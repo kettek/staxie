@@ -3,6 +3,7 @@
   import Editor2D from './sections/Editor2D.svelte'
   import Importer from './sections/Importer.svelte';
   import PaletteSection from './sections/Palette.svelte'
+  import FloatingPanel from './components/FloatingPanel.svelte'
   import { Palette, PaletteEntry, defaultPalette } from './types/palette'
 
   import type { LoadedFile } from './types/file.ts'
@@ -14,6 +15,7 @@
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
   import { Close } from "carbon-icons-svelte"
+  import StackPreview from './sections/StackPreview.svelte'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -84,6 +86,12 @@
         </svelte:fragment>
       </Tabs>
     </section>
+    <FloatingPanel
+      label="Stack Preview"
+      noPadding
+      >
+      <StackPreview files={files} />
+    </FloatingPanel>
   </section>
 </main>
 <ComposedModal bind:open={showImport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageImport}>
