@@ -122,9 +122,12 @@
       ctx.strokeStyle = '#ff0000'
       ctx.lineWidth = 1
 
-      ctx.rect(offsetX*zoom+mousePixelX*zoom, offsetY*zoom+mousePixelY*zoom, 1*zoom, 1*zoom)
-
-      ctx.rect(mouseX, mouseY, 1, 1)
+      if (zoom > 1) {
+        ctx.rect(offsetX*zoom+mousePixelX*zoom, offsetY*zoom+mousePixelY*zoom, 1*zoom, 1*zoom)
+      }
+      if (zoom <= 1 || zoom > 4) {
+        ctx.rect(mouseX, mouseY, 1, 1)
+      }
       ctx.stroke()
     }
     ctx.restore()
@@ -165,6 +168,7 @@
 
     node.addEventListener('wheel', (e: WheelEvent) => {
       if (e.ctrlKey) {
+        e.preventDefault()
         if (e.deltaY < 0) {
           zoom *= 2
         } else if (e.deltaY > 0) {
