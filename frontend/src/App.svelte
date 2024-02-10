@@ -2,7 +2,7 @@
   import type { data } from '../wailsjs/go/models.js'
   import Editor2D from './sections/Editor2D.svelte'
   import Importer from './sections/Importer.svelte';
-  import PaletteSection from './sections/palette.svelte'
+  import PaletteSection from './sections/Palette.svelte'
   import { Palette, PaletteEntry, defaultPalette } from './types/palette'
 
   import type { LoadedFile } from './types/file.ts'
