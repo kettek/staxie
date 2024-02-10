@@ -85,9 +85,13 @@
 
   function canvasMousedown(node) {
     let buttons: Set<number> = new Set()
+    let x: number = 0
+    let y: number = 0
 
     node.addEventListener('mousedown', (e: MouseEvent) => {
       buttons.add(e.button)
+      x = e.clientX
+      y = e.clientY
     })
 
     node.addEventListener('wheel', (e: WheelEvent) => {
@@ -110,12 +114,17 @@
 
     window.addEventListener('mousemove', (e: MouseEvent) => {
       if (buttons.size === 0) return
+      let dx = e.clientX - x
+      let dy = e.clientY - y
+      x = e.clientX
+      y = e.clientY
+
       if (buttons.has(0)) {
         console.log('0')
       }
       if (buttons.has(1)) {
-        offsetX += e.movementX
-        offsetY += e.movementY
+        offsetX += dx
+        offsetY += dy
         capOffset()
       }
       if (buttons.has(2)) {
@@ -135,7 +144,7 @@
 </script>
 
 <main>
-  <canvas bind:this={canvas} use:canvasMousedown></canvas>
+  <canvas bind:this={canvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>
 </main>
 
 <style>
