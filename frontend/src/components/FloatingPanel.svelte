@@ -30,14 +30,10 @@
       x = e.clientX
       y = e.clientY
       node.style.cursor = 'grabbing'
-      document.body.style.cursor = 'grabbing'
-      document.body.style.userSelect = 'none'
     }
     function stop(e: MouseEvent) {
       dragging = false
       node.style.cursor = 'auto'
-      document.body.style.cursor = 'auto'
-      document.body.style.userSelect = 'auto'
     }
     function move(e: MouseEvent) {
       if (!dragging) return
