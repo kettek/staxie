@@ -26,8 +26,10 @@
   let showImport: boolean = false
   let importValid: boolean = false
   let importImage: HTMLImageElement = null
-  let importFile: data.StackistFile = null
+  let importFile: data.StackistFileV1 = null
   let importFilepath: string = ''
+  
+  let showPreview: boolean = false
 
   let refresh = {}
 
@@ -53,7 +55,7 @@
 <Theme bind:theme/>
 <main>
   <menu>
-    <OverflowMenu size="sm">
+    <OverflowMenu size="sm" iconClass='shitcuck' menuOptionsClass='dickfuck'>
       <div slot="menu">File</div>
       <OverflowMenuItem text="New"/>
       <OverflowMenuItem text="Open..."/>
@@ -61,6 +63,10 @@
       <OverflowMenuItem text="Save"/>
       <OverflowMenuItem text="Save As..."/>
       <OverflowMenuItem hasDivider danger text="Quit"/>
+    </OverflowMenu>
+    <OverflowMenu size="sm">
+      <div slot="menu">Windows</div>
+      <OverflowMenuItem text="Preview" on:click={() => showPreview = true}/>
     </OverflowMenu>
   </menu>
   <section class='content'>
@@ -86,12 +92,15 @@
         </svelte:fragment>
       </Tabs>
     </section>
-    <FloatingPanel
-      label="Stack Preview"
-      noPadding
-      >
-      <StackPreview files={files} />
-    </FloatingPanel>
+    {#if showPreview}
+      <FloatingPanel
+        label="Stack Preview"
+        noPadding
+        bind:open={showPreview}
+        >
+        <StackPreview files={files} />
+      </FloatingPanel>
+    {/if}
   </section>
 </main>
 <ComposedModal bind:open={showImport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageImport}>
@@ -110,6 +119,15 @@
     height: 100%;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
+  }
+  menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  :global(menu > button) {
+    width: 4rem !important;
+    color: var(--cds-text-02, #c6c6c6);
   }
   .content {
     display: grid;

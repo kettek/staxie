@@ -7,6 +7,7 @@
   let shownFiles: Record<string, boolean> = {}
   
   let rotation: number = 0
+  let layerDistance: number = 1
   
   let canvas: HTMLCanvasElement
   function draw() {
@@ -37,16 +38,16 @@
                 ctx.save()
                 ctx.translate(x, y)
                 ctx.rotate(rotation * Math.PI / 180)
-                ctx.drawImage(file.image, layer.x, layer.y, group.width, group.height, -group.width/2, -group.height/2, group.width, group.height)
+                ctx.drawImage(file.image, layer.x, layer.y, file.data.width, file.data.height, -file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
                 ctx.restore()
-                y -= 1
+                y -= 1 * layerDistance
               }
               done = true
               if (done) break
             }
             if (done) break
           }
-          x += group.width
+          x += file.data.width
           y = canvas.height/2
           if (done) break
         }
@@ -74,7 +75,8 @@
     </Column>
     <Column>
       <canvas bind:this={canvas}></canvas>
-      <Slider labelText="Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
+      <Slider labelText="Global Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
+      <Slider labelText="Global Layer Distance" min={0} max={2} step={0.1} bind:value={layerDistance} fullWidth></Slider>
     </Column>
   </Row>
 </Grid>

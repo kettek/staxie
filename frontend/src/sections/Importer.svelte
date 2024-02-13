@@ -28,7 +28,7 @@
   let width: number = 16
   let height: number = 16
   let rowBasedFrames: boolean = true
-  export let file: data.StackistFile
+  export let file: data.StackistFileV1
   export let filepath: string = ''
   export let img: HTMLImageElement
   let path: string = ''
@@ -98,15 +98,15 @@
   }
 
   function remakeFile() {
-    file = data.StackistFile.createFrom({
+    file = data.StackistFileV1.createFrom({
+      width: width,
+      height: height,
       groups: {}
     })
     let cx = 0
     let cy = 0
     for (let gi = 0; gi < groups; gi++) {
       let group: data.Group = data.Group.createFrom({
-        width: width,
-        height: height,
         animations: {},
       })
       for (let ai = 0; ai < animations; ai++) {

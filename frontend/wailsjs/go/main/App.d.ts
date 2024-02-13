@@ -6,10 +6,10 @@ export function GetFilePath():Promise<string>;
 
 export function Greet(arg1:string):Promise<string>;
 
-export function Load(arg1:string):Promise<data.StackistFile>;
+export function Load(arg1:string):Promise<data.StackistFileV1>;
 
 export function OpenFileBytes(arg1:string):Promise<Array<number>>;
 
 export function ReadBytes(arg1:string):Promise<Array<number>>;
 
-export function Save(arg1:string,arg2:data.StackistFile):Promise<void>;
+export function Save(arg1:string,arg2:data.StackistFileV1):Promise<void>;

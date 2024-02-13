@@ -80,8 +80,6 @@ export namespace data {
 	}
 	
 	export class Group {
-	    width: number;
-	    height: number;
 	    animations: {[key: string]: Animation};
 	
 	    static createFrom(source: any = {}) {
@@ -90,8 +88,6 @@ export namespace data {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.width = source["width"];
-	        this.height = source["height"];
 	        this.animations = this.convertValues(source["animations"], Animation, true);
 	    }
 	
@@ -114,16 +110,22 @@ export namespace data {
 		}
 	}
 	
-	export class StackistFile {
+	export class StackistFileV1 {
+	    version: string;
 	    groups: {[key: string]: Group};
+	    width: number;
+	    height: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new StackistFile(source);
+	        return new StackistFileV1(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.version = source["version"];
 	        this.groups = this.convertValues(source["groups"], Group, true);
+	        this.width = source["width"];
+	        this.height = source["height"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

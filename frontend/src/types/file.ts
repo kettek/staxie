@@ -4,5 +4,5 @@ export class LoadedFile {
   filepath: string
   title: string
   image: HTMLImageElement
-  data: data.StackistFile
+  data: data.StackistFileV1
 }

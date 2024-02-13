@@ -1,12 +1,13 @@
 package data
 
-type StackistFile struct {
-	Groups map[string]Group `json:"groups"`
+type StackistFileV1 struct {
+	Version string           `json:"version"` // The version of the file format.
+	Groups  map[string]Group `json:"groups"`
+	Width   int              `json:"width"`
+	Height  int              `json:"height"`
 }
 
 type Group struct {
-	Width      int                  `json:"width"`
-	Height     int                  `json:"height"`
 	Animations map[string]Animation `json:"animations"`
 }
 
