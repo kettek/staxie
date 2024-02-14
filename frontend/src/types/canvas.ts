@@ -46,6 +46,12 @@ export class Canvas {
       this.imageData.data[i * 4 + 3] = (color >> 24) & 0xFF
     }
   }
+  getPixel(x: number, y: number): number {
+    if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
+      return -1
+    }
+    return this.pixels[y * this.width + x]
+  }
   setPixel(x: number, y: number, index: number) {
     this.pixels[y * this.width + x] = index
     let color = this.palette[index]

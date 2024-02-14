@@ -6,7 +6,7 @@
   import FloatingPanel from './components/FloatingPanel.svelte'
   import { Palette, PaletteEntry, defaultPalette } from './types/palette'
 
-  import type { LoadedFile } from './types/file.ts'
+  import { LoadedFile } from './types/file.ts'
 
   import "carbon-components-svelte/css/all.css"
   import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate } from "carbon-components-svelte"
@@ -38,6 +38,7 @@
   let focusedFileIndex: number = -1
   let focusedFile: LoadedFile = null
   $: focusedFile = files[focusedFileIndex] ?? null
+  $: console.log(focusedFile)
   
   function selectFile(file: LoadedFile, index: number) {
     focusedFileIndex = index
@@ -46,12 +47,7 @@
 
   function engageImport() {
     if (importValid) {
-      files = [...files, {
-        filepath: importFilepath,
-        title: importFilepath,
-        data: importFile,
-        canvas: importCanvas,
-      }]
+      files = [...files, new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importFile})]
       console.log(files)
     }
     showImport = false
@@ -72,6 +68,11 @@
       <OverflowMenuItem text="Save"/>
       <OverflowMenuItem text="Save As..."/>
       <OverflowMenuItem hasDivider danger text="Quit"/>
+    </OverflowMenu>
+    <OverflowMenu size="sm">
+      <div slot="menu">Edit</div>
+      <OverflowMenuItem text="Undo" on:click={() => focusedFile?.undo()} disabled={!focusedFile?.canUndo()}/>
+      <OverflowMenuItem text="Redo" on:click={() => focusedFile?.redo()} disabled={!focusedFile?.canRedo()}/>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Windows</div>

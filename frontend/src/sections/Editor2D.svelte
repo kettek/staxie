@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
 
   import type { data } from '../../wailsjs/go/models.ts'
-  import type { LoadedFile } from '../types/file'
+  import { PixelPlaceUndoable, type LoadedFile } from '../types/file'
 
   export let file: LoadedFile
   export let animation: data.Animation
@@ -27,6 +27,8 @@
 
   let overlayDirty: boolean = true
   let canvasDirty: boolean = true
+  
+  let traversedPixels: Set<number> = new Set()
 
   // check resizes canvases, etc.
   function check() {
@@ -65,6 +67,14 @@
     if (!ctx) return
     ctx.clearRect(0, 0, rootCanvas.width, rootCanvas.height)
     ctx.drawImage(canvas, 0, 0)
+
+    // Draw the actual canvas image.
+    ctx.save()
+    ctx.imageSmoothingEnabled = false
+    ctx.scale(zoom, zoom)
+    ctx.drawImage(file.canvas.canvas, offsetX, offsetY)
+    ctx.restore()
+
     ctx.drawImage(overlayCanvas, 0, 0)
   }
 
@@ -103,9 +113,6 @@
       }
       ctx.fill()
     }
-
-    // TODO: Draw the current layer of the current frame.
-    ctx.drawImage(file.canvas.canvas, offsetX, offsetY)
     ctx.restore()
   }
 
@@ -164,6 +171,17 @@
       buttons.add(e.button)
       x = e.clientX
       y = e.clientY
+      
+      if (e.button === 0) {
+        console.log('0 click')
+        traversedPixels.clear()
+        file.capture()
+        let p = file.canvas.getPixel(mousePixelX, mousePixelY)
+        if (p !== -1) {
+          file.push(new PixelPlaceUndoable(mousePixelX, mousePixelY, p, 1))
+          traversedPixels.add(mousePixelX+mousePixelY*file.canvas.width)
+        }
+      }
     })
 
     node.addEventListener('wheel', (e: WheelEvent) => {
@@ -221,6 +239,14 @@
 
       if (buttons.has(0)) {
         console.log('0')
+        
+        if (!traversedPixels.has(mousePixelX+mousePixelY*file.canvas.width)) {
+          traversedPixels.add(mousePixelX+mousePixelY*file.canvas.width)
+          let p = file.canvas.getPixel(mousePixelX, mousePixelY)
+          if (p !== -1) {
+            file.push(new PixelPlaceUndoable(mousePixelX, mousePixelY, p, 1))
+          }
+        }
       }
       if (buttons.has(1)) {
         offsetX += dx / zoom
@@ -235,7 +261,15 @@
     })
 
     window.addEventListener('mouseup', (e: MouseEvent) => {
+      if (buttons.size === 0) return
+
+      if (e.button === 0) {
+        file.release()
+        console.log('release')
+      }
+
       buttons.delete(e.button)
+
     })
   }
   
