@@ -60,7 +60,7 @@
 <Theme bind:theme/>
 <main>
   <menu>
-    <OverflowMenu size="sm" iconClass='shitcuck' menuOptionsClass='dickfuck'>
+    <OverflowMenu size="sm">
       <div slot="menu">File</div>
       <OverflowMenuItem text="New"/>
       <OverflowMenuItem text="Open..."/>
