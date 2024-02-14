@@ -14,9 +14,10 @@
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, Redo, Select_01, Undo } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import type { Canvas } from './types/canvas'
+  import { BrushTool, EraserTool, type Tool } from './types/tools';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -31,6 +32,11 @@
   let importCanvas: Canvas = null
   
   let showPreview: boolean = false
+  
+  // let toolSelect = new SelectTool()
+  let toolErase = new EraserTool()
+  let toolBrush = new BrushTool()
+  let currentTool: Tool = toolBrush
 
   let refresh = {}
 
@@ -88,9 +94,10 @@
       <PaletteSection bind:palette bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} />
     </section>
     <menu class='toolbar'>
-      <Button kind="ghost" size="small" icon={Select_01} iconDescription="selection"></Button>
-      <Button kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint"></Button>
-      <Button kind="ghost" size="small" icon={Erase} iconDescription="erase"></Button>
+      <Button disabled kind="ghost" size="small" icon={Select_01} iconDescription="selection" tooltipPosition="right"></Button>
+      <Button disabled kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right"></Button>
+      <Button isSelected={currentTool instanceof BrushTool} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>currentTool=toolBrush}></Button>
+      <Button isSelected={currentTool instanceof EraserTool} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>currentTool=toolErase}></Button>
     </menu>
     <section class='middle'>
       <Tabs>
@@ -105,7 +112,7 @@
         <svelte:fragment slot="content">
           {#each files as file}
             <TabContent>
-              <Editor2D bind:file={file} refresh={refresh} primaryColorIndex={primaryColorIndex} secondaryColorIndex={secondaryColorIndex} />
+              <Editor2D bind:file={file} refresh={refresh} primaryColorIndex={primaryColorIndex} secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} />
             </TabContent>
           {/each}
         </svelte:fragment>

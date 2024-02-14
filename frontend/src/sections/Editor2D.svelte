@@ -4,7 +4,7 @@
   import type { data } from '../../wailsjs/go/models.ts'
   import type { LoadedFile } from '../types/file'
   import type { PixelPosition } from '../types/shapes'
-  import { BrushTool, type Tool } from '../types/tools'
+  import { BrushTool, EraserTool, type Tool } from '../types/tools'
 
   export let file: LoadedFile
   export let animation: data.Animation
@@ -163,7 +163,7 @@
     }
   }
   
-  let currentTool: Tool = new BrushTool()
+  export let currentTool: Tool
   
   function canvasMousedown(node) {
     let buttons: Set<number> = new Set()
@@ -187,6 +187,8 @@
       if (e.button === 0) {
         if (currentTool instanceof BrushTool) {
           currentTool.pointerDown({file, brushSize: 3, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
+        } else if (currentTool instanceof EraserTool) {
+          currentTool.pointerDown({file, brushSize: 3}, {x: mousePixelX, y: mousePixelY, id: e.button })
         }
       }
     })
@@ -248,6 +250,8 @@
         if (currentTool.isActive()) {
           if (currentTool instanceof BrushTool) {
             currentTool.pointerMove({file, brushSize: 3, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
+          } else if (currentTool instanceof EraserTool) {
+            currentTool.pointerMove({file, brushSize: 3}, {x: mousePixelX, y: mousePixelY, id: 0 })
           }
         }
       }

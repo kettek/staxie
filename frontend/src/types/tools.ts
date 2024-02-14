@@ -23,6 +23,10 @@ export interface BrushToolContext {
   colorIndex: number
 }
 
+export interface EraserToolContext {
+  brushSize: number
+}
+
 export class BrushTool implements Tool {
   private active: boolean
   isActive(): boolean {
@@ -74,5 +78,14 @@ export class BrushTool implements Tool {
   pointerUp(ctx: ToolContext, ptr: Pointer) {
     ctx.file.release()
     this.active = false
+  }
+}
+
+export class EraserTool extends BrushTool {
+  pointerDown(ctx: ToolContext & EraserToolContext, ptr: Pointer) {
+    super.pointerDown({...ctx, colorIndex: 0}, ptr)
+  }
+  pointerMove(ctx: ToolContext & EraserToolContext, ptr: Pointer) {
+    super.pointerMove({...ctx, colorIndex: 0}, ptr)
   }
 }
