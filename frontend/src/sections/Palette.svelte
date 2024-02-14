@@ -10,9 +10,9 @@
     const target = event.target as HTMLSpanElement
     const index = parseInt(target.getAttribute('x-index') || '0')
     if (event.shiftKey) {
-      primaryColorIndex = index
-    } else {
       secondaryColorIndex = index
+    } else {
+      primaryColorIndex = index
     }
   }
 </script>
@@ -42,10 +42,10 @@
     border: 2px solid transparent;
   }
   .entry.primary {
-    border: 2px dashed black;
+    border: 2px dashed white;
   }
   .entry.secondary {
-    border: 2px dashed white;
+    border: 2px dashed black;
   }
   .color {
     pointer-events: none;
