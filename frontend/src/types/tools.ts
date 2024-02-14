@@ -1,5 +1,5 @@
 import { PixelPlaceUndoable, type LoadedFile, PixelsPlaceUndoable } from "./file"
-import { FilledCircle } from "./shapes"
+import { FilledCircle, type PixelPosition } from "./shapes"
 
 export interface ToolContext {
   file: LoadedFile
@@ -25,6 +25,10 @@ export interface BrushToolContext {
 
 export interface EraserToolContext {
   brushSize: number
+}
+
+export interface FloodToolContext {
+  colorIndex: number
 }
 
 export class BrushTool implements Tool {
@@ -87,5 +91,48 @@ export class EraserTool extends BrushTool {
   }
   pointerMove(ctx: ToolContext & EraserToolContext, ptr: Pointer) {
     super.pointerMove({...ctx, colorIndex: 0}, ptr)
+  }
+}
+
+export class FillTool implements Tool {
+  private active: boolean
+  isActive(): boolean {
+    return this.active
+  }
+  
+  private pixels: PixelPosition[] = []
+
+  pointerDown(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
+    this.active = true
+    this.pixels = []
+    
+    let traversed = new Set<number>()
+    
+    let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
+    if (p !== -1) {
+      let queue = [{x: ptr.x, y: ptr.y}]
+      while (queue.length > 0) {
+        let {x, y} = queue.shift()
+        let index = y * ctx.file.canvas.width + x
+        if (traversed.has(index)) {
+          continue
+        }
+        traversed.add(index)
+        let p2 = ctx.file.canvas.getPixel(x, y)
+        if (p2 === p) {
+          this.pixels.push({x, y, index: ctx.colorIndex})
+          if (x > 0) queue.push({x: x-1, y})
+          if (x < ctx.file.canvas.width-1) queue.push({x: x+1, y})
+          if (y > 0) queue.push({x, y: y-1})
+          if (y < ctx.file.canvas.height-1) queue.push({x, y: y+1})
+        }
+      }
+    }
+  }
+  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
+  }
+  pointerUp(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
+    ctx.file.push(new PixelsPlaceUndoable(this.pixels))
+    this.active = false
   }
 }

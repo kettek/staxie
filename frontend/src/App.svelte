@@ -17,7 +17,7 @@
   import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import type { Canvas } from './types/canvas'
-  import { BrushTool, EraserTool, type Tool } from './types/tools';
+  import { BrushTool, EraserTool, FillTool, type Tool } from './types/tools';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -34,6 +34,7 @@
   let showPreview: boolean = false
   
   // let toolSelect = new SelectTool()
+  let toolFill = new FillTool()
   let toolErase = new EraserTool()
   let toolBrush = new BrushTool()
   let currentTool: Tool = toolBrush
@@ -99,7 +100,7 @@
     </section>
     <menu class='toolbar'>
       <Button disabled kind="ghost" size="small" icon={Select_01} iconDescription="selection" tooltipPosition="right"></Button>
-      <Button disabled kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right"></Button>
+      <Button isSelected={currentTool === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>swapTool(toolFill)}></Button>
       <Button isSelected={currentTool === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>swapTool(toolBrush)}></Button>
       <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
     </menu>
