@@ -16,6 +16,7 @@
 
   import { Close } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
+  import type { Canvas } from './types/canvas'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -25,9 +26,9 @@
   
   let showImport: boolean = false
   let importValid: boolean = false
-  let importImage: HTMLImageElement = null
   let importFile: data.StackistFileV1 = null
   let importFilepath: string = ''
+  let importCanvas: Canvas = null
   
   let showPreview: boolean = false
 
@@ -41,7 +42,7 @@
         filepath: importFilepath,
         title: importFilepath,
         data: importFile,
-        image: importImage,
+        canvas: importCanvas,
       }]
       console.log(files)
     }
@@ -86,7 +87,7 @@
         <svelte:fragment slot="content">
           {#each files as file}
             <TabContent>
-              <Editor2D img={file.image} refresh={refresh} />
+              <Editor2D bind:file={file} refresh={refresh} />
             </TabContent>
           {/each}
         </svelte:fragment>
@@ -108,8 +109,8 @@
     bind:open={showImport}
     bind:valid={importValid}
     bind:file={importFile}
-    bind:img={importImage}
     bind:filepath={importFilepath}
+    bind:canvas={importCanvas}
   />
 </ComposedModal>
 

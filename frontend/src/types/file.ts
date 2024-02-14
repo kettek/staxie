@@ -1,8 +1,9 @@
 import type { data } from '../../wailsjs/go/models.ts'
+import type { Canvas } from './canvas.ts'
 
 export class LoadedFile {
   filepath: string
   title: string
-  image: HTMLImageElement
+  canvas: Canvas
   data: data.StackistFileV1
 }

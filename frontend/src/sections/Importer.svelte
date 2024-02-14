@@ -3,6 +3,9 @@
   import { data } from '../../wailsjs/go/models.js'
   import { onMount } from 'svelte'
   
+  import { IndexedPNG } from '../types/png'
+  import { Canvas } from '../types/canvas'
+  
   import { Button, NumberInput, Checkbox, RadioButtonGroup, RadioButton } from 'carbon-components-svelte'
   import { Form, FormGroup, InlineNotification, Tile, Truncate } from 'carbon-components-svelte'
   import { Grid, Row, Column } from "carbon-components-svelte"
@@ -30,7 +33,8 @@
   let rowBasedFrames: boolean = true
   export let file: data.StackistFileV1
   export let filepath: string = ''
-  export let img: HTMLImageElement
+  export let canvas: Canvas
+  let img: HTMLImageElement
   let path: string = ''
   let error: string = ""
   let error2: string = ""
@@ -40,7 +44,7 @@
   let groups: number = 0
   let animations: number = 0
   
-  function loadImage(base64: number[]): Promise<HTMLImageElement> {
+  function loadImage(base64: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       img = new Image()
       img.onload = () => resolve(img)
@@ -52,9 +56,45 @@
   async function openFile() {
     try {
       filepath = await GetFilePath()
-      let bytes = await OpenFileBytes(filepath)
+      let bytes = (await OpenFileBytes(filepath)) as unknown as string
       path = /[^/\\]*$/.exec(filepath)[0]
       img = await loadImage(bytes)
+      
+      console.log('oops', bytes, typeof bytes)
+      console.log('gonna do it...')
+      let arr = Uint8Array.from(atob(bytes), (v) => v.charCodeAt(0))
+      console.log('arr', arr)
+      let png = new IndexedPNG(arr)
+      console.log('hmm', png)
+      await png.decode()
+      
+      canvas = new Canvas(png.width, png.height)
+      console.log('made canvas', canvas)
+      
+      if (png.pixelBitlength === 32) {
+        console.log('yee', png.decodedPixels)
+        for (let i = 0; i < png.decodedPixels.length; i += 4) {
+          let y = Math.floor(i / (png.width * 4))
+          let x = (i / 4) % png.width
+          canvas.setPixelRGBA(x, y, png.decodedPixels[i], png.decodedPixels[i+1], png.decodedPixels[i+2], png.decodedPixels[i+3])
+        }
+      } else if (png.pixelBitlength === 24) {
+        // RGB
+      } else if (png.pixelBitlength === 8) {
+        canvas.setPaletteFromUint8Array(png.decodedPalette)
+        for (let i = 0; i < png.decodedPixels.length; i++) {
+          let y = Math.floor(i / (png.width * 4))
+          let x = (i / 4) % png.width
+          canvas.setPixel(x, y, png.decodedPixels[i])
+        }
+      } else {
+        error = "pixel format"
+        error2 = "unsupported pixel format"
+        return
+      }
+      console.log('wowww', canvas)
+      canvas.refreshCanvas()
+
       recalc()
     } catch(err) {
       error = "open"

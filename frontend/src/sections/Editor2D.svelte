@@ -2,8 +2,9 @@
   import { onMount } from 'svelte'
 
   import type { data } from '../../wailsjs/go/models.ts'
+  import type { LoadedFile } from '../types/file'
 
-  export let img: HTMLImageElement
+  export let file: LoadedFile
   export let animation: data.Animation
   export let frame: data.Frame
   export let layer: data.Layer
@@ -44,8 +45,8 @@
     }
     if (offsetX === undefined || offsetY === undefined) {
       // Adjust offset to center image on first LOAD.
-      offsetX = rootCanvas.width/2 - img.width/2
-      offsetY = rootCanvas.height/2 - img.height/2
+      offsetX = rootCanvas.width/2 - file.canvas.width/2
+      offsetY = rootCanvas.height/2 - file.canvas.height/2
     }
   }
 
@@ -78,15 +79,14 @@
     ctx.save()
     ctx.imageSmoothingEnabled = false
     ctx.scale(zoom, zoom)
-    //ctx.transform(1, 0, 0, 1, -img.width/2, -img.height/2)
     {
       ctx.beginPath()
       ctx.fillStyle = '#888888'
-      ctx.rect(offsetX, offsetY, img.width, img.height)
+      ctx.rect(offsetX, offsetY, file.canvas.width, file.canvas.height)
       ctx.fill()
 
-      let rows = img.height / checkerboardSize
-      let cols = img.width / checkerboardSize
+      let rows = file.canvas.height / checkerboardSize
+      let cols = file.canvas.width / checkerboardSize
       ctx.beginPath()
       ctx.fillStyle = '#444444'
       for (let r = 0; r < rows; r++) {
@@ -105,7 +105,7 @@
     }
 
     // TODO: Draw the current layer of the current frame.
-    ctx.drawImage(img, offsetX, offsetY)
+    ctx.drawImage(file.canvas.canvas, offsetX, offsetY)
     ctx.restore()
   }
 
@@ -134,13 +134,13 @@
   }
 
   function capOffset() {
-    if (offsetX < -img.width+30) {
-      offsetX = -img.width+30
+    if (offsetX < -file.canvas.width+30) {
+      offsetX = -file.canvas.width+30
     } else if (offsetX > canvas.width-30) {
       offsetX = canvas.width-30
     }
-    if (offsetY < -img.height+30) {
-      offsetY = -img.height+30
+    if (offsetY < -file.canvas.height+30) {
+      offsetY = -file.canvas.height+30
     } else if (offsetY > canvas.height-30) {
       offsetY = canvas.height-30
     }

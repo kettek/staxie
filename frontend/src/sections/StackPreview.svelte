@@ -38,7 +38,7 @@
                 ctx.save()
                 ctx.translate(x, y)
                 ctx.rotate(rotation * Math.PI / 180)
-                ctx.drawImage(file.image, layer.x, layer.y, file.data.width, file.data.height, -file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
+                ctx.drawImage(file.canvas.canvas, layer.x, layer.y, file.data.width, file.data.height, -file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
                 ctx.restore()
                 y -= 1 * layerDistance
               }
