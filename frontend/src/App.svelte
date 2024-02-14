@@ -96,7 +96,7 @@
         <svelte:fragment slot="content">
           {#each files as file}
             <TabContent>
-              <Editor2D bind:file={file} refresh={refresh} />
+              <Editor2D bind:file={file} refresh={refresh} primaryColorIndex={primaryColorIndex} secondaryColorIndex={secondaryColorIndex} />
             </TabContent>
           {/each}
         </svelte:fragment>

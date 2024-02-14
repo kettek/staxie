@@ -20,6 +20,9 @@
   let mouseY: number = 0
   let mousePixelX: number = 0
   let mousePixelY: number = 0
+  
+  export let primaryColorIndex: number
+  export let secondaryColorIndex: number
 
   let rootCanvas: HTMLCanvasElement
   let overlayCanvas: HTMLCanvasElement = document.createElement('canvas')
@@ -178,7 +181,7 @@
         file.capture()
         let p = file.canvas.getPixel(mousePixelX, mousePixelY)
         if (p !== -1) {
-          file.push(new PixelPlaceUndoable(mousePixelX, mousePixelY, p, 1))
+          file.push(new PixelPlaceUndoable(mousePixelX, mousePixelY, p, primaryColorIndex))
           traversedPixels.add(mousePixelX+mousePixelY*file.canvas.width)
         }
       }
@@ -244,7 +247,7 @@
           traversedPixels.add(mousePixelX+mousePixelY*file.canvas.width)
           let p = file.canvas.getPixel(mousePixelX, mousePixelY)
           if (p !== -1) {
-            file.push(new PixelPlaceUndoable(mousePixelX, mousePixelY, p, 1))
+            file.push(new PixelPlaceUndoable(mousePixelX, mousePixelY, p, primaryColorIndex))
           }
         }
       }
