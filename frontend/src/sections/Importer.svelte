@@ -60,19 +60,13 @@
       path = /[^/\\]*$/.exec(filepath)[0]
       img = await loadImage(bytes)
       
-      console.log('oops', bytes, typeof bytes)
-      console.log('gonna do it...')
       let arr = Uint8Array.from(atob(bytes), (v) => v.charCodeAt(0))
-      console.log('arr', arr)
       let png = new IndexedPNG(arr)
-      console.log('hmm', png)
       await png.decode()
       
       canvas = new Canvas(png.width, png.height)
-      console.log('made canvas', canvas)
       
       if (png.pixelBitlength === 32) {
-        console.log('yee', png.decodedPixels)
         for (let i = 0; i < png.decodedPixels.length; i += 4) {
           let y = Math.floor(i / (png.width * 4))
           let x = (i / 4) % png.width
@@ -82,17 +76,12 @@
         // RGB
       } else if (png.pixelBitlength === 8) {
         canvas.setPaletteFromUint8Array(png.decodedPalette)
-        for (let i = 0; i < png.decodedPixels.length; i++) {
-          let y = Math.floor(i / (png.width * 4))
-          let x = (i / 4) % png.width
-          canvas.setPixel(x, y, png.decodedPixels[i])
-        }
+        canvas.setPixelsFromUint8Array(png.decodedPixels)
       } else {
         error = "pixel format"
         error2 = "unsupported pixel format"
         return
       }
-      console.log('wowww', canvas)
       canvas.refreshCanvas()
 
       recalc()

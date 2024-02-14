@@ -32,7 +32,7 @@ export class Canvas {
   setPaletteFromUint8Array(palette: Uint8Array) {
     this.palette = new Uint32Array(palette.length / 4)
     for (let i = 0; i < palette.length; i += 4) {
-      this.palette[i / 4] = (palette[i + 3] << 24) | (palette[i] << 16) | (palette[i + 1] << 8) | palette[i + 2]
+      this.palette[i / 4] = new Uint32Array(palette.buffer.slice(i, i + 4))[0]
     }
   }
   setPixelsFromUint8Array(pixels: Uint8Array) {
@@ -49,10 +49,14 @@ export class Canvas {
   setPixel(x: number, y: number, index: number) {
     this.pixels[y * this.width + x] = index
     let color = this.palette[index]
-    this.imageData.data[(y * this.width + x) * 4 + 0] = color & 0xFF
-    this.imageData.data[(y * this.width + x) * 4 + 1] = (color >> 8) & 0xFF
-    this.imageData.data[(y * this.width + x) * 4 + 2] = (color >> 16) & 0xFF
-    this.imageData.data[(y * this.width + x) * 4 + 3] = (color >> 24) & 0xFF
+    let r = color & 0xFF
+    let g = (color >> 8) & 0xFF
+    let b = (color >> 16) & 0xFF
+    let a = (color >> 24) & 0xFF
+    this.imageData.data[(y * this.width + x) * 4 + 0] = r
+    this.imageData.data[(y * this.width + x) * 4 + 1] = g
+    this.imageData.data[(y * this.width + x) * 4 + 2] = b
+    this.imageData.data[(y * this.width + x) * 4 + 3] = a
   }
   setPixelRGBA(x: number, y: number, r: number, g: number, b: number, a: number) {
     this.pixels[y * this.width + x] = this.addPaletteColor(r, g, b, a)

@@ -1,7 +1,8 @@
 <script lang='ts'>
-  import { Palette, defaultPalette } from '../types/palette'
+  import type { LoadedFile } from '../types/file'
+
+  export let file: LoadedFile
   
-  export let palette: Palette = defaultPalette()
   export let primaryColorIndex: number = 1
   export let secondaryColorIndex: number = 0
   
@@ -17,9 +18,11 @@
 </script>
 
 <main>
-  {#each palette.entries as color, index}
-    <span on:click={paletteClick} style="background-color: {color.color}" x-index={index} class="color {index===primaryColorIndex?'primary':''} {index===secondaryColorIndex?'secondary':''}"></span>
-  {/each}
+  {#if file}
+    {#each file.canvas.palette as palette, paletteIndex}
+      <span on:click={paletteClick} style="background-color: rgba({palette&0xFF},{(palette>>8)&0xFF},{(palette>>16)&0xFF},{(palette>>24)&0xFF})" x-index={paletteIndex} class="color {paletteIndex===primaryColorIndex?'primary':''} {paletteIndex===secondaryColorIndex?'secondary':''}"></span>
+    {/each}
+  {/if}
 </main>
 
 <style>

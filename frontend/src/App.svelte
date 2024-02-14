@@ -35,6 +35,14 @@
   let refresh = {}
 
   let files: LoadedFile[] = []
+  let focusedFileIndex: number = -1
+  let focusedFile: LoadedFile = null
+  $: focusedFile = files[focusedFileIndex] ?? null
+  
+  function selectFile(file: LoadedFile, index: number) {
+    focusedFileIndex = index
+    refresh = {}
+  }
 
   function engageImport() {
     if (importValid) {
@@ -72,12 +80,12 @@
   </menu>
   <section class='content'>
     <section class='left'>
-      <PaletteSection bind:palette bind:primaryColorIndex bind:secondaryColorIndex />
+      <PaletteSection bind:palette bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} />
     </section>
     <section class='middle'>
       <Tabs>
         {#each files as file, index}
-          <Tab on:click={()=>refresh={}}>
+          <Tab on:click={()=>selectFile(file, index)}>
             <span class='tab'>
               <span>{file.title}</span>
               <Button size="small" kind="ghost" iconDescription="close" icon={Close} href="#" on:click={(e)=>{e.preventDefault();closeFile(index)}} />
