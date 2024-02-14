@@ -37,6 +37,10 @@
   let toolErase = new EraserTool()
   let toolBrush = new BrushTool()
   let currentTool: Tool = toolBrush
+  
+  function swapTool(tool: Tool) {
+    currentTool = tool
+  }
 
   let refresh = {}
 
@@ -96,8 +100,8 @@
     <menu class='toolbar'>
       <Button disabled kind="ghost" size="small" icon={Select_01} iconDescription="selection" tooltipPosition="right"></Button>
       <Button disabled kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right"></Button>
-      <Button isSelected={currentTool instanceof BrushTool} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>currentTool=toolBrush}></Button>
-      <Button isSelected={currentTool instanceof EraserTool} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>currentTool=toolErase}></Button>
+      <Button isSelected={currentTool === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>swapTool(toolBrush)}></Button>
+      <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
     </menu>
     <section class='middle'>
       <Tabs>
