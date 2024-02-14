@@ -2,7 +2,9 @@
   import { onMount } from 'svelte'
 
   import type { data } from '../../wailsjs/go/models.ts'
-  import { PixelPlaceUndoable, type LoadedFile } from '../types/file'
+  import type { LoadedFile } from '../types/file'
+  import type { PixelPosition } from '../types/shapes'
+  import { BrushTool, type Tool } from '../types/tools'
 
   export let file: LoadedFile
   export let animation: data.Animation
@@ -32,6 +34,11 @@
   let canvasDirty: boolean = true
   
   let traversedPixels: Set<number> = new Set()
+  function addTraversedPixels(pixels: PixelPosition[]) {
+    for (let p of pixels) {
+      traversedPixels.add(p.x+p.y*file.canvas.width)
+    }
+  }
 
   // check resizes canvases, etc.
   function check() {
@@ -155,7 +162,9 @@
       offsetY = canvas.height-30
     }
   }
-
+  
+  let currentTool: Tool = new BrushTool()
+  
   function canvasMousedown(node) {
     let buttons: Set<number> = new Set()
     let x: number = 0
@@ -176,13 +185,8 @@
       y = e.clientY
       
       if (e.button === 0) {
-        console.log('0 click')
-        traversedPixels.clear()
-        file.capture()
-        let p = file.canvas.getPixel(mousePixelX, mousePixelY)
-        if (p !== -1) {
-          file.push(new PixelPlaceUndoable(mousePixelX, mousePixelY, p, primaryColorIndex))
-          traversedPixels.add(mousePixelX+mousePixelY*file.canvas.width)
+        if (currentTool instanceof BrushTool) {
+          currentTool.pointerDown({file, brushSize: 3, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
         }
       }
     })
@@ -241,13 +245,9 @@
       y = e.clientY
 
       if (buttons.has(0)) {
-        console.log('0')
-        
-        if (!traversedPixels.has(mousePixelX+mousePixelY*file.canvas.width)) {
-          traversedPixels.add(mousePixelX+mousePixelY*file.canvas.width)
-          let p = file.canvas.getPixel(mousePixelX, mousePixelY)
-          if (p !== -1) {
-            file.push(new PixelPlaceUndoable(mousePixelX, mousePixelY, p, primaryColorIndex))
+        if (currentTool.isActive()) {
+          if (currentTool instanceof BrushTool) {
+            currentTool.pointerMove({file, brushSize: 3, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
           }
         }
       }
@@ -267,8 +267,9 @@
       if (buttons.size === 0) return
 
       if (e.button === 0) {
-        file.release()
-        console.log('release')
+        if (currentTool.isActive()) {
+          currentTool.pointerUp({file}, {x: mousePixelX, y: mousePixelY, id: 0 })
+        }
       }
 
       buttons.delete(e.button)

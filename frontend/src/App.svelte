@@ -6,15 +6,15 @@
   import FloatingPanel from './components/FloatingPanel.svelte'
   import { Palette, PaletteEntry, defaultPalette } from './types/palette'
 
-  import { LoadedFile } from './types/file.ts'
+  import { LoadedFile } from './types/file'
 
   import "carbon-components-svelte/css/all.css"
-  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate } from "carbon-components-svelte"
+  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet } from "carbon-components-svelte"
   import { ComposedModal } from "carbon-components-svelte"
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, Redo, Select_01, Undo } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import type { Canvas } from './types/canvas'
   
@@ -59,7 +59,7 @@
 
 <Theme bind:theme/>
 <main>
-  <menu>
+  <menu class="mainMenu">
     <OverflowMenu size="sm">
       <div slot="menu">File</div>
       <OverflowMenuItem text="New"/>
@@ -71,8 +71,12 @@
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Edit</div>
-      <OverflowMenuItem text="Undo" on:click={() => focusedFile?.undo()} disabled={!focusedFile?.canUndo()}/>
-      <OverflowMenuItem text="Redo" on:click={() => focusedFile?.redo()} disabled={!focusedFile?.canRedo()}/>
+      <OverflowMenuItem on:click={() => focusedFile?.undo()} disabled={!focusedFile?.canUndo()}>
+        Undo &nbsp; <Undo/>
+      </OverflowMenuItem>
+      <OverflowMenuItem on:click={() => focusedFile?.redo()} disabled={!focusedFile?.canRedo()}>
+        Redo &nbsp; <Redo/>
+      </OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Windows</div>
@@ -83,6 +87,11 @@
     <section class='left'>
       <PaletteSection bind:palette bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} />
     </section>
+    <menu class='toolbar'>
+      <Button kind="ghost" size="small" icon={Select_01} iconDescription="selection"></Button>
+      <Button kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint"></Button>
+      <Button kind="ghost" size="small" icon={Erase} iconDescription="erase"></Button>
+    </menu>
     <section class='middle'>
       <Tabs>
         {#each files as file, index}
@@ -130,24 +139,29 @@
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
   }
-  menu {
+  .mainMenu {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
   }
-  :global(menu > button) {
+  :global(.mainMenu > button) {
     width: 4rem !important;
     color: var(--cds-text-02, #c6c6c6);
   }
   .content {
     display: grid;
-    grid-template-columns: 1fr 4fr;
+    grid-template-columns: 1fr auto 4fr;
     grid-template-rows: minmax(0, 1fr);
   }
   .left {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
+  }
+  .toolbar {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
   }
   .middle {
     display: grid;

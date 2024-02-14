@@ -1,6 +1,6 @@
 import type { data } from '../../wailsjs/go/models.ts'
-import type { Canvas } from './canvas.ts'
-import { UndoableStack, type Undoable } from './undo.ts'
+import type { Canvas } from './canvas'
+import { UndoableStack, type Undoable } from './undo'
 
 export interface LoadedFileOptions {
   filepath: string
@@ -50,10 +50,40 @@ export class PixelPlaceUndoable implements Undoable<LoadedFile> {
     this.newIndex = newIndex
   }
   apply(file: LoadedFile) {
-    console.log('apply', this.x, this.y, this.newIndex)
     file.canvas.setPixel(this.x, this.y, this.newIndex)
   }
   unapply(file: LoadedFile) {
     file.canvas.setPixel(this.x, this.y, this.oldIndex)
+  }
+}
+
+export class PixelsPlaceUndoable implements Undoable<LoadedFile> {
+  private oldPixels: { x: number, y: number, index: number }[]
+  private hasOldPixels: boolean
+  private pixels: { x: number, y: number, index: number }[]
+  constructor(pixels: {x: number, y: number, index: number}[]) {
+    this.hasOldPixels = false
+    this.oldPixels = []
+    this.pixels = pixels
+  }
+  apply(file: LoadedFile) {
+    if (!this.hasOldPixels) {
+      for (let pixel of this.pixels) {
+        let p = file.canvas.getPixel(pixel.x, pixel.y)
+        this.oldPixels.push({x: pixel.x, y: pixel.y, index: p})
+      }
+      this.hasOldPixels = true
+    }
+    for (let pixel of this.pixels) {
+      file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
+    }
+  }
+  unapply(file: LoadedFile) {
+    if (!this.hasOldPixels) {
+      throw new Error('no old pixels')
+    }
+    for (let pixel of this.oldPixels) {
+      file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
+    }
   }
 }
