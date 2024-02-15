@@ -163,26 +163,28 @@
       ctx.strokeStyle = '#ff0000'
       ctx.lineWidth = 1
       
+      // Draw brush preview.
+      let shape: PixelPosition[]
+      if (brushType === 'square' || brushSize <= 2) {
+        // FIXME: This is daft to adjust +1,+1 for size 2 -- without this, the rect preview draws one pixel offset to the top-left, which is not the same as when the filled rect is placed.
+        if (brushSize === 2) {
+          shape = FilledSquare(1, 1, brushSize, 1)
+        } else {
+          shape = FilledSquare(0, 0, brushSize, 1)
+        }
+      } else if (brushType === 'circle') {
+        shape = FilledCircle(0, 0, brushSize-2, 1)
+      }
+      let {r, g, b, a }= file.canvas.getPaletteAsRGBA(primaryColorIndex)
+      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+      for (let i = 0; i < shape.length; i++) {
+        ctx.fillRect(offsetX*zoom+(mousePixelX+shape[i].x)*zoom, offsetY*zoom+(mousePixelY+shape[i].y)*zoom, zoom, zoom)
+      }
+      // Draw zoomed pixel-sized square where mouse is.
       if (zoom > 1) {
-        let shape: PixelPosition[]
-        if (brushType === 'square' || brushSize <= 2) {
-          // FIXME: This is daft to adjust +1,+1 for size 2 -- without this, the rect preview draws one pixel offset to the top-left, which is not the same as when the filled rect is placed.
-          if (brushSize === 2) {
-            shape = FilledSquare(1, 1, brushSize, 1)
-          } else {
-            shape = FilledSquare(0, 0, brushSize, 1)
-          }
-        } else if (brushType === 'circle') {
-          shape = FilledCircle(0, 0, brushSize-2, 1)
-        }
-        let {r, g, b, a }= file.canvas.getPaletteAsRGBA(primaryColorIndex)
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-        for (let i = 0; i < shape.length; i++) {
-          ctx.fillRect(offsetX*zoom+(mousePixelX+shape[i].x)*zoom, offsetY*zoom+(mousePixelY+shape[i].y)*zoom, zoom, zoom)
-        }
-
         ctx.rect(offsetX*zoom+mousePixelX*zoom, offsetY*zoom+mousePixelY*zoom, 1*zoom, 1*zoom)
       }
+      // Draw  pixel square where mouse is.
       if (zoom <= 1 || zoom > 4) {
         ctx.rect(mouseX, mouseY, 1, 1)
       }
