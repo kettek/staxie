@@ -9,15 +9,16 @@
   import { LoadedFile } from './types/file'
 
   import "carbon-components-svelte/css/all.css"
-  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet } from "carbon-components-svelte"
+  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput } from "carbon-components-svelte"
   import { ComposedModal } from "carbon-components-svelte"
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import type { Canvas } from './types/canvas'
   import { BrushTool, EraserTool, FillTool, type Tool } from './types/tools';
+  import BrushSize from './components/BrushSize.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -38,6 +39,7 @@
   let toolErase = new EraserTool()
   let toolBrush = new BrushTool()
   let currentTool: Tool = toolBrush
+  let brushSize: number = 1
   
   function swapTool(tool: Tool) {
     currentTool = tool
@@ -104,6 +106,13 @@
       <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
     </menu>
     <section class='middle'>
+      <menu class='toolsettings'>
+        {#if currentTool === toolBrush || currentTool === toolErase}
+          <Scale/>
+          <BrushSize bind:brushSize/>
+          <NumberInput size="sm" min={1} max={100} step={1} bind:value={brushSize}/>
+        {/if}
+      </menu>
       <Tabs>
         {#each files as file, index}
           <Tab on:click={()=>selectFile(file, index)}>
@@ -116,7 +125,7 @@
         <svelte:fragment slot="content">
           {#each files as file}
             <TabContent>
-              <Editor2D bind:file={file} refresh={refresh} primaryColorIndex={primaryColorIndex} secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} />
+              <Editor2D bind:file={file} refresh={refresh} primaryColorIndex={primaryColorIndex} secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} />
             </TabContent>
           {/each}
         </svelte:fragment>
@@ -173,10 +182,21 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    padding-top: 2rem;
+  }
+  .toolsettings {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 2rem;
+  }
+  :global(menu.toolsettings > .bx--form-item) {
+    flex: initial;
   }
   .middle {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
   }
   .tab {
     display: inline-grid;
@@ -192,5 +212,15 @@
   .tab span {
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  :global(.middle .bx--tabs__nav-link) {
+    height: 1rem;
+  }
+  :global(.middle .bx--tabs) {
+    min-height: 1.4rem;
+  }
+  :global(.middle .bx--tabs .bx--btn) {
+    padding-top: 0;
+    top: -.25rem;
   }
 </style>

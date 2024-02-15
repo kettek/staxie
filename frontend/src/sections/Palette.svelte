@@ -31,6 +31,7 @@
 <style>
   main {
     background-color: var(--cds-background-selected);
+    text-align: left;
   }
   .entry {
     position: relative;

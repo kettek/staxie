@@ -27,6 +27,7 @@
   
   export let primaryColorIndex: number
   export let secondaryColorIndex: number
+  export let brushSize: number
 
   let rootCanvas: HTMLCanvasElement
   let overlayCanvas: HTMLCanvasElement = document.createElement('canvas')
@@ -208,9 +209,9 @@
       
       if (e.button === 0) {
         if (currentTool instanceof BrushTool) {
-          currentTool.pointerDown({file, brushSize: 3, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
+          currentTool.pointerDown({file, brushSize, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
         } else if (currentTool instanceof EraserTool) {
-          currentTool.pointerDown({file, brushSize: 3}, {x: mousePixelX, y: mousePixelY, id: e.button })
+          currentTool.pointerDown({file, brushSize}, {x: mousePixelX, y: mousePixelY, id: e.button })
         } else if (currentTool instanceof FillTool) {
           currentTool.pointerDown({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
         } else {
@@ -268,9 +269,9 @@
       if (buttons.has(0)) {
         if (currentTool.isActive()) {
           if (currentTool instanceof BrushTool) {
-            currentTool.pointerMove({file, brushSize: 3, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, brushSize, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof EraserTool) {
-            currentTool.pointerMove({file, brushSize: 3}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, brushSize}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof FillTool) {
             currentTool.pointerMove({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else {
