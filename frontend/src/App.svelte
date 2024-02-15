@@ -49,7 +49,6 @@
   let focusedFileIndex: number = -1
   let focusedFile: LoadedFile = null
   $: focusedFile = files[focusedFileIndex] ?? null
-  $: console.log(focusedFile)
   
   function selectFile(file: LoadedFile, index: number) {
     focusedFileIndex = index
@@ -59,7 +58,7 @@
   function engageImport() {
     if (importValid) {
       files = [...files, new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importFile})]
-      console.log(files)
+      focusedFileIndex = files.length - 1
     }
     showImport = false
   }
