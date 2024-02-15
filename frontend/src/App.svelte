@@ -14,10 +14,10 @@
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import type { Canvas } from './types/canvas'
-  import { BrushTool, EraserTool, FillTool, type Tool } from './types/tools';
+  import { BrushTool, EraserTool, FillTool, PickerTool, type Tool } from './types/tools';
   import BrushSize from './components/BrushSize.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
@@ -38,6 +38,7 @@
   let toolFill = new FillTool()
   let toolErase = new EraserTool()
   let toolBrush = new BrushTool()
+  let toolPicker = new PickerTool()
   let currentTool: Tool = toolBrush
   let brushSize: number = 1
   
@@ -103,6 +104,7 @@
       <Button disabled kind="ghost" size="small" icon={Select_01} iconDescription="selection" tooltipPosition="right"></Button>
       <Button isSelected={currentTool === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>swapTool(toolFill)}></Button>
       <Button isSelected={currentTool === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>swapTool(toolBrush)}></Button>
+      <Button isSelected={currentTool === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>swapTool(toolPicker)}></Button>
       <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
     </menu>
     <section class='middle'>
@@ -124,7 +126,7 @@
         <svelte:fragment slot="content">
           {#each files as file}
             <TabContent>
-              <Editor2D bind:file={file} refresh={refresh} primaryColorIndex={primaryColorIndex} secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} />
+              <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} />
             </TabContent>
           {/each}
         </svelte:fragment>

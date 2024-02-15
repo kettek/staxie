@@ -31,6 +31,10 @@ export interface FloodToolContext {
   colorIndex: number
 }
 
+export interface PickerToolContext {
+  setColorIndex(index: number): void
+}
+
 export class BrushTool implements Tool {
   private active: boolean
   isActive(): boolean {
@@ -133,6 +137,30 @@ export class FillTool implements Tool {
   }
   pointerUp(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
     ctx.file.push(new PixelsPlaceUndoable(this.pixels))
+    this.active = false
+  }
+}
+
+export class PickerTool implements Tool {
+  private active: boolean
+  isActive(): boolean {
+    return this.active
+  }
+
+  pointerDown(ctx: ToolContext & PickerToolContext, ptr: Pointer) {
+    this.active = true
+    let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
+    if (p !== -1) {
+      ctx.setColorIndex(p)
+    }
+  }
+  pointerMove(ctx: ToolContext & PickerToolContext, ptr: Pointer) {
+    let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
+    if (p !== -1) {
+      ctx.setColorIndex(p)
+    }
+  }
+  pointerUp(ctx: ToolContext & PickerToolContext, ptr: Pointer) {
     this.active = false
   }
 }

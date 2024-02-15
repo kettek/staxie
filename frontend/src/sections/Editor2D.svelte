@@ -4,7 +4,7 @@
   import type { data } from '../../wailsjs/go/models.ts'
   import type { LoadedFile } from '../types/file'
   import type { PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, type Tool } from '../types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, type Tool } from '../types/tools'
   import { Button, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte';
 
@@ -214,6 +214,8 @@
           currentTool.pointerDown({file, brushSize}, {x: mousePixelX, y: mousePixelY, id: e.button })
         } else if (currentTool instanceof FillTool) {
           currentTool.pointerDown({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
+        } else if (currentTool instanceof PickerTool) {
+          currentTool.pointerDown({file, setColorIndex: index=>primaryColorIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button })
         } else {
           currentTool.pointerDown({file}, {x: mousePixelX, y: mousePixelY, id: e.button })
         }
@@ -274,6 +276,8 @@
             currentTool.pointerMove({file, brushSize}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof FillTool) {
             currentTool.pointerMove({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
+          } else if (currentTool instanceof PickerTool) {
+            currentTool.pointerMove({file, setColorIndex: index=>primaryColorIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button })
           } else {
             currentTool.pointerMove({file}, {x: mousePixelX, y: mousePixelY, id: 0 })
           }
