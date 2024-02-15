@@ -17,7 +17,7 @@
   import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import type { Canvas } from './types/canvas'
-  import { BrushTool, EraserTool, FillTool, PickerTool, type Tool } from './types/tools';
+  import { BrushTool, EraserTool, FillTool, PickerTool, type BrushType, type Tool } from './types/tools';
   import BrushSize from './components/BrushSize.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
@@ -41,6 +41,7 @@
   let toolPicker = new PickerTool()
   let currentTool: Tool = toolBrush
   let brushSize: number = 1
+  let brushType: BrushType = 'circle'
   
   function swapTool(tool: Tool) {
     currentTool = tool
@@ -110,7 +111,7 @@
     <section class='middle'>
       <menu class='toolsettings'>
         {#if currentTool === toolBrush || currentTool === toolErase}
-          <BrushSize bind:brushSize/>
+          <BrushSize bind:brushSize bind:brushType/>
           <NumberInput size="sm" min={1} max={100} step={1} bind:value={brushSize}/>
         {/if}
       </menu>
@@ -126,7 +127,7 @@
         <svelte:fragment slot="content">
           {#each files as file}
             <TabContent>
-              <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} />
+              <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} brushType={brushType} />
             </TabContent>
           {/each}
         </svelte:fragment>

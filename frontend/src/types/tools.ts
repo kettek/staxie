@@ -1,5 +1,5 @@
 import { PixelPlaceUndoable, type LoadedFile, PixelsPlaceUndoable } from "./file"
-import { FilledCircle, type PixelPosition } from "./shapes"
+import { FilledCircle, FilledSquare, type PixelPosition } from "./shapes"
 
 export interface ToolContext {
   file: LoadedFile
@@ -11,6 +11,8 @@ interface Pointer {
   id: number
 }
 
+export type BrushType = "circle" | "square"
+
 export interface Tool {
   isActive(): boolean
   pointerDown(ctx: ToolContext, ptr: Pointer): void
@@ -20,11 +22,13 @@ export interface Tool {
 
 export interface BrushToolContext {
   brushSize: number
+  brushType: BrushType
   colorIndex: number
 }
 
 export interface EraserToolContext {
   brushSize: number
+  brushType: BrushType
 }
 
 export interface FloodToolContext {
@@ -59,7 +63,12 @@ export class BrushTool implements Tool {
         }
       }
     } else {
-      let shape = FilledCircle(ptr.x, ptr.y, ctx.brushSize-2, ctx.colorIndex)
+      let shape: PixelPosition[]
+      if (ctx.brushType == "circle") {
+        shape = FilledCircle(ptr.x, ptr.y, ctx.brushSize-2, ctx.colorIndex)
+      } else if (ctx.brushType == "square") {
+        shape = FilledSquare(ptr.x, ptr.y, ctx.brushSize, ctx.colorIndex)
+      }
       ctx.file.push(new PixelsPlaceUndoable(shape))
     }
   }
@@ -79,7 +88,12 @@ export class BrushTool implements Tool {
         }
       }
     } else {
-      let shape = FilledCircle(ptr.x, ptr.y, ctx.brushSize-2, ctx.colorIndex)
+      let shape: PixelPosition[]
+      if (ctx.brushType == "circle") {
+        shape = FilledCircle(ptr.x, ptr.y, ctx.brushSize-2, ctx.colorIndex)
+      } else if (ctx.brushType == "square") {
+        shape = FilledSquare(ptr.x, ptr.y, ctx.brushSize, ctx.colorIndex)
+      }
       ctx.file.push(new PixelsPlaceUndoable(shape))
     }
   }

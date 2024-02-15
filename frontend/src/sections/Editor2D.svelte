@@ -4,7 +4,7 @@
   import type { data } from '../../wailsjs/go/models.ts'
   import type { LoadedFile } from '../types/file'
   import type { PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, PickerTool, type Tool } from '../types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, type BrushType, type Tool } from '../types/tools'
   import { Button, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte';
 
@@ -28,6 +28,7 @@
   export let primaryColorIndex: number
   export let secondaryColorIndex: number
   export let brushSize: number
+  export let brushType: BrushType
 
   let rootCanvas: HTMLCanvasElement
   let overlayCanvas: HTMLCanvasElement = document.createElement('canvas')
@@ -209,9 +210,9 @@
       
       if (e.button === 0) {
         if (currentTool instanceof BrushTool) {
-          currentTool.pointerDown({file, brushSize, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
+          currentTool.pointerDown({file, brushSize, brushType, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
         } else if (currentTool instanceof EraserTool) {
-          currentTool.pointerDown({file, brushSize}, {x: mousePixelX, y: mousePixelY, id: e.button })
+          currentTool.pointerDown({file, brushSize, brushType}, {x: mousePixelX, y: mousePixelY, id: e.button })
         } else if (currentTool instanceof FillTool) {
           currentTool.pointerDown({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
         } else if (currentTool instanceof PickerTool) {
@@ -271,9 +272,9 @@
       if (buttons.has(0)) {
         if (currentTool.isActive()) {
           if (currentTool instanceof BrushTool) {
-            currentTool.pointerMove({file, brushSize, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, brushSize, brushType, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof EraserTool) {
-            currentTool.pointerMove({file, brushSize}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, brushSize, brushType}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof FillTool) {
             currentTool.pointerMove({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof PickerTool) {
