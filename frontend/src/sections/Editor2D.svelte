@@ -5,6 +5,8 @@
   import type { LoadedFile } from '../types/file'
   import type { PixelPosition } from '../types/shapes'
   import { BrushTool, EraserTool, FillTool, type Tool } from '../types/tools'
+  import { Button, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
+  import { ZoomIn, ZoomOut } from 'carbon-icons-svelte';
 
   export let file: LoadedFile
   export let animation: data.Animation
@@ -38,6 +40,26 @@
     for (let p of pixels) {
       traversedPixels.add(p.x+p.y*file.canvas.width)
     }
+  }
+  
+  function zoomIn() {
+    zoom *= 2
+    if (zoom > 1) {
+      zoom = Math.round(zoom)
+    }
+
+    capOffset()
+    canvasDirty = true
+    overlayDirty = true
+  }
+  function zoomOut() {
+    zoom /= 2
+    if (zoom > 1) {
+      zoom = Math.round(zoom)
+    }
+    capOffset()
+    canvasDirty = true
+    overlayDirty = true
   }
 
   // check resizes canvases, etc.
@@ -201,17 +223,10 @@
       if (e.ctrlKey) {
         e.preventDefault()
         if (e.deltaY < 0) {
-          zoom *= 2
+          zoomIn()
         } else if (e.deltaY > 0) {
-          zoom /= 2
+          zoomOut()
         }
-        if (zoom > 1) {
-          zoom = Math.round(zoom)
-        }
-
-        capOffset()
-        canvasDirty = true
-        overlayDirty = true
         return
       }
       if (e.deltaY < 0) {
@@ -304,6 +319,34 @@
 
 <main>
   <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>
+  <menu>
+    <NumberInput
+      min={0}
+      max={10}
+      step={1}
+      bind:value={zoom}
+      size="sm"
+      hideSteppers
+    />
+    <Button
+      on:click={zoomIn}
+      kind="ghost"
+      size="small"
+      icon={ZoomIn}
+      iconDescription="Zoom In"
+      tooltipPosition="top"
+      tooltipAlignment="end"
+    />
+    <Button
+      on:click={zoomOut}
+      kind="ghost"
+      size="small"
+      icon={ZoomOut}
+      iconDescription="Zoom Out"
+      tooltipPosition="top"
+      tooltipAlignment="end"
+    />
+  </menu>
 </main>
 
 <style>
@@ -311,10 +354,21 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
   }
   canvas {
     width: 100%;
     height: 100%;
     image-rendering: pixelated;
+  }
+  menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  menu > .bx--form-item {
+    flex: initial;
   }
 </style>
