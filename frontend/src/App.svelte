@@ -108,7 +108,6 @@
     <section class='middle'>
       <menu class='toolsettings'>
         {#if currentTool === toolBrush || currentTool === toolErase}
-          <Scale/>
           <BrushSize bind:brushSize/>
           <NumberInput size="sm" min={1} max={100} step={1} bind:value={brushSize}/>
         {/if}
