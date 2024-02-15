@@ -17,8 +17,10 @@
   import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import type { Canvas } from './types/canvas'
-  import { BrushTool, EraserTool, FillTool, PickerTool, type BrushType, type Tool } from './types/tools';
-  import BrushSize from './components/BrushSize.svelte';
+  import { BrushTool, EraserTool, FillTool, PickerTool, type BrushType, type Tool } from './types/tools'
+  import BrushSize from './components/BrushSize.svelte'
+  import Shortcut from './components/Shortcut.svelte'
+  import Shortcuts from './components/Shortcuts.svelte'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -126,6 +128,10 @@
         {/each}
         <svelte:fragment slot="content">
           {#each files as file}
+            <Shortcuts group='editor2D' active={focusedFile===file}>
+              <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
+              <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
+            </Shortcuts>
             <TabContent>
               <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} brushType={brushType} />
             </TabContent>
