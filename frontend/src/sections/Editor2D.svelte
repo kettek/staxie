@@ -369,7 +369,7 @@
     flex-direction: row;
     justify-content: flex-end;
   }
-  menu > .bx--form-item {
+  :global(menu > .bx--form-item) {
     flex: initial;
   }
 </style>
