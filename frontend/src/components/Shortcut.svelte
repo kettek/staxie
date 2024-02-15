@@ -8,9 +8,10 @@
   export let group: string = 'default'
   export let cmd: string
   export let keys: string[]
+  export let global: boolean = false
   const { registerShortcut } = getContext(SHORTCUTS) as ShortcutsType
   
-  registerShortcut({cmd, group, keys, callback: () => {
+  registerShortcut({cmd, group, global, keys, callback: () => {
     dispatch('trigger', {})
   }})
   

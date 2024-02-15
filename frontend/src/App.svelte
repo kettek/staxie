@@ -109,6 +109,12 @@
       <Button isSelected={currentTool === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>swapTool(toolBrush)}></Button>
       <Button isSelected={currentTool === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>swapTool(toolPicker)}></Button>
       <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
+      <Shortcuts group='editor2D'>
+        <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>swapTool(toolBrush)} />
+        <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>swapTool(toolFill)} />
+        <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>swapTool(toolPicker)} />
+        <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>swapTool(toolErase)} />
+      </Shortcuts>
     </menu>
     <section class='middle'>
       <menu class='toolsettings'>

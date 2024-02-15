@@ -3,7 +3,7 @@
   import { get, writable } from 'svelte/store'
   export const SHORTCUTS = {}
   export type ShortcutsType = {
-    registerShortcut: (opts: {cmd: string, group: string, keys: string[], callback: () => void}) => void,
+    registerShortcut: (opts: {cmd: string, group: string, global: boolean, keys: string[], callback: () => void}) => void,
   }
   
   let currentShortcuts = writable({id: {}, group: 'default'})
@@ -12,6 +12,7 @@
     id: {},
     cmd: string,
     keys: string[],
+    global: boolean,
     callback: () => void,
     group: string,
   }
@@ -43,7 +44,7 @@
     let cur = get(currentShortcuts)
     for (let shortcut of get(shortcuts)) {
       if (shortcut.group !== cur.group) continue
-      if (shortcut.id !== cur.id) continue
+      if (!shortcut.global && shortcut.id !== cur.id) continue
       if (shortcut.keys.includes(keystring)) {
         shortcut.callback()
       }
@@ -86,12 +87,12 @@
   })(id, group, active)
 
   setContext(SHORTCUTS, {
-    registerShortcut: (opts: {cmd: string, keys: string[], callback: () => void}) => {
+    registerShortcut: (opts: {cmd: string, keys: string[], global: boolean, callback: () => void}) => {
       shortcuts.update(shortcuts => {
         let keys = opts.keys.map(v => {
           return v.replaceAll('ctrl', 'control')
         })
-        shortcuts.push({id, cmd: opts.cmd, group: group, keys: keys.map(v=>keysToString(v.split('+'))), callback: opts.callback})
+        shortcuts.push({id, cmd: opts.cmd, group: group, global: opts.global, keys: keys.map(v=>keysToString(v.split('+'))), callback: opts.callback})
         return shortcuts
       })
       
