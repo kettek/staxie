@@ -29,6 +29,18 @@ export class Canvas {
   setPalette(palette: Uint32Array) {
     this.palette = palette
   }
+  getPaletteAsRGBA(index: number): { r: number, g: number, b: number, a: number } {
+    if (index < 0 || index >= this.palette.length) {
+      return { r: 0, g: 0, b: 0, a: 0 }
+    }
+    let color = this.palette[index]
+    return {
+      r: color & 0xFF,
+      g: (color >> 8) & 0xFF,
+      b: (color >> 16) & 0xFF,
+      a: (color >> 24) & 0xFF
+    }
+  }
   setPaletteFromUint8Array(palette: Uint8Array) {
     this.palette = new Uint32Array(palette.length / 4)
     for (let i = 0; i < palette.length; i += 4) {
