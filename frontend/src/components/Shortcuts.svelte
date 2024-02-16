@@ -92,7 +92,7 @@
         let keys = opts.keys.map(v => {
           return v.replaceAll('ctrl', 'control')
         })
-        shortcuts.push({id, cmd: opts.cmd, group: group, global: opts.global, keys: keys.map(v=>keysToString(v.split('+'))), callback: opts.callback})
+        shortcuts.push({id, cmd: opts.cmd, group: group, global: opts.global, keys: keys.map(v=>keysToString(v.toLowerCase().split('+'))), callback: opts.callback})
         return shortcuts
       })
       

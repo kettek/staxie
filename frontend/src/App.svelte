@@ -57,6 +57,7 @@
   $: focusedFile = files[focusedFileIndex] ?? null
   
   function selectFile(file: LoadedFile, index: number) {
+    if (index < 0 || index >= files.length) return
     focusedFileIndex = index
     refresh = {}
   }
@@ -70,6 +71,9 @@
   }
   function closeFile(index: number) {
     files = files.filter((_,i)=>i!==index)
+    if (focusedFileIndex === index) {
+      focusedFileIndex = Math.min(files.length-1, focusedFileIndex)
+    }
   }
 </script>
 
@@ -123,7 +127,7 @@
           <NumberInput size="sm" min={1} max={100} step={1} bind:value={brushSize}/>
         {/if}
       </menu>
-      <Tabs>
+      <Tabs bind:selected={focusedFileIndex}>
         {#each files as file, index}
           <Tab on:click={()=>selectFile(file, index)}>
             <span class='tab'>
@@ -133,10 +137,11 @@
           </Tab>
         {/each}
         <svelte:fragment slot="content">
-          {#each files as file}
+          {#each files as file, index}
             <Shortcuts group='editor2D' active={focusedFile===file}>
               <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
               <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
+              <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
             </Shortcuts>
             <TabContent>
               <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} brushType={brushType} />
@@ -228,6 +233,7 @@
     text-overflow: ellipsis;
   }
   :global(.middle .bx--tabs__nav-link) {
+    position: relative;
     height: 1rem;
   }
   :global(.middle .bx--tabs) {
