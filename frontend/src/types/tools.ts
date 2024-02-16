@@ -35,6 +35,9 @@ export interface FloodToolContext {
   colorIndex: number
 }
 
+export interface SelectionToolContext {
+}
+
 export interface PickerToolContext {
   setColorIndex(index: number): void
 }
@@ -196,6 +199,64 @@ export class PickerTool implements Tool {
     }
   }
   pointerUp(ctx: ToolContext & PickerToolContext, ptr: Pointer) {
+    this.active = false
+  }
+}
+
+export class SelectionTool implements Tool {
+  private active: boolean
+  private startX: number
+  private startY: number
+  private endX: number
+  private endY: number
+
+  isActive(): boolean {
+    return this.active
+  }
+
+  getArea(): { x: number, y: number, width: number, height: number } {
+    let x1 = Math.min(this.startX, this.endX)
+    let x2 = Math.max(this.startX, this.endX)
+    let y1 = Math.min(this.startY, this.endY)
+    let y2 = Math.max(this.startY, this.endY)
+    return {
+      x: x1,
+      y: y1,
+      width: x2-x1+1,
+      height: y2-y1+1,
+    }
+  }
+
+  pointerDown(ctx: ToolContext & SelectionToolContext, ptr: Pointer) {
+    ctx.file.selection.active = true
+    this.startX = this.endX = ptr.x
+    this.startY = this.endY = ptr.y
+    this.active = true
+  }
+  pointerMove(ctx: ToolContext & SelectionToolContext, ptr: Pointer) {
+    if (ptr.x < 0) ptr.x = 0
+    if (ptr.y < 0) ptr.y = 0
+    if (ptr.x >= ctx.file.canvas.width) ptr.x = ctx.file.canvas.width-1
+    if (ptr.y >= ctx.file.canvas.height) ptr.y = ctx.file.canvas.height-1
+    this.endX = ptr.x
+    this.endY = ptr.y
+  }
+  pointerUp(ctx: ToolContext & SelectionToolContext, ptr: Pointer) {
+    if (this.startX === this.endX && this.startY === this.endY) {
+      ctx.file.selection.clear()
+      ctx.file.selection.active = false
+      this.active = false
+      return
+    }
+
+    let {x: startX, y: startY, width, height} = this.getArea()
+
+    for (let x = startX; x <= startX+width-1; x++) {
+      for (let y = startY; y <= startY+height-1; y++) {
+        ctx.file.selection.setPixel(x, y, true)
+      }
+    }
+
     this.active = false
   }
 }

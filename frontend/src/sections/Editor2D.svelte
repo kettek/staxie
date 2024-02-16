@@ -4,7 +4,7 @@
   import type { data } from '../../wailsjs/go/models.ts'
   import type { LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, PickerTool, type BrushType, type Tool } from '../types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, type BrushType, type Tool, SelectionTool } from '../types/tools'
   import { Button, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte';
 
@@ -19,6 +19,7 @@
   let offsetX: number
   let offsetY: number
   let zoom: number = 1.0
+  $: file.selection.resize(file.canvas.width, file.canvas.height, zoom)
 
   let mouseX: number = 0
   let mouseY: number = 0
@@ -98,6 +99,9 @@
       drawOverlay()
       overlayDirty = false
     }
+
+    file.selection.update()
+
     let ctx = rootCanvas.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, rootCanvas.width, rootCanvas.height)
@@ -110,7 +114,38 @@
     ctx.drawImage(file.canvas.canvas, offsetX, offsetY)
     ctx.restore()
 
+    // Draw our selection overlay.
+    if (file.selection.active) {
+      ctx.imageSmoothingEnabled = false
+      ctx.drawImage(file.selection.marchingCanvas, offsetX*zoom, offsetY*zoom)
+    }
+
+    // FIXME: Reorganize overlay drawing to have two types: regular composition, such as this pixel brush preview, and difference composition for cursors and bounding boxes.
+    // Draw brush preview.
+    if (currentTool instanceof BrushTool) {
+      let shape: PixelPosition[]
+      if (brushType === 'square' || brushSize <= 2) {
+        // FIXME: This is daft to adjust +1,+1 for size 2 -- without this, the rect preview draws one pixel offset to the top-left, which is not the same as when the filled rect is placed.
+        if (brushSize === 2) {
+          shape = FilledSquare(1, 1, brushSize, 1)
+        } else {
+          shape = FilledSquare(0, 0, brushSize, 1)
+        }
+      } else if (brushType === 'circle') {
+        shape = FilledCircle(0, 0, brushSize-2, 1)
+      }
+      let {r, g, b, a } = file.canvas.getPaletteAsRGBA(primaryColorIndex)
+      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+      for (let i = 0; i < shape.length; i++) {
+        ctx.fillRect(offsetX*zoom+(mousePixelX+shape[i].x)*zoom, offsetY*zoom+(mousePixelY+shape[i].y)*zoom, zoom, zoom)
+      }
+    }
+
+    // Draw our overlay with difference composition so visibility is better.
+    ctx.save()
+    ctx.globalCompositeOperation = 'difference'
     ctx.drawImage(overlayCanvas, 0, 0)
+    ctx.restore()
   }
 
   function drawCanvas() {
@@ -161,27 +196,13 @@
     // Draw a cursor.
     {
       ctx.beginPath()
-      ctx.strokeStyle = '#ff0000'
+      ctx.strokeStyle = '#cc3388'
       ctx.lineWidth = 1
       
-      // Draw brush preview.
-      if (currentTool instanceof BrushTool) {
-        let shape: PixelPosition[]
-        if (brushType === 'square' || brushSize <= 2) {
-          // FIXME: This is daft to adjust +1,+1 for size 2 -- without this, the rect preview draws one pixel offset to the top-left, which is not the same as when the filled rect is placed.
-          if (brushSize === 2) {
-            shape = FilledSquare(1, 1, brushSize, 1)
-          } else {
-            shape = FilledSquare(0, 0, brushSize, 1)
-          }
-        } else if (brushType === 'circle') {
-          shape = FilledCircle(0, 0, brushSize-2, 1)
-        }
-        let {r, g, b, a }= file.canvas.getPaletteAsRGBA(primaryColorIndex)
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-        for (let i = 0; i < shape.length; i++) {
-          ctx.fillRect(offsetX*zoom+(mousePixelX+shape[i].x)*zoom, offsetY*zoom+(mousePixelY+shape[i].y)*zoom, zoom, zoom)
-        }
+      // Draw bounding box selection preview.
+      if (currentTool instanceof SelectionTool && currentTool.isActive()) {
+        let {x, y, width, height} = currentTool.getArea()
+        ctx.strokeRect(offsetX*zoom+x*zoom, offsetY*zoom+y*zoom, width*zoom, height*zoom)
       }
       // Draw zoomed pixel-sized square where mouse is.
       if (zoom > 1) {
