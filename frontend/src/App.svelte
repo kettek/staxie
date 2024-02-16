@@ -114,6 +114,7 @@
       <Button isSelected={currentTool === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>swapTool(toolPicker)}></Button>
       <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
       <Shortcuts group='editor2D'>
+        <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>swapTool(toolSelection)} />
         <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>swapTool(toolBrush)} />
         <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>swapTool(toolFill)} />
         <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>swapTool(toolPicker)} />
