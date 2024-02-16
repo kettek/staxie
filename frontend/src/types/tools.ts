@@ -91,6 +91,8 @@ export class BrushTool implements Tool {
       let x = Math.floor(this.lastX + Math.cos(angle) * i)
       let y = Math.floor(this.lastY + Math.sin(angle) * i)
 
+      if (x < 0 || y < 0 || x >= ctx.file.canvas.width || y >= ctx.file.canvas.height) continue
+
       if (ctx.brushSize == 1) {
         let p = ctx.file.canvas.getPixel(x, y)
         if (p !== -1) {
