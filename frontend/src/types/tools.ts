@@ -57,16 +57,17 @@ export class BrushTool implements Tool {
 
     this.active = true
     ctx.file.capture()
+
     if (ctx.brushSize == 1) {
       let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
-      if (p !== -1) {
+      if (p !== -1 && ctx.file.selection.isPixelMarked(ptr.x, ptr.y)) {
         ctx.file.push(new PixelPlaceUndoable(ptr.x, ptr.y, p, ctx.colorIndex))
       }
     } else if (ctx.brushSize == 2) {
       for (let x1 = 0; x1 < 2; x1++) {
         for (let y1 = 0; y1 < 2; y1++) {
           let p = ctx.file.canvas.getPixel(ptr.x+x1, ptr.y+y1)
-          if (p !== -1) {
+          if (p !== -1 && ctx.file.selection.isPixelMarked(ptr.x+x1, ptr.y+y1)) {
             ctx.file.push(new PixelPlaceUndoable(ptr.x+x1, ptr.y+y1, p, ctx.colorIndex))
           }
         }
@@ -78,6 +79,7 @@ export class BrushTool implements Tool {
       } else if (ctx.brushType == "square") {
         shape = FilledSquare(ptr.x, ptr.y, ctx.brushSize, ctx.colorIndex)
       }
+      shape = shape.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
       ctx.file.push(new PixelsPlaceUndoable(shape))
     }
   }
@@ -98,14 +100,14 @@ export class BrushTool implements Tool {
 
       if (ctx.brushSize == 1) {
         let p = ctx.file.canvas.getPixel(x, y)
-        if (p !== -1) {
+        if (p !== -1 && ctx.file.selection.isPixelMarked(x, y)) {
           ctx.file.push(new PixelPlaceUndoable(x, y, p, ctx.colorIndex))
         }
       } else if (ctx.brushSize == 2) {
         for (let x1 = 0; x1 < 2; x1++) {
           for (let y1 = 0; y1 < 2; y1++) {
             let p = ctx.file.canvas.getPixel(x+x1, y+y1)
-            if (p !== -1) {
+            if (p !== -1 && ctx.file.selection.isPixelMarked(x+x1, y+y1)) {
               ctx.file.push(new PixelPlaceUndoable(x+x1, y+y1, p, ctx.colorIndex))
             }
           }
@@ -117,6 +119,7 @@ export class BrushTool implements Tool {
         } else if (ctx.brushType == "square") {
           shape = FilledSquare(x, y, ctx.brushSize, ctx.colorIndex)
         }
+        shape = shape.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
         ctx.file.push(new PixelsPlaceUndoable(shape))
       }
     }
@@ -149,6 +152,10 @@ export class FillTool implements Tool {
     this.pixels = []
     
     let traversed = new Set<number>()
+
+    if (!ctx.file.selection.isPixelMarked(ptr.x, ptr.y)) {
+      return
+    }
     
     let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
     if (p !== -1) {
@@ -156,7 +163,7 @@ export class FillTool implements Tool {
       while (queue.length > 0) {
         let {x, y} = queue.shift()
         let index = y * ctx.file.canvas.width + x
-        if (traversed.has(index)) {
+        if (traversed.has(index) || !ctx.file.selection.isPixelMarked(x, y)) {
           continue
         }
         traversed.add(index)

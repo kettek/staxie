@@ -163,6 +163,12 @@ export class SelectionArea {
     this.marchStep++
   }
 
+  public isPixelMarked(x: number, y: number): boolean {
+    if (!this.active) return true // Always return true if selection is not active.
+    if (x < 0 || y < 0 || x >= this.pixelMaskCanvas.width || y >= this.pixelMaskCanvas.height) return false
+    return this.pixelMaskCanvasPixels.data[(y * this.pixelMaskCanvas.width + x) * 4 + 3] === 255
+  }
+
   setPixel(x: number, y: number, marked: boolean) {
     this.redrawPixelMask = true
     this.pixelMaskCanvasPixels.data[(y * this.pixelMaskCanvas.width + x) * 4 + 3] = marked ? 255 : 0
