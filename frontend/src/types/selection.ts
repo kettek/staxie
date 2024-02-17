@@ -56,6 +56,16 @@ export class SelectionArea {
     this.redrawPixelMask = true
     this.refresh()
   }
+  
+  static fromData({ width, height, pixels }: { width: number, height: number, pixels: Uint8ClampedArray }): SelectionArea {
+    let selection = new SelectionArea(width, height, 1)
+    for (let i = 0; i < pixels.length; i++) {
+      selection.pixelMaskCanvasPixels.data[i] = pixels[i]
+    }
+    selection.redrawPixelMask = true
+    selection.refresh()
+    return selection
+  }
 
   public resize(width: number, height: number, zoom: number) {
     // Copy the old pixel mask pixels to a new one.
@@ -102,7 +112,7 @@ export class SelectionArea {
     if (this.redrawPixelMask) {
       this.pixelMaskCanvas.getContext('2d').putImageData(this.pixelMaskCanvasPixels, 0, 0)
 
-      let ctx = this.canvas.getContext('2d')
+      let ctx = this.canvas.getContext('2d', { willReadFrequently: true })
       if (!ctx) return
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       ctx.imageSmoothingEnabled = false

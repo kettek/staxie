@@ -16,6 +16,23 @@ export class Canvas {
     this.canvas = document.createElement('canvas')
     this.imageData = new ImageData(width, height)
   }
+  
+  // fromData creates a new Canvas instance from the provided data.
+  static fromData({width, height, palette, pixels}: {width: number, height: number, palette: Uint32Array, pixels: Uint8Array}): Canvas {
+    let canvas = new Canvas(width, height)
+    canvas.palette = palette
+    canvas.pixels = pixels
+    canvas.imageData = new ImageData(width, height)
+    for (let i = 0; i < pixels.length; i++) {
+      let color = palette[pixels[i]]
+      canvas.imageData.data[i * 4 + 0] = color & 0xFF
+      canvas.imageData.data[i * 4 + 1] = (color >> 8) & 0xFF
+      canvas.imageData.data[i * 4 + 2] = (color >> 16) & 0xFF
+      canvas.imageData.data[i * 4 + 3] = (color >> 24) & 0xFF
+    }
+    return canvas
+  }
+  
   clear() {
     for (let i = 0; i < this.pixels.length; i++) {
       this.pixels[i] = 0
@@ -134,5 +151,45 @@ export class Canvas {
       }
     }
     return {imageData, x: minX, y: minY, w: width, h: height}
+  }
+
+  // Clip the canvas to contain only the pixels in the provided mask. It returns the new left and top position that the canvas should be rendered to.
+  clipToMask(mask: PixelPosition[]): ({x: number, y: number}) {
+    // Get minimum x position from mask.
+    let minX = 9999999
+    let minY = 9999999
+    let maxX = -9999999
+    let maxY = -9999999
+    for (let pixel of mask) {
+      minX = Math.min(minX, pixel.x)
+      minY = Math.min(minY, pixel.y)
+      maxX = Math.max(maxX, pixel.x)
+      maxY = Math.max(maxY, pixel.y)
+    }
+    let width = maxX - minX + 1
+    let height = maxY - minY + 1
+    
+    let newPixels = new Uint8Array(width * height)
+    let newImageData = new ImageData(width, height)
+    
+    for (let pixel of mask) {
+      let p = this.getPixel(pixel.x, pixel.y)
+      if (p !== -1) {
+        newPixels[(pixel.y - minY) * width + (pixel.x - minX)] = p
+        let color = this.palette[p]
+        newImageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 0] = color & 0xFF
+        newImageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 1] = (color >> 8) & 0xFF
+        newImageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 2] = (color >> 16) & 0xFF
+        newImageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 3] = (color >> 24) & 0xFF
+      }
+    }
+
+    this.pixels = newPixels
+    this.imageData = newImageData
+
+    this.width = width
+    this.height = height
+
+    return {x: minX, y: minY}
   }
 }

@@ -21,6 +21,7 @@
   import BrushSize from './components/BrushSize.svelte'
   import Shortcut from './components/Shortcut.svelte'
   import Shortcuts from './components/Shortcuts.svelte'
+  import { CopyPaste } from './types/copypaste'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -85,6 +86,26 @@
     }
     showImport = false
   }
+  
+  function engageCopy() {
+    if (!focusedFile) return
+    CopyPaste.toLocal(focusedFile.canvas, focusedFile.selection)
+  }
+  function engagePaste() {
+    if (!focusedFile) return
+    let cp = CopyPaste.fromLocal()
+    let paletteDiff = cp.getPaletteLengthDifference(focusedFile.canvas.palette)
+    let missingColors = cp.getMissingPaletteColors(focusedFile.canvas.palette)
+    
+    // TODO: We need to do the following:
+    // 1. If the copying palette has more colors, we need to ask if we want to:
+    //    a. Add the missing colors to the current palette
+    //    b. Replace the current palette entries with the copying palette entries
+    //    c. Remap the copying palette entries, but add the missing colors.
+    
+    console.log('paste results', paletteDiff, missingColors, cp)
+  }
+
   function closeFile(index: number) {
     files = files.filter((_,i)=>i!==index)
     if (focusedFileIndex === index) {
@@ -147,6 +168,8 @@
         <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>swapTool(toolFill)} />
         <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>swapTool(toolPicker)} />
         <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>swapTool(toolErase)} />
+        <Shortcut global cmd='copy' keys={['ctrl+c']} on:trigger={()=>engageCopy()} />
+        <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>engagePaste()} />
       </Shortcuts>
     </menu>
     <section class='middle'>
