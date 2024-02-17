@@ -3,7 +3,7 @@
   import { get, writable } from 'svelte/store'
   export const SHORTCUTS = {}
   export type ShortcutsType = {
-    registerShortcut: (opts: {cmd: string, group: string, global: boolean, keys: string[], callback: () => void}) => void,
+    registerShortcut: (opts: {cmd: string, group: string, global: boolean, keys: string[], trigger: () => void, release: () => void}) => void,
   }
   
   let currentShortcuts = writable({id: {}, group: 'default'})
@@ -13,10 +13,12 @@
     cmd: string,
     keys: string[],
     global: boolean,
-    callback: () => void,
+    trigger: () => void,
+    release: () => void,
     group: string,
   }
   
+  let triggered: Set<string> = new Set()
   let keys: Set<string> = new Set()
   let keystring = ''
   
@@ -46,11 +48,25 @@
       if (shortcut.group !== cur.group) continue
       if (!shortcut.global && shortcut.id !== cur.id) continue
       if (shortcut.keys.includes(keystring)) {
-        shortcut.callback()
+        triggered.add(keystring)
+        shortcut.trigger()
       }
     }
   })
   window.addEventListener('keyup', (event: KeyboardEvent) => {
+    keystring = keysToString([...keys])
+
+    if (triggered.has(keystring)) {
+      triggered.delete(keystring)
+      for (let shortcut of get(shortcuts)) {
+        if (shortcut.group !== get(currentShortcuts).group) continue
+        if (!shortcut.global && shortcut.id !== get(currentShortcuts).id) continue
+        if (shortcut.keys.includes(keystring)) {
+          shortcut.release()
+        }
+      }
+    }
+
     let key = normalizeKey(event)
     keys.delete(key.toLowerCase())
     keystring = keysToString([...keys])
@@ -87,12 +103,12 @@
   })(id, group, active)
 
   setContext(SHORTCUTS, {
-    registerShortcut: (opts: {cmd: string, keys: string[], global: boolean, callback: () => void}) => {
+    registerShortcut: (opts: {cmd: string, keys: string[], global: boolean, trigger: () => void, release: () => void}) => {
       shortcuts.update(shortcuts => {
         let keys = opts.keys.map(v => {
           return v.replaceAll('ctrl', 'control')
         })
-        shortcuts.push({id, cmd: opts.cmd, group: group, global: opts.global, keys: keys.map(v=>keysToString(v.toLowerCase().split('+'))), callback: opts.callback})
+        shortcuts.push({id, cmd: opts.cmd, group: group, global: opts.global, keys: keys.map(v=>keysToString(v.toLowerCase().split('+'))), trigger: opts.trigger, release: opts.release})
         return shortcuts
       })
       

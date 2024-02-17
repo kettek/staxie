@@ -11,8 +11,10 @@
   export let global: boolean = false
   const { registerShortcut } = getContext(SHORTCUTS) as ShortcutsType
   
-  registerShortcut({cmd, group, global, keys, callback: () => {
+  registerShortcut({cmd, group, global, keys, trigger: () => {
     dispatch('trigger', {})
+  }, release: () => {
+    dispatch('release', {})
   }})
   
 </script>
