@@ -42,10 +42,12 @@
   let toolBrush = new BrushTool()
   let toolPicker = new PickerTool()
   let currentTool: Tool = toolBrush
+  let previousTool: Tool = null
   let brushSize: number = 1
   let brushType: BrushType = 'circle'
   
   function swapTool(tool: Tool) {
+    previousTool = currentTool
     currentTool = tool
   }
 
@@ -116,6 +118,7 @@
       <Shortcuts group='editor2D'>
         <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>swapTool(toolSelection)} />
         <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>swapTool(toolBrush)} />
+        <Shortcut global cmd='brushToPicker' keys={['alt']} on:trigger={()=>currentTool===toolBrush?swapTool(toolPicker):null} on:release={()=>previousTool===toolBrush&&currentTool===toolPicker?swapTool(toolBrush):null} />
         <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>swapTool(toolFill)} />
         <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>swapTool(toolPicker)} />
         <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>swapTool(toolErase)} />
