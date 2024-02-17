@@ -47,7 +47,11 @@
   }
   
   function zoomIn() {
-    zoom *= 2
+    if (zoom < 1) {
+      zoom *=2
+    } else {
+      zoom++
+    }
     if (zoom > 1) {
       zoom = Math.round(zoom)
     }
@@ -57,7 +61,11 @@
     overlayDirty = true
   }
   function zoomOut() {
-    zoom /= 2
+    if (zoom-1 <= 0) {
+      zoom /= 2
+    } else {
+      zoom--
+    }
     if (zoom > 1) {
       zoom = Math.round(zoom)
     }
