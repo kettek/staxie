@@ -14,10 +14,10 @@
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper, Move } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import type { Canvas } from './types/canvas'
-  import { BrushTool, EraserTool, FillTool, PickerTool, SelectionTool, type BrushType, type Tool } from './types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, SelectionTool, type BrushType, type Tool, MoveTool } from './types/tools'
   import BrushSize from './components/BrushSize.svelte'
   import Shortcut from './components/Shortcut.svelte'
   import Shortcuts from './components/Shortcuts.svelte'
@@ -41,6 +41,7 @@
   let toolErase = new EraserTool()
   let toolBrush = new BrushTool()
   let toolPicker = new PickerTool()
+  let toolMove = new MoveTool()
   let currentTool: Tool = toolBrush
   let previousTool: Tool = null
   let brushSize: number = 1
@@ -110,6 +111,7 @@
       <PaletteSection bind:palette bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} />
     </section>
     <menu class='toolbar'>
+      <Button isSelected={currentTool === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>swapTool(toolMove)}></Button>
       <Button isSelected={currentTool === toolSelection} kind="ghost" size="small" icon={Select_01} iconDescription="selection" tooltipPosition="right" on:click={()=>swapTool(toolSelection)}></Button>
       <Button isSelected={currentTool === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>swapTool(toolFill)}></Button>
       <Button isSelected={currentTool === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>swapTool(toolBrush)}></Button>
@@ -117,6 +119,7 @@
       <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
       <Shortcuts group='editor2D'>
         <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>swapTool(toolSelection)} />
+        <Shortcut global cmd='move' keys={['m']} on:trigger={()=>swapTool(toolMove)} />
         <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>swapTool(toolBrush)} />
         <Shortcut global cmd='brushToPicker' keys={['alt']} on:trigger={()=>currentTool===toolBrush?swapTool(toolPicker):null} on:release={()=>previousTool===toolBrush&&currentTool===toolPicker?swapTool(toolBrush):null} />
         <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>swapTool(toolFill)} />

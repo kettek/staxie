@@ -277,3 +277,58 @@ export class SelectionTool implements Tool {
     this.active = false
   }
 }
+
+export class MoveTool implements Tool {
+  private active: boolean
+  private startX: number
+  private startY: number
+  private endX: number
+  private endY: number
+
+  isActive(): boolean {
+    return this.active
+  }
+
+  pointerDown(ctx: ToolContext, ptr: Pointer) {
+    this.startX = this.endX = ptr.x
+    this.startY = this.endY = ptr.y
+    this.active = true
+  }
+  pointerMove(ctx: ToolContext, ptr: Pointer) {
+    this.endX = ptr.x
+    this.endY = ptr.y
+  }
+  pointerUp(ctx: ToolContext, ptr: Pointer) {
+    if (this.startX === this.endX && this.startY === this.endY) {
+      this.active = false
+      return
+    }
+
+    let dx = this.endX - this.startX
+    let dy = this.endY - this.startY
+
+    let pixels: { x: number, y: number, index: number }[] = []
+    let clearPixels: { x: number, y: number, index: number }[] = []
+    for (let x = 0; x < ctx.file.canvas.width; x++) {
+      for (let y = 0; y < ctx.file.canvas.height; y++) {
+        if (ctx.file.selection.isPixelMarked(x, y)) {
+          let p = ctx.file.canvas.getPixel(x, y)
+          let { a } = ctx.file.canvas.getPaletteAsRGBA(p)
+          // FIXME: Do we really want to treat 0 as transparent index? Additionally, for RGBA, we probably want to merge the colors and create a new entry... maybe this should be handled in PixelsPlaceUndoable within the file class...
+          if (a !== 0) {
+            if (x+dx >= 0 && x+dx < ctx.file.canvas.width && y+dy >= 0 && y+dy < ctx.file.canvas.height) {
+              pixels.push({x: x+dx, y: y+dy, index: p})
+            }
+            clearPixels.push({x, y, index: 0})
+          }
+        }
+      }
+    }
+
+    ctx.file.capture()
+    ctx.file.push(new PixelsPlaceUndoable(clearPixels))
+    ctx.file.push(new PixelsPlaceUndoable(pixels))
+    ctx.file.release()
+    this.active = false
+  }
+}

@@ -4,7 +4,7 @@
   import type { data } from '../../wailsjs/go/models.ts'
   import type { LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, PickerTool, type BrushType, type Tool, SelectionTool } from '../types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type BrushType, type Tool, SelectionTool } from '../types/tools'
   import { Button, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte';
 
