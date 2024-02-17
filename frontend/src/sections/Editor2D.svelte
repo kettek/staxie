@@ -147,6 +147,13 @@
       for (let i = 0; i < shape.length; i++) {
         ctx.fillRect(offsetX*zoom+(mousePixelX+shape[i].x)*zoom, offsetY*zoom+(mousePixelY+shape[i].y)*zoom, zoom, zoom)
       }
+    } else if (currentTool instanceof MoveTool && currentTool.isActive()) {
+      ctx.save()
+      ctx.imageSmoothingEnabled = false
+      ctx.scale(zoom, zoom)
+      let {x, y} = currentTool.previewPosition()
+      ctx.drawImage(currentTool.preview.canvas, offsetX+x, offsetY+y)
+      ctx.restore()
     }
 
     // Draw our overlay with difference composition so visibility is better.

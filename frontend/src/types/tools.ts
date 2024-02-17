@@ -1,4 +1,5 @@
 import { PixelPlaceUndoable, type LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from "./file"
+import { Preview } from "./preview"
 import { FilledCircle, FilledSquare, type PixelPosition } from "./shapes"
 
 export interface ToolContext {
@@ -287,9 +288,14 @@ export class MoveTool implements Tool {
   private startY: number
   private endX: number
   private endY: number
+  public preview: Preview
 
   isActive(): boolean {
     return this.active
+  }
+  
+  previewPosition(): ({x: number, y: number}) {
+    return {x: this.endX - this.startX + this.preview.x, y: this.endY - this.startY + this.preview.y}
   }
 
   shift(ctx: ToolContext, ptr: Pointer) {
@@ -300,11 +306,14 @@ export class MoveTool implements Tool {
     this.pointerUp(ctx, ptr)
   }
   pointerDown(ctx: ToolContext, ptr: Pointer) {
+    this.preview = new Preview()
+    this.preview.fromSelectionAndCanvas(ctx.file.selection, ctx.file.canvas)
     this.startX = this.endX = ptr.x
     this.startY = this.endY = ptr.y
     this.active = true
   }
   pointerMove(ctx: ToolContext, ptr: Pointer) {
+    this.preview.fromSelectionAndCanvas(ctx.file.selection, ctx.file.canvas)
     this.endX = ptr.x
     this.endY = ptr.y
   }

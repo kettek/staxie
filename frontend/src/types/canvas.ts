@@ -1,3 +1,5 @@
+import type { PixelPosition } from "./shapes"
+
 export class Canvas {
   width: number
   height: number
@@ -101,5 +103,36 @@ export class Canvas {
     this.palette = newPalette
 
     return index
+  }
+  
+  // Returns the an ImageData containing the canvas contents clipped to the provided pixel mask.
+  getImageDataFromMask(mask: PixelPosition[]): {imageData: ImageData, x: number, y: number, w: number, h: number} {
+    // Get minimum x position from mask.
+    let minX = 9999999
+    let minY = 9999999
+    let maxX = -9999999
+    let maxY = -9999999
+    for (let pixel of mask) {
+      minX = Math.min(minX, pixel.x)
+      minY = Math.min(minY, pixel.y)
+      maxX = Math.max(maxX, pixel.x)
+      maxY = Math.max(maxY, pixel.y)
+    }
+    let width = maxX - minX + 1
+    let height = maxY - minY + 1
+    
+    let imageData = new ImageData(width, height)
+
+    for (let pixel of mask) {
+      let p = this.getPixel(pixel.x, pixel.y)
+      if (p !== -1) {
+        let color = this.palette[p]
+        imageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 0] = color & 0xFF
+        imageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 1] = (color >> 8) & 0xFF
+        imageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 2] = (color >> 16) & 0xFF
+        imageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 3] = (color >> 24) & 0xFF
+      }
+    }
+    return {imageData, x: minX, y: minY, w: width, h: height}
   }
 }

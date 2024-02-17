@@ -1,5 +1,6 @@
 import type { data } from '../../wailsjs/go/models.ts'
 import type { Canvas } from './canvas'
+import { Preview } from './preview'
 import { SelectionArea } from './selection'
 import { UndoableStack, type Undoable } from './undo'
 
@@ -15,6 +16,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
   title: string
   canvas: Canvas
   selection: SelectionArea
+  preview: Preview
   data: data.StackistFileV1
   
   constructor(options: LoadedFileOptions) {
@@ -24,6 +26,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
     this.filepath = options.filepath
     this.title = options.title
     this.canvas = options.canvas
+    this.preview = new Preview()
     this.selection = new SelectionArea(options.canvas.width, options.canvas.height, 1)
   }
   

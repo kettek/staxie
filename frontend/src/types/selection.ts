@@ -1,3 +1,5 @@
+import type { PixelPosition } from "./shapes"
+
 export class SelectionArea {
   public marchingCanvas: HTMLCanvasElement
   private marchStep: number = 0
@@ -198,5 +200,18 @@ export class SelectionArea {
     for (let i = 0; i < this.pixelMaskCanvasPixels.data.length; i += 4) {
       this.pixelMaskCanvasPixels.data[i + 3] = 0
     }
+  }
+  
+  // getMask returns an array of PixelPositions that correspond to non-zero alpha pixels in the selection.
+  getMask(): PixelPosition[] {
+    let pixels: PixelPosition[] = []
+    for (let y = 0; y < this.pixelMaskCanvas.height; y++) {
+      for (let x = 0; x < this.pixelMaskCanvas.width; x++) {
+        if (this.pixelMaskCanvasPixels.data[(y * this.pixelMaskCanvas.width + x) * 4 + 3] !== 0) {
+          pixels.push({x, y, index: 0})
+        }
+      }
+    }
+    return pixels
   }
 }
