@@ -274,6 +274,7 @@
         }
         return
       }
+      if (e.altKey) return
       if (e.deltaY < 0) {
         if (e.shiftKey) {
           offsetX--

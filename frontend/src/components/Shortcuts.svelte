@@ -71,6 +71,29 @@
     keys.delete(key.toLowerCase())
     keystring = keysToString([...keys])
   })
+
+  window.addEventListener('wheel', (event: WheelEvent) => {
+    if (event.deltaY < 0 || event.deltaX < 0) {
+      keys.add('wheelup')
+    } else if (event.deltaY > 0 || event.deltaX > 0) {
+      keys.add('wheeldown')
+    }
+
+    keystring = keysToString([...keys])
+    
+    let cur = get(currentShortcuts)
+    for (let shortcut of get(shortcuts)) {
+      if (shortcut.group !== cur.group) continue
+      if (!shortcut.global && shortcut.id !== cur.id) continue
+      if (shortcut.keys.includes(keystring)) {
+        shortcut.trigger()
+      }
+    }
+
+    keys.delete('wheelup')
+    keys.delete('wheeldown')
+  })
+
   window.addEventListener('blur', () => {
     keys.clear()
     keystring = ''

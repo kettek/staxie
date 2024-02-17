@@ -15,9 +15,21 @@
       primaryColorIndex = index
     }
   }
+  function handleWheel(event: WheelEvent) {
+    if (event.deltaX < 0) {
+      secondaryColorIndex = (secondaryColorIndex - 1 + file.canvas.palette.length) % file.canvas.palette.length
+    } else if (event.deltaX > 0) {
+      secondaryColorIndex = (secondaryColorIndex + 1) % file.canvas.palette.length
+    }
+    if (event.deltaY < 0) {
+      primaryColorIndex = (primaryColorIndex - 1 + file.canvas.palette.length) % file.canvas.palette.length
+    } else if (event.deltaY > 0) {
+      primaryColorIndex = (primaryColorIndex + 1) % file.canvas.palette.length
+    }
+  }
 </script>
 
-<main>
+<main on:wheel={handleWheel}>
   {#if file}
     {#each file.canvas.palette as palette, paletteIndex}
       <span on:click={paletteClick} x-index={paletteIndex} class='entry{paletteIndex===primaryColorIndex?' primary':''}{paletteIndex===secondaryColorIndex?' secondary':''}'>

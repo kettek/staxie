@@ -27,6 +27,19 @@
   let palette: Palette = defaultPalette()
   let primaryColorIndex: number = 1
   let secondaryColorIndex: number = 0
+
+  // Oh no, what are you doing, step palette~
+  function stepPalette(step: number, primary: boolean) {
+    if (primary) {
+      primaryColorIndex += step
+      if (primaryColorIndex < 0) primaryColorIndex = focusedFile?.canvas.palette.length-1
+      if (primaryColorIndex >= focusedFile?.canvas.palette.length) primaryColorIndex = 0
+    } else {
+      secondaryColorIndex += step
+      if (secondaryColorIndex < 0) secondaryColorIndex = focusedFile?.canvas.palette.length-1
+      if (secondaryColorIndex >= focusedFile?.canvas.palette.length) secondaryColorIndex = 0
+    }
+  }
   
   let showImport: boolean = false
   let importValid: boolean = false
@@ -127,6 +140,10 @@
         <Shortcut global cmd='move down' keys={['arrowdown']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 0, y: 1, id: 0})} />
         <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>swapTool(toolBrush)} />
         <Shortcut global cmd='brushToPicker' keys={['alt']} on:trigger={()=>currentTool===toolBrush?swapTool(toolPicker):null} on:release={()=>previousTool===toolBrush&&currentTool===toolPicker?swapTool(toolBrush):null} />
+        <Shortcut global cmd='previousPrimaryPaletteEntry' keys={['alt+wheelup']} on:trigger={()=>stepPalette(-1, true)}/>
+        <Shortcut global cmd='nextPrimaryPaletteEntry' keys={['alt+wheeldown']} on:trigger={()=>stepPalette(1, true)}/>
+        <Shortcut global cmd='previousSecondaryPaletteEntry' keys={['alt+shift+wheelup']} on:trigger={()=>stepPalette(-1, false)}/>
+        <Shortcut global cmd='nextSecondaryPaletteEntry' keys={['alt+shift+wheeldown']} on:trigger={()=>stepPalette(1, false)}/>
         <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>swapTool(toolFill)} />
         <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>swapTool(toolPicker)} />
         <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>swapTool(toolErase)} />
