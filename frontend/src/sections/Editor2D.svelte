@@ -251,15 +251,15 @@
       
       if (e.button === 0) {
         if (currentTool instanceof BrushTool) {
-          currentTool.pointerDown({file, brushSize, brushType, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
+          currentTool.pointerDown({file, brushSize, brushType, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof EraserTool) {
-          currentTool.pointerDown({file, brushSize, brushType}, {x: mousePixelX, y: mousePixelY, id: e.button })
+          currentTool.pointerDown({file, brushSize, brushType}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof FillTool) {
-          currentTool.pointerDown({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button })
+          currentTool.pointerDown({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof PickerTool) {
-          currentTool.pointerDown({file, setColorIndex: index=>primaryColorIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button })
+          currentTool.pointerDown({file, setColorIndex: index=>primaryColorIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else {
-          currentTool.pointerDown({file}, {x: mousePixelX, y: mousePixelY, id: e.button })
+          currentTool.pointerDown({file}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         }
       }
     })
@@ -342,7 +342,7 @@
 
       if (e.button === 0) {
         if (currentTool.isActive()) {
-          currentTool.pointerUp({file}, {x: mousePixelX, y: mousePixelY, id: 0 })
+          currentTool.pointerUp({file}, {x: mousePixelX, y: mousePixelY, id: 0, shift: e.shiftKey, control: e.ctrlKey })
         }
       }
 

@@ -9,6 +9,8 @@ interface Pointer {
   x: number
   y: number
   id: number
+  shift?: boolean
+  control?: boolean
 }
 
 export type BrushType = "circle" | "square"
@@ -256,11 +258,19 @@ export class SelectionTool implements Tool {
       return
     }
 
+    let value = true
+    if (!ptr.shift && !ptr.control) {
+      ctx.file.selection.clear()
+    }
+    if (ptr.control) {
+      value = false
+    }
+
     let {x: startX, y: startY, width, height} = this.getArea()
 
     for (let x = startX; x <= startX+width-1; x++) {
       for (let y = startY; y <= startY+height-1; y++) {
-        ctx.file.selection.setPixel(x, y, true)
+        ctx.file.selection.setPixel(x, y, value)
       }
     }
 
