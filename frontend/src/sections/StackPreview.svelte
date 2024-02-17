@@ -7,6 +7,7 @@
   let shownFiles: Record<string, boolean> = {}
   
   let rotation: number = 0
+  let zoom: number = 1
   let layerDistance: number = 1
   
   let canvas: HTMLCanvasElement
@@ -24,6 +25,8 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.fillStyle = '#222222'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    ctx.imageSmoothingEnabled = false
     
     let x = canvas.width/2
     let y = canvas.height/2
@@ -37,10 +40,11 @@
               for (let layer of frame.layers) {
                 ctx.save()
                 ctx.translate(x, y)
+                ctx.scale(zoom, zoom)
                 ctx.rotate(rotation * Math.PI / 180)
                 ctx.drawImage(file.canvas.canvas, layer.x, layer.y, file.data.width, file.data.height, -file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
                 ctx.restore()
-                y -= 1 * layerDistance
+                y -= 1 * layerDistance * zoom
               }
               done = true
               if (done) break
@@ -75,6 +79,7 @@
     </Column>
     <Column>
       <canvas bind:this={canvas}></canvas>
+      <Slider labelText="Global Zoom" min={1} max={10} step={1} bind:value={zoom} fullWidth></Slider>
       <Slider labelText="Global Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
       <Slider labelText="Global Layer Distance" min={0} max={2} step={0.1} bind:value={layerDistance} fullWidth></Slider>
     </Column>
