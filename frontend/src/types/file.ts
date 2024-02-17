@@ -93,3 +93,88 @@ export class PixelsPlaceUndoable implements Undoable<LoadedFile> {
     }
   }
 }
+
+export class SelectionSetUndoable implements Undoable<LoadedFile> {
+  private oldPixels: { x: number, y: number, marked: boolean }[]
+  private pixels: { x: number, y: number, marked: boolean }[]
+  private clear: boolean
+
+  constructor(pixels: {x: number, y: number, marked: boolean}[], clear: boolean) {
+    this.pixels = pixels
+    this.clear = clear
+  }
+  apply(file: LoadedFile) {
+    if (!this.oldPixels) {
+      this.oldPixels = []
+      for (let y = 0; y < file.selection.pixelMaskCanvasPixels.height; y++) {
+        for (let x = 0; x < file.selection.pixelMaskCanvasPixels.width; x++) {
+          this.oldPixels.push({x, y, marked: file.selection.pixelMaskCanvasPixels.data[(y * file.selection.pixelMaskCanvasPixels.width + x) * 4 + 3] !== 0})
+        }
+      }
+    }
+    if (this.clear) {
+      file.selection.clear()
+    }
+    for (let pixel of this.pixels) {
+      file.selection.setPixel(pixel.x, pixel.y, pixel.marked)
+    }
+  }
+  unapply(file: LoadedFile) {
+    for (let pixel of this.oldPixels) {
+      file.selection.setPixel(pixel.x, pixel.y, pixel.marked)
+    }
+  }
+}
+
+export class SelectionMoveUndoable implements Undoable<LoadedFile> {
+  private oldPixels: { x: number, y: number, marked: boolean }[]
+
+  private dx: number
+  private dy: number
+
+  constructor(dx: number, dy: number) {
+    this.dx = dx
+    this.dy = dy
+  }
+  apply(file: LoadedFile) {
+    if (!this.oldPixels) {
+      this.oldPixels = []
+      for (let y = 0; y < file.selection.pixelMaskCanvasPixels.height; y++) {
+        for (let x = 0; x < file.selection.pixelMaskCanvasPixels.width; x++) {
+          this.oldPixels.push({x, y, marked: file.selection.pixelMaskCanvasPixels.data[(y * file.selection.pixelMaskCanvasPixels.width + x) * 4 + 3] !== 0})
+        }
+      }
+    }
+    file.selection.move(this.dx, this.dy)
+  }
+  unapply(file: LoadedFile) {
+    file.selection.clear()
+    for (let pixel of this.oldPixels) {
+      file.selection.setPixel(pixel.x, pixel.y, pixel.marked)
+    }
+  }
+}
+
+export class SelectionClearUndoable implements Undoable<LoadedFile> {
+  private oldPixels: { x: number, y: number, marked: boolean }[]
+  private oldActive: boolean
+  constructor() {
+    this.oldPixels = []
+  }
+  apply(file: LoadedFile) {
+    this.oldActive = file.selection.active
+    for (let y = 0; y < file.selection.pixelMaskCanvasPixels.height; y++) {
+      for (let x = 0; x < file.selection.pixelMaskCanvasPixels.width; x++) {
+        this.oldPixels.push({x, y, marked: file.selection.pixelMaskCanvasPixels.data[(y * file.selection.pixelMaskCanvasPixels.width + x) * 4 + 3] !== 0})
+      }
+    }
+    file.selection.clear()
+    file.selection.active = false
+  }
+  unapply(file: LoadedFile) {
+    for (let pixel of this.oldPixels) {
+      file.selection.setPixel(pixel.x, pixel.y, pixel.marked)
+    }
+    file.selection.active = this.oldActive
+  }
+}

@@ -8,7 +8,7 @@ export class SelectionArea {
 
   private canvas: HTMLCanvasElement
   private pixelMaskCanvas: HTMLCanvasElement
-  private pixelMaskCanvasPixels: ImageData
+  public pixelMaskCanvasPixels: ImageData
   private redrawPixelMask: boolean
 
   private checkerboard: HTMLCanvasElement
@@ -75,6 +75,25 @@ export class SelectionArea {
     this.redrawPixelMask = true
 
     this.refresh()
+  }
+
+  public move(dx: number, dy: number) {
+    let pixelMaskCanvasPixels = new ImageData(this.pixelMaskCanvas.width, this.pixelMaskCanvas.height)
+    for (let y = 0; y < this.pixelMaskCanvas.height; y++) {
+      for (let x = 0; x < this.pixelMaskCanvas.width; x++) {
+        let i = (y * this.pixelMaskCanvas.width + x) * 4
+        let ii = ((y + dy) * this.pixelMaskCanvas.width + (x + dx)) * 4
+        if (ii >= 0 && ii < pixelMaskCanvasPixels.data.length) {
+          pixelMaskCanvasPixels.data[i + 0] = this.pixelMaskCanvasPixels.data[ii + 0]
+          pixelMaskCanvasPixels.data[i + 1] = this.pixelMaskCanvasPixels.data[ii + 1]
+          pixelMaskCanvasPixels.data[i + 2] = this.pixelMaskCanvasPixels.data[ii + 2]
+          pixelMaskCanvasPixels.data[i + 3] = this.pixelMaskCanvasPixels.data[ii + 3]
+        }
+      }
+    }
+    this.pixelMaskCanvasPixels = pixelMaskCanvasPixels
+
+    this.redrawPixelMask = true
   }
 
   public refresh() {

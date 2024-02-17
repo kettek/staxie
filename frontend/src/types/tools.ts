@@ -1,4 +1,4 @@
-import { PixelPlaceUndoable, type LoadedFile, PixelsPlaceUndoable } from "./file"
+import { PixelPlaceUndoable, type LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from "./file"
 import { FilledCircle, FilledSquare, type PixelPosition } from "./shapes"
 
 export interface ToolContext {
@@ -252,15 +252,15 @@ export class SelectionTool implements Tool {
   }
   pointerUp(ctx: ToolContext & SelectionToolContext, ptr: Pointer) {
     if (this.startX === this.endX && this.startY === this.endY) {
-      ctx.file.selection.clear()
-      ctx.file.selection.active = false
+      ctx.file.push(new SelectionClearUndoable())
       this.active = false
       return
     }
 
     let value = true
+    let clear = false
     if (!ptr.shift && !ptr.control) {
-      ctx.file.selection.clear()
+      clear = true
     }
     if (ptr.control) {
       value = false
@@ -268,11 +268,14 @@ export class SelectionTool implements Tool {
 
     let {x: startX, y: startY, width, height} = this.getArea()
 
+    let pixels: { x: number, y: number, marked: boolean }[] = []
     for (let x = startX; x <= startX+width-1; x++) {
       for (let y = startY; y <= startY+height-1; y++) {
-        ctx.file.selection.setPixel(x, y, value)
+        pixels.push({x, y, marked: value})
       }
     }
+
+    ctx.file.push(new SelectionSetUndoable(pixels, clear))
 
     this.active = false
   }
@@ -289,6 +292,13 @@ export class MoveTool implements Tool {
     return this.active
   }
 
+  shift(ctx: ToolContext, ptr: Pointer) {
+    this.startX = 0
+    this.startY = 0
+    this.endX = ptr.x
+    this.endY = ptr.y
+    this.pointerUp(ctx, ptr)
+  }
   pointerDown(ctx: ToolContext, ptr: Pointer) {
     this.startX = this.endX = ptr.x
     this.startY = this.endY = ptr.y
@@ -326,6 +336,7 @@ export class MoveTool implements Tool {
     }
 
     ctx.file.capture()
+    ctx.file.push(new SelectionMoveUndoable(-dx, -dy))
     ctx.file.push(new PixelsPlaceUndoable(clearPixels))
     ctx.file.push(new PixelsPlaceUndoable(pixels))
     ctx.file.release()

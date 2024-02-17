@@ -6,7 +6,7 @@
   import FloatingPanel from './components/FloatingPanel.svelte'
   import { Palette, PaletteEntry, defaultPalette } from './types/palette'
 
-  import { LoadedFile } from './types/file'
+  import { LoadedFile, SelectionClearUndoable } from './types/file'
 
   import "carbon-components-svelte/css/all.css"
   import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput } from "carbon-components-svelte"
@@ -118,8 +118,13 @@
       <Button isSelected={currentTool === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>swapTool(toolPicker)}></Button>
       <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
       <Shortcuts group='editor2D'>
+        <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>focusedFile?.push(new SelectionClearUndoable())} />
         <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>swapTool(toolSelection)} />
         <Shortcut global cmd='move' keys={['m']} on:trigger={()=>swapTool(toolMove)} />
+        <Shortcut global cmd='move left' keys={['arrowleft']} on:trigger={()=>currentTool===toolMove?toolMove.shift({file: focusedFile}, {x: -1, y: 0, id: 0}):null} />
+        <Shortcut global cmd='move right' keys={['arrowright']} on:trigger={()=>currentTool===toolMove?toolMove.shift({file: focusedFile}, {x: 1, y: 0, id: 0}):null} />
+        <Shortcut global cmd='move up' keys={['arrowup']} on:trigger={()=>currentTool===toolMove?toolMove.shift({file: focusedFile}, {x: 0, y: -1, id: 0}):null} />
+        <Shortcut global cmd='move down' keys={['arrowdown']} on:trigger={()=>currentTool===toolMove?toolMove.shift({file: focusedFile}, {x: 0, y: 1, id: 0}):null} />
         <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>swapTool(toolBrush)} />
         <Shortcut global cmd='brushToPicker' keys={['alt']} on:trigger={()=>currentTool===toolBrush?swapTool(toolPicker):null} on:release={()=>previousTool===toolBrush&&currentTool===toolPicker?swapTool(toolBrush):null} />
         <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>swapTool(toolFill)} />
