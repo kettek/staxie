@@ -149,10 +149,11 @@
       <Button isSelected={currentTool === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>swapTool(toolMove)}></Button>
       <Button isSelected={currentTool === toolSelection} kind="ghost" size="small" icon={Select_01} iconDescription="selection" tooltipPosition="right" on:click={()=>swapTool(toolSelection)}></Button>
       <Button isSelected={currentTool === toolMagicWand} kind="ghost" size="small" icon={MagicWand} iconDescription="magic selection" tooltipPosition="right" on:click={()=>swapTool(toolMagicWand)}></Button>
-      <Button isSelected={currentTool === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>swapTool(toolFill)}></Button>
+      <hr/>
       <Button isSelected={currentTool === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>swapTool(toolBrush)}></Button>
       <Button isSelected={currentTool === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>swapTool(toolPicker)}></Button>
       <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
+      <Button isSelected={currentTool === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>swapTool(toolFill)}></Button>
       <Shortcuts group='editor2D'>
         <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>focusedFile?.push(new SelectionClearUndoable())} />
         <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>swapTool(toolSelection)} />
@@ -256,6 +257,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    align-items: center;
     padding-top: 2rem;
   }
   .toolsettings {
@@ -297,5 +299,12 @@
   :global(.middle .bx--tabs .bx--btn) {
     padding-top: 0;
     top: -.25rem;
+  }
+  hr {
+    width: 50%;
+    height: 1px;
+    border: none;
+    background-color: var(--cds-text-02, #c6c6c6);
+    margin: 0.5rem 0;
   }
 </style>
