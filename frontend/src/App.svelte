@@ -6,7 +6,7 @@
   import FloatingPanel from './components/FloatingPanel.svelte'
   import { Palette, PaletteEntry, defaultPalette } from './types/palette'
 
-  import { LoadedFile, SelectionClearUndoable } from './types/file'
+  import { LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable } from './types/file'
 
   import "carbon-components-svelte/css/all.css"
   import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput } from "carbon-components-svelte"
@@ -22,6 +22,7 @@
   import Shortcut from './components/Shortcut.svelte'
   import Shortcuts from './components/Shortcuts.svelte'
   import { CopyPaste } from './types/copypaste'
+  import type { PixelPosition } from './types/shapes.js';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -91,6 +92,24 @@
   function engageCopy() {
     if (!focusedFile) return
     CopyPaste.toLocal(focusedFile.canvas, focusedFile.selection)
+  }
+  function engageDelete(cut: boolean) {
+    if (!focusedFile) return
+    focusedFile.capture()
+    if (cut) {
+      CopyPaste.toLocal(focusedFile.canvas, focusedFile.selection)
+    }
+    let pixels: PixelPosition[] = []
+    for (let y = 0; y < focusedFile.canvas.height; y++) {
+      for (let x = 0; x < focusedFile.canvas.width; x++) {
+        if (focusedFile.selection.isPixelMarked(x, y)) {
+          pixels.push({x, y, index: 0})
+        }
+      }
+    }
+    focusedFile.push(new SelectionClearUndoable())
+    focusedFile.push(new PixelsPlaceUndoable(pixels))
+    focusedFile.release()
   }
   function engagePaste() {
     if (!focusedFile) return
@@ -173,6 +192,8 @@
         <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>swapTool(toolPicker)} />
         <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>swapTool(toolErase)} />
         <Shortcut global cmd='copy' keys={['ctrl+c']} on:trigger={()=>engageCopy()} />
+        <Shortcut global cmd='cut' keys={['ctrl+x']} on:trigger={()=>engageDelete(true)} />
+        <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>engageDelete(false)} />
         <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>engagePaste()} />
       </Shortcuts>
     </menu>
