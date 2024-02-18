@@ -66,17 +66,17 @@
       
       canvas = new Canvas(png.width, png.height)
       
-      if (png.pixelBitlength === 32) {
+      if (png.colorType === 6 || png.colorType === 2) { // RGBA / RGB
         for (let i = 0; i < png.decodedPixels.length; i += 4) {
           let y = Math.floor(i / (png.width * 4))
           let x = (i / 4) % png.width
           canvas.setPixelRGBA(x, y, png.decodedPixels[i], png.decodedPixels[i+1], png.decodedPixels[i+2], png.decodedPixels[i+3])
         }
-      } else if (png.pixelBitlength === 24) {
-        // RGB
-      } else if (png.pixelBitlength === 8) {
+        canvas.isIndexed = false
+      } else if (png.colorType === 3) { // indexed
         canvas.setPaletteFromUint8Array(png.decodedPalette)
         canvas.setPixelsFromUint8Array(png.decodedPixels)
+        canvas.isIndexed = true
       } else {
         error = "pixel format"
         error2 = "unsupported pixel format"

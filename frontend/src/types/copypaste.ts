@@ -45,6 +45,7 @@ export class CopyPaste {
     currentCanvas = Canvas.fromData({
       width: canvas.width,
       height: canvas.height,
+      isIndexed: canvas.isIndexed,
       palette: canvas.palette,
       pixels: canvas.pixels
     })
@@ -67,6 +68,7 @@ export class CopyPaste {
     let canvas = Canvas.fromData({
       width: currentCanvas.width,
       height: currentCanvas.height,
+      isIndexed: currentCanvas.isIndexed,
       palette: currentCanvas.palette,
       pixels: currentCanvas.pixels
     })

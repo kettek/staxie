@@ -5,6 +5,7 @@ export class Canvas {
   height: number
   palette: Uint32Array // 32-bit RGBA palette
   pixels: Uint8Array // 8-bit indices into the palette
+  public isIndexed: boolean = false
   canvas: HTMLCanvasElement
   imageData: ImageData
   
@@ -18,8 +19,9 @@ export class Canvas {
   }
   
   // fromData creates a new Canvas instance from the provided data.
-  static fromData({width, height, palette, pixels}: {width: number, height: number, palette: Uint32Array, pixels: Uint8Array}): Canvas {
+  static fromData({width, height, isIndexed, palette, pixels}: {width: number, height: number, isIndexed: boolean, palette: Uint32Array, pixels: Uint8Array}): Canvas {
     let canvas = new Canvas(width, height)
+    canvas.isIndexed = isIndexed
     canvas.palette = palette
     canvas.pixels = pixels
     canvas.imageData = new ImageData(width, height)

@@ -24,7 +24,7 @@ export class IndexedPNG {
   public width: number
   public height: number
   private bits: number
-  private colorType: number
+  public colorType: number
   private compressionMethod: number
   private filterMethod: number
   private interlaceMethod: number
