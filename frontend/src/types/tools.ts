@@ -282,6 +282,59 @@ export class SelectionTool implements Tool {
   }
 }
 
+export class MagicWandTool implements Tool {
+  private active: boolean
+
+  isActive(): boolean {
+    return this.active
+  }
+
+  pointerDown(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
+    this.active = true
+    let pixels: { x: number, y: number, marked: boolean }[] = []
+    
+    let traversed = new Set<number>()
+
+    let value = true
+    let clear = false
+    if (!ptr.shift && !ptr.control) {
+      clear = true
+    }
+    if (ptr.control) {
+      value = false
+    }
+
+    let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
+    if (p !== -1) {
+      let queue = [{x: ptr.x, y: ptr.y}]
+      while (queue.length > 0) {
+        let {x, y} = queue.shift()
+        let index = y * ctx.file.canvas.width + x
+        if (traversed.has(index)) {
+          continue
+        }
+        traversed.add(index)
+        let p2 = ctx.file.canvas.getPixel(x, y)
+        if (p2 === p) {
+          pixels.push({x, y, marked: value})
+          if (x > 0) queue.push({x: x-1, y})
+          if (x < ctx.file.canvas.width-1) queue.push({x: x+1, y})
+          if (y > 0) queue.push({x, y: y-1})
+          if (y < ctx.file.canvas.height-1) queue.push({x, y: y+1})
+        }
+      }
+    }
+
+    ctx.file.selection.active = true
+    ctx.file.push(new SelectionSetUndoable(pixels, clear))
+  }
+  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
+  }
+  pointerUp(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
+    this.active = false
+  }
+}
+
 export class MoveTool implements Tool {
   private active: boolean
   private startX: number
