@@ -121,6 +121,30 @@ export class Canvas {
 
     return index
   }
+  getClosestPaletteColor(r: number, g: number, b: number, a: number): {r: number, g: number, b: number, a: number, index: number} {
+    let similarityMap = this.palette.map((color) => {
+      let r2 = color & 0xFF
+      let g2 = (color >> 8) & 0xFF
+      let b2 = (color >> 16) & 0xFF
+      let a2 = (color >> 24) & 0xFF
+      return Math.abs(r2 - r) + Math.abs(g2 - g) + Math.abs(b2 - b) + Math.abs(a2 - a)
+    })
+    let closestIndex = 0
+    let closestValue = similarityMap[0]
+    for (let i = 1; i < similarityMap.length; i++) {
+      if (similarityMap[i] < closestValue) {
+        closestValue = similarityMap[i]
+        closestIndex = i
+      }
+    }
+    return {
+      r: this.palette[closestIndex] & 0xFF,
+      g: (this.palette[closestIndex] >> 8) & 0xFF,
+      b: (this.palette[closestIndex] >> 16) & 0xFF,
+      a: (this.palette[closestIndex] >> 24) & 0xFF,
+      index: closestIndex
+    }
+  }
   
   // Returns the an ImageData containing the canvas contents clipped to the provided pixel mask.
   getImageDataFromMask(mask: PixelPosition[]): {imageData: ImageData, x: number, y: number, w: number, h: number} {
