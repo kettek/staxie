@@ -34,7 +34,11 @@
 
 <main>
   <div class="color" style="background-color: rgba({red},{green},{blue},{alpha})">
-    <div class="label" style="color: rgb({255-red}, {255-green}, {255-blue})">{index}</div>
+    <div class="label" style="color: rgb({255-red}, {255-green}, {255-blue})">
+      {#if swatchExists}
+        {index}
+      {/if}
+    </div>
   </div>
   <Button kind="ghost" size="small" disabled={swatchExists} iconDescription="replace swatch" tooltipPosition="top" icon={ColorSwitch} on:click={replaceSwatch}></Button>
   <Button kind="ghost" size="small" disabled={swatchExists} iconDescription="add swatch" tooltipPosition="top" icon={AddLarge} on:click={addSwatch}></Button>
