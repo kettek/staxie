@@ -303,7 +303,6 @@
   .left {
     display: grid;
     grid-template-rows: minmax(0, 1fr) auto;
-    overflow: hidden;
   }
   .toolbar {
     display: flex;
