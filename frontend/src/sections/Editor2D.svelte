@@ -14,7 +14,14 @@
   export let layer: data.Layer
   export let refresh: {}
 
+  export let showCheckerboard: boolean = true
   export let checkerboardSize: number = 8
+  export let checkerboardColor1: string = '#888888'
+  export let checkerboardColor2: string = '#444444'
+
+  $: ((...args) => {
+    canvasDirty = true
+  })(showCheckerboard, checkerboardSize, checkerboardColor1, checkerboardColor2)
 
   let offsetX: number
   let offsetY: number
@@ -174,16 +181,16 @@
     ctx.save()
     ctx.imageSmoothingEnabled = false
     ctx.scale(zoom, zoom)
-    {
+    if (showCheckerboard) {
       ctx.beginPath()
-      ctx.fillStyle = '#888888'
+      ctx.fillStyle = checkerboardColor1
       ctx.rect(offsetX, offsetY, file.canvas.width, file.canvas.height)
       ctx.fill()
 
       let rows = file.canvas.height / checkerboardSize
       let cols = file.canvas.width / checkerboardSize
       ctx.beginPath()
-      ctx.fillStyle = '#444444'
+      ctx.fillStyle = checkerboardColor2
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           if (r % 2 === 0 && c % 2 === 1 || r % 2 === 1 && c % 2 === 0) {

@@ -9,7 +9,7 @@
   import { LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable } from './types/file'
 
   import "carbon-components-svelte/css/all.css"
-  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput, Dropdown } from "carbon-components-svelte"
+  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput, Dropdown, Checkbox, TextInput } from "carbon-components-svelte"
   import { ComposedModal } from "carbon-components-svelte"
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
@@ -25,6 +25,9 @@
   import type { PixelPosition } from './types/shapes.js';
   import ColorSelector from './components/ColorSelector.svelte';
   import ColorIndex from './components/ColorIndex.svelte';
+  import CheckerboardSettingsModal from './components/CheckerboardSettingsModal.svelte';
+  import GridSettingsModal from './components/GridSettingsModal.svelte';
+  import ThemeSettingsModal from './components/ThemeSettingsModal.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -82,6 +85,21 @@
   let importCanvas: Canvas = null
   
   let showPreview: boolean = false
+  let showGridSettings: boolean = false
+  let showCheckerboardSettings: boolean = false
+  let showThemeSettings: boolean = false
+
+  let showGrid: boolean = true
+  let showCheckerboard: boolean = true
+
+  let gridMajorSize: number = 16
+  let gridMinorSize: number = 8
+  let gridMajorColor: string = '#0000ff'
+  let gridMinorColor: string = '#006666'
+
+  let checkerboardSize: number = 8
+  let checkerboardColor1: string = '#888888'
+  let checkerboardColor2: string = '#444444'
   
   let toolSelection = new SelectionTool()
   let toolMagicWand = new MagicWandTool()
@@ -200,6 +218,18 @@
       </OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
+      <div slot="menu">View</div>
+      <OverflowMenuItem>
+        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={showGrid} labelText="Grid" />
+      </OverflowMenuItem>
+      <OverflowMenuItem text="Change Grid..." on:click={()=>showGridSettings = true} />
+      <OverflowMenuItem hasDivider>
+        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={showCheckerboard} labelText="Checkerboard" />
+      </OverflowMenuItem>
+      <OverflowMenuItem text="Change Checkerboard..." on:click={()=>showCheckerboardSettings = true} />
+      <OverflowMenuItem hasDivider text="Theme..." on:click={()=>showThemeSettings = true} />
+    </OverflowMenu>
+    <OverflowMenu size="sm">
       <div slot="menu">Windows</div>
       <OverflowMenuItem text="Preview" on:click={() => showPreview = true}/>
     </OverflowMenu>
@@ -277,7 +307,7 @@
               <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
             </Shortcuts>
             <TabContent>
-              <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} brushType={brushType} />
+              <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} brushType={brushType} showCheckerboard={showCheckerboard} checkerboardSize={checkerboardSize} checkerboardColor1={checkerboardColor1} checkerboardColor2={checkerboardColor2} />
             </TabContent>
           {/each}
         </svelte:fragment>
@@ -288,11 +318,21 @@
         label="Stack Preview"
         noPadding
         bind:open={showPreview}
-        >
+      >
         <StackPreview files={files} />
       </FloatingPanel>
     {/if}
+    {#if showGridSettings}
+      <GridSettingsModal bind:open={showGridSettings} bind:majorSize={gridMajorSize} bind:minorSize={gridMinorSize} bind:majorColor={gridMajorColor} bind:minorColor={gridMinorColor} />
+    {/if}
+    {#if showCheckerboardSettings}
+      <CheckerboardSettingsModal bind:open={showCheckerboardSettings} bind:size={checkerboardSize} bind:color1={checkerboardColor1} bind:color2={checkerboardColor2} />
+    {/if}
+    {#if showThemeSettings}
+      <ThemeSettingsModal bind:open={showThemeSettings} bind:theme={theme} />
+    {/if}
   </section>
+
 </main>
 <ComposedModal bind:open={showImport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageImport}>
   <Importer
