@@ -81,7 +81,7 @@
     }
     function stop(e: MouseEvent) {
       if (hoveringIndex !== -1 && hoveringIndex !== draggingIndex) {
-        file.push(new MoveSwatchUndoable(draggingIndex, hoveringIndex))
+        file.push(new MoveSwatchUndoable(draggingIndex, hoveringIndex<draggingIndex?hoveringIndex:hoveringIndex-1))
         file = file
       }
 
@@ -119,16 +119,18 @@
 <main on:wheel={handleWheel}>
   {#if file}
     {#each file.canvas.palette as palette, paletteIndex}
-      {#if paletteIndex === hoveringIndex || (paletteIndex === hoveringIndex-1 && paletteIndex === file.canvas.palette.length-2)}
+      {#if draggingIndex !== -1 && (paletteIndex === hoveringIndex || (paletteIndex === hoveringIndex-1 && paletteIndex === file.canvas.palette.length-2))}
         <span class="entry primary">
           <span class="checkerboard"></span>
           <span style="background-color: rgba({file.canvas.palette[draggingIndex]&0xFF},{(file.canvas.palette[draggingIndex]>>8)&0xFF},{(file.canvas.palette[draggingIndex]>>16)&0xFF},{((file.canvas.palette[draggingIndex]>>24)&0xFF)/255})" class="color"></span>
+          <span class='label'>{draggingIndex}</span>
         </span>
       {/if}
       {#if paletteIndex !== draggingIndex}
         <span on:click={paletteClick} x-index={paletteIndex} class='entry{paletteIndex===primaryColorIndex?' primary':''}{paletteIndex===secondaryColorIndex?' secondary':''}{paletteIndex===draggingIndex?' hide':''}' use:swatchDrag>
           <span class="checkerboard"></span>
           <span style="background-color: rgba({palette&0xFF},{(palette>>8)&0xFF},{(palette>>16)&0xFF},{((palette>>24)&0xFF)/255})" class="color"></span>
+          <span class='label'>{paletteIndex}</span>
         </span>
       {/if}
     {/each}
@@ -146,8 +148,6 @@
     display: inline-block;
     width: 2em;
     height: 2em;
-    margin: 2px;
-    padding: 2px;
     border: 2px solid transparent;
   }
   .entry.hide {
@@ -178,5 +178,18 @@
     background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
     background-size: 10px 10px;
     background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+  }
+  .label {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.6rem;
+    mix-blend-mode: difference;
   }
 </style>
