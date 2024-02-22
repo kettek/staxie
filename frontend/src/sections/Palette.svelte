@@ -48,6 +48,7 @@
     }
   }
   function handleWheel(event: WheelEvent) {
+    if (!file) return
     if (event.deltaX < 0) {
       secondaryColorIndex = (secondaryColorIndex - 1 + file.canvas.palette.length) % file.canvas.palette.length
     } else if (event.deltaX > 0) {
