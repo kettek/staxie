@@ -147,6 +147,49 @@ export class Canvas {
       index: closestIndex
     }
   }
+  addNewPaletteColor(r: number, g: number, b: number, a: number) {
+    this.palette = new Uint32Array([...this.palette, new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]])
+  }
+  removePaletteColor(index: number) {
+    if (index < 0) {
+      index = this.palette.length - index
+    }
+    let newPalette = new Uint32Array(this.palette.length - 1)
+    for (let i = 0; i < index; i++) {
+      newPalette[i] = this.palette[i]
+    }
+    for (let i = index + 1; i < this.palette.length; i++) {
+      newPalette[i - 1] = this.palette[i]
+    }
+    this.palette = newPalette
+    for (let i = 0; i < this.pixels.length; i++) {
+      if (this.pixels[i] === index) {
+        this.pixels[i] = 0
+      } else if (this.pixels[i] > index) {
+        this.pixels[i]--
+      }
+    }
+  }
+  replacePaletteColor(index: number, r: number, g: number, b: number, a: number) {
+    this.palette[index] = new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]
+  }
+  hasPaletteColor(r: number, g: number, b: number, a: number): boolean {
+    for (let color of this.palette) {
+      if ((color & 0xFF) === r && ((color >> 8) & 0xFF) === g && ((color >> 16) & 0xFF) === b && ((color >> 24) & 0xFF) === a) {
+        return true
+      }
+    }
+    return false
+  }
+  refreshImageData() {
+    for (let i = 0; i < this.pixels.length; i++) {
+      let color = this.palette[this.pixels[i]]
+      this.imageData.data[i * 4 + 0] = color & 0xFF
+      this.imageData.data[i * 4 + 1] = (color >> 8) & 0xFF
+      this.imageData.data[i * 4 + 2] = (color >> 16) & 0xFF
+      this.imageData.data[i * 4 + 3] = (color >> 24) & 0xFF
+    }
+  }
   
   // Returns the an ImageData containing the canvas contents clipped to the provided pixel mask.
   getImageDataFromMask(mask: PixelPosition[]): {imageData: ImageData, x: number, y: number, w: number, h: number} {

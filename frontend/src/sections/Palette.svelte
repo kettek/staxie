@@ -1,19 +1,50 @@
 <script lang='ts'>
   import type { Color } from '../types/palette'
-  import type { LoadedFile } from '../types/file'
+  import { ReplaceSwatchUndoable, type LoadedFile, AddSwatchUndoable } from '../types/file'
+  import { createEventDispatcher } from 'svelte'
+  import type { Undoable } from '../types/undo'
 
   export let file: LoadedFile
+  let lastFile: LoadedFile
+  export let refresh: {}
+  $: { refresh ? file = file : null }
   
   export let primaryColorIndex: number = 1
   export let secondaryColorIndex: number = 0
+
+  const dispatch = createEventDispatcher()
+
+  const fileChanged = (item: Undoable<LoadedFile>) => {
+    if (item instanceof ReplaceSwatchUndoable || item instanceof AddSwatchUndoable) {
+      file = file
+    }
+  }
+
+  $: {
+    if (file && lastFile !== file) {
+      if (lastFile) {
+        lastFile.off('redo', fileChanged)
+        lastFile.off('undo', fileChanged)
+        lastFile.off('push', fileChanged)
+      }
+
+      file.on('redo', fileChanged)
+      file.on('undo', fileChanged)
+      file.on('push', fileChanged)
+
+      lastFile = file
+    }
+  }
   
   function paletteClick(event: MouseEvent) {
     const target = event.target as HTMLSpanElement
     const index = parseInt(target.getAttribute('x-index') || '0')
     if (event.shiftKey) {
       secondaryColorIndex = index
+      dispatch('select', { index: secondaryColorIndex })
     } else {
       primaryColorIndex = index
+      dispatch('select', { index: primaryColorIndex })
     }
   }
   function handleWheel(event: WheelEvent) {

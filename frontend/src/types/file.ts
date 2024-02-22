@@ -181,3 +181,62 @@ export class SelectionClearUndoable implements Undoable<LoadedFile> {
     file.selection.active = this.oldActive
   }
 }
+
+export class ReplaceSwatchUndoable implements Undoable<LoadedFile> {
+  private index: number
+
+  private red: number
+  private green: number
+  private blue: number
+  private alpha: number
+
+  private oldRed: number
+  private oldGreen: number
+  private oldBlue: number
+  private oldAlpha: number
+
+  constructor(index: number, red: number, green: number, blue: number, alpha: number) {
+    this.index = index
+    this.red = red
+    this.green = green
+    this.blue = blue
+    this.alpha = alpha
+  }
+  apply(file: LoadedFile) {
+    let r = file.canvas.palette[this.index] & 0xFF
+    let g = (file.canvas.palette[this.index] >> 8) & 0xFF
+    let b = (file.canvas.palette[this.index] >> 16) & 0xFF
+    let a = (file.canvas.palette[this.index] >> 24) & 0xFF
+    this.oldRed = r
+    this.oldGreen = g
+    this.oldBlue = b
+    this.oldAlpha = a
+    file.canvas.replacePaletteColor(this.index, this.red, this.green, this.blue, this.alpha)
+    file.canvas.refreshImageData()
+    file.canvas.refreshCanvas()
+  }
+  unapply(file: LoadedFile) {
+    file.canvas.replacePaletteColor(this.index, this.oldRed, this.oldGreen, this.oldBlue, this.oldAlpha)
+    file.canvas.refreshImageData()
+    file.canvas.refreshCanvas()
+  }
+}
+
+export class AddSwatchUndoable implements Undoable<LoadedFile> {
+  private red: number
+  private green: number
+  private blue: number
+  private alpha: number
+  constructor(red: number, green: number, blue: number, alpha: number) {
+    this.red = red
+    this.green = green
+    this.blue = blue
+    this.alpha = alpha
+  }
+  apply(file: LoadedFile) {
+    file.canvas.addNewPaletteColor(this.red, this.green, this.blue, this.alpha)
+  }
+  unapply(file: LoadedFile) {
+    file.canvas.removePaletteColor(-1)
+  }
+}

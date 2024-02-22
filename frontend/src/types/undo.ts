@@ -6,6 +6,8 @@ export class UndoableStack<T> {
   private captureStack: Undoable<T>[] = [];
   private capturing: boolean = false;
 
+  private listeners: { [key: string]: ((...args: any[]) => void)[] } = {}
+
   setTarget(target: T) {
     this.target = target;
   }
@@ -20,6 +22,7 @@ export class UndoableStack<T> {
     this.stack.splice(this.stackIndex, this.stack.length - this.stackIndex, item);
     item.apply(this.target);
     this.stackIndex++;
+    this.emit('push', item)
   }
 
   public pop(): Undoable<T> {
@@ -35,6 +38,7 @@ export class UndoableStack<T> {
       return;
     }
     this.stack[--this.stackIndex].unapply(this.target);
+    this.emit('undo', this.stack[this.stackIndex])
   }
 
   public redo() {
@@ -42,6 +46,7 @@ export class UndoableStack<T> {
       return;
     }
     this.stack[this.stackIndex++].apply(this.target);
+    this.emit('redo', this.stack[this.stackIndex - 1])
   }
   
   public canUndo() {
@@ -62,6 +67,33 @@ export class UndoableStack<T> {
     this.stackIndex++;
     console.log(this.stack, this.stackIndex)
     this.captureStack = [];
+  }
+
+  public on(event: string, listener: (...args: any[]) => void) {
+    if (!this.listeners[event]) {
+      this.listeners[event] = []
+    }
+    this.listeners[event].push(listener)
+  }
+
+  public off(event: string, listener: (...args: any[]) => void) {
+    if (!this.listeners[event]) {
+      return
+    }
+    let index = this.listeners[event].indexOf(listener)
+    if (index === -1) {
+      return
+    }
+    this.listeners[event].splice(index, 1)
+  }
+
+  public emit(event: string, ...args: any[]) {
+    if (!this.listeners[event]) {
+      return
+    }
+    for (let listener of this.listeners[event]) {
+      listener(...args)
+    }
   }
 }
 

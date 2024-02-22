@@ -24,6 +24,7 @@
   import { CopyPaste } from './types/copypaste'
   import type { PixelPosition } from './types/shapes.js';
   import ColorSelector from './components/ColorSelector.svelte';
+  import ColorIndex from './components/ColorIndex.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -36,6 +37,13 @@
   
   $: primaryColor = palette?.[primaryColorIndex]
   $: secondaryColor = palette?.[secondaryColorIndex]
+
+  let red: number = 0
+  let green: number = 0
+  let blue: number = 0
+  let alpha: number = 0
+
+  let refreshPalette = {}
 
   // Oh no, what are you doing, step palette~
   function stepPalette(step: number, primary: boolean) {
@@ -139,6 +147,18 @@
       focusedFileIndex = Math.min(files.length-1, focusedFileIndex)
     }
   }
+
+  function handlePaletteSelect(event: CustomEvent) {
+    let index = event.detail.index
+
+    if (index < 0 || index >= focusedFile.canvas.palette.length) return
+
+    let entry = focusedFile.canvas.palette[index]
+    red = entry & 0xFF
+    green = (entry >> 8) & 0xFF
+    blue = (entry >> 16) & 0xFF
+    alpha = (entry >> 24) & 0xFF
+  }
 </script>
 
 <Theme bind:theme/>
@@ -169,8 +189,11 @@
   </menu>
   <section class='content'>
     <section class='left'>
-      <PaletteSection bind:palette bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} />
-      <ColorSelector />
+      <PaletteSection refresh={refreshPalette} bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} on:select={handlePaletteSelect} />
+      <article>
+        <ColorSelector bind:red bind:green bind:blue bind:alpha />
+        <ColorIndex bind:red bind:green bind:blue bind:alpha index={primaryColorIndex} file={focusedFile} on:refresh={()=>refreshPalette={}} />
+      </article>
     </section>
     <menu class='toolbar'>
       <Button isSelected={currentTool === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>swapTool(toolMove)}></Button>
