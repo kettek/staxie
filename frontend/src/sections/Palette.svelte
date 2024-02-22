@@ -1,4 +1,5 @@
 <script lang='ts'>
+  import type { Color } from '../types/palette'
   import type { LoadedFile } from '../types/file'
 
   export let file: LoadedFile

@@ -4,7 +4,7 @@
   import Importer from './sections/Importer.svelte';
   import PaletteSection from './sections/Palette.svelte'
   import FloatingPanel from './components/FloatingPanel.svelte'
-  import { Palette, PaletteEntry, defaultPalette } from './types/palette'
+  import { Palette, PaletteEntry, defaultPalette, type Color } from './types/palette'
 
   import { LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable } from './types/file'
 
@@ -23,12 +23,19 @@
   import Shortcuts from './components/Shortcuts.svelte'
   import { CopyPaste } from './types/copypaste'
   import type { PixelPosition } from './types/shapes.js';
+  import ColorSelector from './components/ColorSelector.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
   let palette: Palette = defaultPalette()
   let primaryColorIndex: number = 1
   let secondaryColorIndex: number = 0
+  
+  let primaryColor: Color = {r: 0, g: 0, b: 0, a: 0}
+  let secondaryColor: Color = {r: 0, g: 0, b: 0, a: 0}
+  
+  $: primaryColor = palette?.[primaryColorIndex]
+  $: secondaryColor = palette?.[secondaryColorIndex]
 
   // Oh no, what are you doing, step palette~
   function stepPalette(step: number, primary: boolean) {
@@ -163,6 +170,7 @@
   <section class='content'>
     <section class='left'>
       <PaletteSection bind:palette bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} />
+      <ColorSelector />
     </section>
     <menu class='toolbar'>
       <Button isSelected={currentTool === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>swapTool(toolMove)}></Button>
@@ -271,8 +279,9 @@
   }
   .left {
     display: flex;
-    flex-direction: row;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
   }
   .toolbar {
     display: flex;
