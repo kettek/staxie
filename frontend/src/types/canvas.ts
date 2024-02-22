@@ -4,6 +4,7 @@ export class Canvas {
   width: number
   height: number
   palette: Uint32Array // 32-bit RGBA palette
+  fakePalette: Uint32Array // 32-bit RGBA palette
   pixels: Uint8Array // 8-bit indices into the palette
   public isIndexed: boolean = false
   canvas: HTMLCanvasElement
@@ -199,9 +200,19 @@ export class Canvas {
     }
     this.palette[to] = temp
   }
+  setFakePalette(palette: Uint32Array | undefined) {
+    this.fakePalette = palette
+  }
   refreshImageData() {
+    let palette = this.palette
+    if (this.fakePalette) {
+      palette = this.fakePalette
+    }
     for (let i = 0; i < this.pixels.length; i++) {
-      let color = this.palette[this.pixels[i]]
+      let color: number = 0
+      if (this.pixels[i] < palette.length) {
+        color = palette[this.pixels[i]]
+      }
       this.imageData.data[i * 4 + 0] = color & 0xFF
       this.imageData.data[i * 4 + 1] = (color >> 8) & 0xFF
       this.imageData.data[i * 4 + 2] = (color >> 16) & 0xFF

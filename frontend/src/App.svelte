@@ -9,7 +9,7 @@
   import { LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable } from './types/file'
 
   import "carbon-components-svelte/css/all.css"
-  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput } from "carbon-components-svelte"
+  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput, Dropdown } from "carbon-components-svelte"
   import { ComposedModal } from "carbon-components-svelte"
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
@@ -44,6 +44,23 @@
   let alpha: number = 0
 
   let refreshPalette = {}
+  let fakePalette: Uint32Array | undefined = undefined
+  let selectedPaletteID: number = 0
+  $: {
+    if (selectedPaletteID === 0) {
+      fakePalette = undefined
+    } else if (selectedPaletteID === 1) {
+      fakePalette = new Uint32Array([
+        0xFFE0F8D0, 0xFF88C070, 0xFF346856, 0xFF081820,
+        0xFFF8F8F8, 0xFFC0C0C0, 0xFF606060, 0xFF202020,
+        0xFFF8D8F8, 0xFFA800A8, 0xFF503050, 0xFF200020,
+        0xFFF8B8F8, 0xFFA800A8, 0xFF503050, 0xFF200020,
+      ])
+    }
+    focusedFile?.canvas.setFakePalette(fakePalette)
+    focusedFile?.canvas.refreshImageData()
+    focusedFile?.canvas.refreshCanvas()
+  }
 
   // Oh no, what are you doing, step palette~
   function stepPalette(step: number, primary: boolean) {
@@ -189,7 +206,15 @@
   </menu>
   <section class='content'>
     <section class='left'>
-      <PaletteSection refresh={refreshPalette} bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} on:select={handlePaletteSelect} />
+      <Dropdown
+        size="sm"
+        bind:selectedId={selectedPaletteID}
+        items={[
+          { id: 0, text: "<image>"},
+          { id: 1, text: "test palette"},
+        ]}
+      />
+      <PaletteSection refresh={refreshPalette} bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} fakePalette={fakePalette} on:select={handlePaletteSelect} />
       <article>
         <ColorSelector bind:red bind:green bind:blue bind:alpha />
         <ColorIndex bind:red bind:green bind:blue bind:alpha index={primaryColorIndex} file={focusedFile} on:refresh={()=>refreshPalette={}} />
@@ -302,7 +327,7 @@
   }
   .left {
     display: grid;
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
   }
   .toolbar {
     display: flex;

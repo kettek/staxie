@@ -35,6 +35,16 @@
       lastFile = file
     }
   }
+
+  export let fakePalette: Uint32Array | undefined
+  let palette: Uint32Array | undefined[]
+  $: {
+    if (fakePalette) {
+      palette = fakePalette
+    } else {
+      palette = file ? file.canvas.palette : []
+    }
+  }
   
   function paletteClick(event: MouseEvent) {
     const target = event.target as HTMLSpanElement
@@ -48,16 +58,15 @@
     }
   }
   function handleWheel(event: WheelEvent) {
-    if (!file) return
     if (event.deltaX < 0) {
-      secondaryColorIndex = (secondaryColorIndex - 1 + file.canvas.palette.length) % file.canvas.palette.length
+      secondaryColorIndex = (secondaryColorIndex - 1 + palette.length) % palette.length
     } else if (event.deltaX > 0) {
-      secondaryColorIndex = (secondaryColorIndex + 1) % file.canvas.palette.length
+      secondaryColorIndex = (secondaryColorIndex + 1) % palette.length
     }
     if (event.deltaY < 0) {
-      primaryColorIndex = (primaryColorIndex - 1 + file.canvas.palette.length) % file.canvas.palette.length
+      primaryColorIndex = (primaryColorIndex - 1 + palette.length) % palette.length
     } else if (event.deltaY > 0) {
-      primaryColorIndex = (primaryColorIndex + 1) % file.canvas.palette.length
+      primaryColorIndex = (primaryColorIndex + 1) % palette.length
     }
   }
 
@@ -118,24 +127,22 @@
 </script>
 
 <main on:wheel={handleWheel}>
-  {#if file}
-    {#each file.canvas.palette as palette, paletteIndex}
-      {#if draggingIndex !== -1 && (paletteIndex === hoveringIndex || (paletteIndex === hoveringIndex-1 && paletteIndex === file.canvas.palette.length-2))}
-        <span class="entry primary">
-          <span class="checkerboard"></span>
-          <span style="background-color: rgba({file.canvas.palette[draggingIndex]&0xFF},{(file.canvas.palette[draggingIndex]>>8)&0xFF},{(file.canvas.palette[draggingIndex]>>16)&0xFF},{((file.canvas.palette[draggingIndex]>>24)&0xFF)/255})" class="color"></span>
-          <span class='label'>{draggingIndex}</span>
-        </span>
-      {/if}
-      {#if paletteIndex !== draggingIndex}
-        <span on:click={paletteClick} x-index={paletteIndex} class='entry{paletteIndex===primaryColorIndex?' primary':''}{paletteIndex===secondaryColorIndex?' secondary':''}{paletteIndex===draggingIndex?' hide':''}' use:swatchDrag>
-          <span class="checkerboard"></span>
-          <span style="background-color: rgba({palette&0xFF},{(palette>>8)&0xFF},{(palette>>16)&0xFF},{((palette>>24)&0xFF)/255})" class="color"></span>
-          <span class='label'>{paletteIndex}</span>
-        </span>
-      {/if}
-    {/each}
-  {/if}
+  {#each palette as swatch, swatchIndex}
+    {#if draggingIndex !== -1 && (swatchIndex === hoveringIndex || (swatchIndex === hoveringIndex-1 && swatchIndex === palette.length-1))}
+      <span class="entry primary">
+        <span class="checkerboard"></span>
+        <span style="background-color: rgba({palette[draggingIndex]&0xFF},{(palette[draggingIndex]>>8)&0xFF},{(palette[draggingIndex]>>16)&0xFF},{((palette[draggingIndex]>>24)&0xFF)/255})" class="color"></span>
+        <span class='label'>{draggingIndex}</span>
+      </span>
+    {/if}
+    {#if swatchIndex !== draggingIndex}
+      <span on:click={paletteClick} x-index={swatchIndex} class='entry{swatchIndex===primaryColorIndex?' primary':''}{swatchIndex===secondaryColorIndex?' secondary':''}{swatchIndex===draggingIndex?' hide':''}' use:swatchDrag>
+        <span class="checkerboard"></span>
+        <span style="background-color: rgba({swatch&0xFF},{(swatch>>8)&0xFF},{(swatch>>16)&0xFF},{((swatch>>24)&0xFF)/255})" class="color"></span>
+        <span class='label'>{swatchIndex}</span>
+      </span>
+    {/if}
+  {/each}
 </main>
 
 <style>
