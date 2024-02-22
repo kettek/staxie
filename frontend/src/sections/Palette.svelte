@@ -142,6 +142,7 @@
     background-color: var(--cds-background-selected);
     text-align: left;
     user-select: none;
+    overflow: auto;
   }
   .entry {
     position: relative;

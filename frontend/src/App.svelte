@@ -301,10 +301,9 @@
     grid-template-rows: minmax(0, 1fr);
   }
   .left {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: space-between;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow: hidden;
   }
   .toolbar {
     display: flex;
