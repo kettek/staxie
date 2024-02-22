@@ -150,7 +150,6 @@
     display: inline-block;
     width: 2em;
     height: 2em;
-    border: 2px solid transparent;
   }
   .entry.hide {
     display: none;
