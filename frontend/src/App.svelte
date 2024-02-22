@@ -28,6 +28,7 @@
   import CheckerboardSettingsModal from './components/CheckerboardSettingsModal.svelte';
   import GridSettingsModal from './components/GridSettingsModal.svelte';
   import ThemeSettingsModal from './components/ThemeSettingsModal.svelte';
+  import BackgroundSettingsModal from './components/BackgroundSettingsModal.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -88,6 +89,7 @@
   let showGridSettings: boolean = false
   let showCheckerboardSettings: boolean = false
   let showThemeSettings: boolean = false
+  let showBackgroundSettings: boolean = false
 
   let showGrid: boolean = true
   let showCheckerboard: boolean = true
@@ -100,6 +102,8 @@
   let checkerboardSize: number = 8
   let checkerboardColor1: string = '#888888'
   let checkerboardColor2: string = '#444444'
+
+  let backgroundColor: string = '#111111'
   
   let toolSelection = new SelectionTool()
   let toolMagicWand = new MagicWandTool()
@@ -227,6 +231,7 @@
         <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={showCheckerboard} labelText="Checkerboard" />
       </OverflowMenuItem>
       <OverflowMenuItem text="Change Checkerboard..." on:click={()=>showCheckerboardSettings = true} />
+      <OverflowMenuItem hasDivider text="Background..." on:click={()=>showBackgroundSettings = true} />
       <OverflowMenuItem hasDivider text="Theme..." on:click={()=>showThemeSettings = true} />
     </OverflowMenu>
     <OverflowMenu size="sm">
@@ -307,7 +312,7 @@
               <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
             </Shortcuts>
             <TabContent>
-              <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} brushType={brushType} showCheckerboard={showCheckerboard} checkerboardSize={checkerboardSize} checkerboardColor1={checkerboardColor1} checkerboardColor2={checkerboardColor2} />
+              <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} brushType={brushType} showCheckerboard={showCheckerboard} checkerboardSize={checkerboardSize} checkerboardColor1={checkerboardColor1} checkerboardColor2={checkerboardColor2} backgroundColor={backgroundColor} />
             </TabContent>
           {/each}
         </svelte:fragment>
@@ -327,6 +332,9 @@
     {/if}
     {#if showCheckerboardSettings}
       <CheckerboardSettingsModal bind:open={showCheckerboardSettings} bind:size={checkerboardSize} bind:color1={checkerboardColor1} bind:color2={checkerboardColor2} />
+    {/if}
+    {#if showBackgroundSettings}
+      <BackgroundSettingsModal bind:open={showBackgroundSettings} bind:color={backgroundColor} />
     {/if}
     {#if showThemeSettings}
       <ThemeSettingsModal bind:open={showThemeSettings} bind:theme={theme} />

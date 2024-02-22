@@ -19,9 +19,11 @@
   export let checkerboardColor1: string = '#888888'
   export let checkerboardColor2: string = '#444444'
 
+  export let backgroundColor: string = '#111111'
+
   $: ((...args) => {
     canvasDirty = true
-  })(showCheckerboard, checkerboardSize, checkerboardColor1, checkerboardColor2)
+  })(showCheckerboard, checkerboardSize, checkerboardColor1, checkerboardColor2, backgroundColor)
 
   let offsetX: number
   let offsetY: number
@@ -174,7 +176,7 @@
     let ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    ctx.fillStyle = '#111111'
+    ctx.fillStyle = backgroundColor
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     // Draw checkboard.
