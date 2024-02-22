@@ -181,6 +181,24 @@ export class Canvas {
     }
     return false
   }
+  swapPaletteColors(index1: number, index2: number) {
+    let temp = this.palette[index1]
+    this.palette[index1] = this.palette[index2]
+    this.palette[index2] = temp
+  }
+  movePaletteColor(from: number, to: number) {
+    let temp = this.palette[from]
+    if (from < to) {
+      for (let i = from; i < to; i++) {
+        this.palette[i] = this.palette[i + 1]
+      }
+    } else {
+      for (let i = from; i > to; i--) {
+        this.palette[i] = this.palette[i - 1]
+      }
+    }
+    this.palette[to] = temp
+  }
   refreshImageData() {
     for (let i = 0; i < this.pixels.length; i++) {
       let color = this.palette[this.pixels[i]]

@@ -1,6 +1,6 @@
 <script lang='ts'>
   import type { Color } from '../types/palette'
-  import { ReplaceSwatchUndoable, type LoadedFile, AddSwatchUndoable } from '../types/file'
+  import { ReplaceSwatchUndoable, type LoadedFile, AddSwatchUndoable, MoveSwatchUndoable } from '../types/file'
   import { createEventDispatcher } from 'svelte'
   import type { Undoable } from '../types/undo'
 
@@ -15,7 +15,7 @@
   const dispatch = createEventDispatcher()
 
   const fileChanged = (item: Undoable<LoadedFile>) => {
-    if (item instanceof ReplaceSwatchUndoable || item instanceof AddSwatchUndoable) {
+    if (item instanceof ReplaceSwatchUndoable || item instanceof AddSwatchUndoable || item instanceof MoveSwatchUndoable) {
       file = file
     }
   }
@@ -59,15 +59,78 @@
       primaryColorIndex = (primaryColorIndex + 1) % file.canvas.palette.length
     }
   }
+
+  let draggingIndex: number = -1
+  let hoveringIndex: number = -1
+  function swatchDrag(node) {
+    let index = parseInt(node.getAttribute('x-index') || '-1')
+    let x = 0
+    let y = 0
+    let dx = 0
+    let dy = 0
+    node.addEventListener('mousedown', start)
+
+    function start(e: MouseEvent) {
+      e.preventDefault()
+      x = e.clientX
+      y = e.clientY
+
+      window.addEventListener('mouseup', stop)
+      window.addEventListener('mouseleave', stop)
+      window.addEventListener('mousemove', move)
+    }
+    function stop(e: MouseEvent) {
+      if (hoveringIndex !== -1 && hoveringIndex !== draggingIndex) {
+        file.push(new MoveSwatchUndoable(draggingIndex, hoveringIndex))
+        file = file
+      }
+
+      draggingIndex = -1
+      hoveringIndex = -1
+      window.removeEventListener('mouseup', stop)
+      window.removeEventListener('mouseleave', stop)
+      window.removeEventListener('mousemove', move)
+    }
+    function move(e: MouseEvent) {
+      dx += e.clientX - x
+      dy += e.clientY - y
+
+      x = e.clientX
+      y = e.clientY
+
+      if (Math.abs(dx)+Math.abs(dy) < 5) {
+        return
+      }
+      draggingIndex = index
+
+      for (let i = 0; i < file.canvas.palette.length; i++) {
+        const entry = document.querySelector(`.entry[x-index="${i}"]`) as HTMLSpanElement
+        if (!entry) continue
+        const rect = entry.getBoundingClientRect()
+        if (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom) {
+          hoveringIndex = i+1
+          break
+        }
+      }
+    }
+  }
 </script>
 
 <main on:wheel={handleWheel}>
   {#if file}
     {#each file.canvas.palette as palette, paletteIndex}
-      <span on:click={paletteClick} x-index={paletteIndex} class='entry{paletteIndex===primaryColorIndex?' primary':''}{paletteIndex===secondaryColorIndex?' secondary':''}'>
-        <span class="checkerboard"></span>
-        <span style="background-color: rgba({palette&0xFF},{(palette>>8)&0xFF},{(palette>>16)&0xFF},{((palette>>24)&0xFF)/255})" class="color"></span>
-      </span>
+      {#if paletteIndex === hoveringIndex || (paletteIndex === hoveringIndex-1 && paletteIndex === file.canvas.palette.length-2)}
+        <span class="entry primary">
+          <span class="checkerboard"></span>
+          <span style="background-color: rgba({file.canvas.palette[draggingIndex]&0xFF},{(file.canvas.palette[draggingIndex]>>8)&0xFF},{(file.canvas.palette[draggingIndex]>>16)&0xFF},{((file.canvas.palette[draggingIndex]>>24)&0xFF)/255})" class="color"></span>
+        </span>
+      {/if}
+      {#if paletteIndex !== draggingIndex}
+        <span on:click={paletteClick} x-index={paletteIndex} class='entry{paletteIndex===primaryColorIndex?' primary':''}{paletteIndex===secondaryColorIndex?' secondary':''}{paletteIndex===draggingIndex?' hide':''}' use:swatchDrag>
+          <span class="checkerboard"></span>
+          <span style="background-color: rgba({palette&0xFF},{(palette>>8)&0xFF},{(palette>>16)&0xFF},{((palette>>24)&0xFF)/255})" class="color"></span>
+        </span>
+      {/if}
     {/each}
   {/if}
 </main>
@@ -76,6 +139,7 @@
   main {
     background-color: var(--cds-background-selected);
     text-align: left;
+    user-select: none;
   }
   .entry {
     position: relative;
@@ -85,6 +149,9 @@
     margin: 2px;
     padding: 2px;
     border: 2px solid transparent;
+  }
+  .entry.hide {
+    display: none;
   }
   .entry.primary {
     border: 2px dashed white;
