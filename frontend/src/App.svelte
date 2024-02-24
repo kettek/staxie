@@ -158,6 +158,10 @@
 
     showNew = false
   }
+
+  function engageQuit() {
+    (window as any).runtime.Quit()
+  }
   
   function engageCopy() {
     if (!focusedFile) return
@@ -226,7 +230,7 @@
       <OverflowMenuItem text="Import from PNG..." on:click={() => showImport = true}/>
       <OverflowMenuItem text="Save"/>
       <OverflowMenuItem text="Save As..."/>
-      <OverflowMenuItem hasDivider danger text="Quit"/>
+      <OverflowMenuItem hasDivider danger text="Quit" on:click={engageQuit}/>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Edit</div>
@@ -304,6 +308,7 @@
         <Shortcut global cmd='cut' keys={['ctrl+x']} on:trigger={()=>engageDelete(true)} />
         <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>engageDelete(false)} />
         <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>engagePaste()} />
+        <Shortcut global cmd='quit' keys={['ctrl+q']} on:trigger={()=>engageQuit()} />
       </Shortcuts>
     </menu>
     <section class='middle'>
