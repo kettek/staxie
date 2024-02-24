@@ -21,6 +21,12 @@
 
   export let backgroundColor: string = '#111111'
 
+  export let showGrid: boolean = true
+  export let gridMajorSize: number = 16
+  export let gridMajorColor: string = '#333333'
+  export let gridMinorSize: number = 1
+  export let gridMinorColor: string = '#222222'
+
   $: ((...args) => {
     canvasDirty = true
   })(showCheckerboard, checkerboardSize, checkerboardColor1, checkerboardColor2, backgroundColor)
@@ -163,6 +169,36 @@
       let {x, y} = currentTool.previewPosition()
       ctx.drawImage(currentTool.preview.canvas, offsetX+x, offsetY+y)
       ctx.restore()
+    }
+
+    // Draw our grid.
+    if (showGrid) {
+      // Minor grid lines.
+      ctx.strokeStyle = gridMinorColor
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      for (let x = gridMinorSize; x < file.canvas.width; x += gridMinorSize) {
+        ctx.moveTo(offsetX*zoom+x*zoom, offsetY*zoom)
+        ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+file.canvas.height*zoom)
+      }
+      for (let y = gridMinorSize; y < file.canvas.height; y += gridMinorSize) {
+        ctx.moveTo(offsetX*zoom, offsetY*zoom+y*zoom)
+        ctx.lineTo(offsetX*zoom+file.canvas.width*zoom, offsetY*zoom+y*zoom)
+      }
+      ctx.stroke()
+      // Major grid lines.
+      ctx.strokeStyle = gridMajorColor
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      for (let x = gridMajorSize; x < file.canvas.width; x += gridMajorSize) {
+        ctx.moveTo(offsetX*zoom+x*zoom, offsetY*zoom)
+        ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+file.canvas.height*zoom)
+      }
+      for (let y = gridMajorSize; y < file.canvas.height; y += gridMajorSize) {
+        ctx.moveTo(offsetX*zoom, offsetY*zoom+y*zoom)
+        ctx.lineTo(offsetX*zoom+file.canvas.width*zoom, offsetY*zoom+y*zoom)
+      }
+      ctx.stroke()
     }
 
     // Draw our overlay with difference composition so visibility is better.

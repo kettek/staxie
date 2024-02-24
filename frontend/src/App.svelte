@@ -312,7 +312,25 @@
               <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
             </Shortcuts>
             <TabContent>
-              <Editor2D bind:file={file} refresh={refresh} bind:primaryColorIndex={primaryColorIndex} bind:secondaryColorIndex={secondaryColorIndex} bind:currentTool={currentTool} brushSize={brushSize} brushType={brushType} showCheckerboard={showCheckerboard} checkerboardSize={checkerboardSize} checkerboardColor1={checkerboardColor1} checkerboardColor2={checkerboardColor2} backgroundColor={backgroundColor} />
+              <Editor2D
+                bind:file={file}
+                refresh={refresh}
+                bind:primaryColorIndex={primaryColorIndex}
+                bind:secondaryColorIndex={secondaryColorIndex}
+                bind:currentTool={currentTool}
+                brushSize={brushSize}
+                brushType={brushType}
+                showCheckerboard={showCheckerboard}
+                checkerboardSize={checkerboardSize}
+                checkerboardColor1={checkerboardColor1}
+                checkerboardColor2={checkerboardColor2}
+                showGrid={showGrid}
+                backgroundColor={backgroundColor}
+                gridMajorColor={gridMajorColor}
+                gridMinorColor={gridMinorColor}
+                gridMajorSize={gridMajorSize}
+                gridMinorSize={gridMinorSize}
+              />
             </TabContent>
           {/each}
         </svelte:fragment>
