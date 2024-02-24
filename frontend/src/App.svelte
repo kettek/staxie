@@ -14,10 +14,10 @@
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper, Move, MagicWand } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper, Move, MagicWand, SprayPaint } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import type { Canvas } from './types/canvas'
-  import { BrushTool, EraserTool, FillTool, PickerTool, SelectionTool, MagicWandTool, type BrushType, type Tool, MoveTool } from './types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, SelectionTool, MagicWandTool, type BrushType, type Tool, MoveTool, SprayTool } from './types/tools'
   import BrushSize from './components/BrushSize.svelte'
   import Shortcut from './components/Shortcut.svelte'
   import Shortcuts from './components/Shortcuts.svelte'
@@ -110,12 +110,15 @@
   let toolFill = new FillTool()
   let toolErase = new EraserTool()
   let toolBrush = new BrushTool()
+  let toolSpray = new SprayTool()
   let toolPicker = new PickerTool()
   let toolMove = new MoveTool()
   let currentTool: Tool = toolBrush
   let previousTool: Tool = null
   let brushSize: number = 1
   let brushType: BrushType = 'circle'
+  let sprayRadius: number = 16
+  let sprayDensity: number = 2
   
   function swapTool(tool: Tool) {
     previousTool = currentTool
@@ -261,6 +264,7 @@
       <Button isSelected={currentTool === toolMagicWand} kind="ghost" size="small" icon={MagicWand} iconDescription="magic selection" tooltipPosition="right" on:click={()=>swapTool(toolMagicWand)}></Button>
       <hr/>
       <Button isSelected={currentTool === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>swapTool(toolBrush)}></Button>
+      <Button isSelected={currentTool === toolSpray} kind="ghost" size="small" icon={SprayPaint} iconDescription="spray" tooltipPosition="right" on:click={()=>swapTool(toolSpray)}></Button>
       <Button isSelected={currentTool === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>swapTool(toolPicker)}></Button>
       <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
       <Button isSelected={currentTool === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>swapTool(toolFill)}></Button>
@@ -282,6 +286,7 @@
         <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>swapTool(toolFill)} />
         <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>swapTool(toolPicker)} />
         <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>swapTool(toolErase)} />
+        <Shortcut global cmd='erase' keys={['p']} on:trigger={()=>swapTool(toolSpray)} />
         <Shortcut global cmd='copy' keys={['ctrl+c']} on:trigger={()=>engageCopy()} />
         <Shortcut global cmd='cut' keys={['ctrl+x']} on:trigger={()=>engageDelete(true)} />
         <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>engageDelete(false)} />
@@ -293,6 +298,9 @@
         {#if currentTool === toolBrush || currentTool === toolErase}
           <BrushSize bind:brushSize bind:brushType/>
           <NumberInput size="sm" min={1} max={100} step={1} bind:value={brushSize}/>
+        {:else if currentTool === toolSpray}
+          radius:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={sprayRadius}/>
+          density:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={sprayDensity}/>
         {/if}
       </menu>
       <Tabs bind:selected={focusedFileIndex}>
@@ -320,6 +328,8 @@
                 bind:currentTool={currentTool}
                 brushSize={brushSize}
                 brushType={brushType}
+                sprayDensity={sprayDensity}
+                sprayRadius={sprayRadius}
                 showCheckerboard={showCheckerboard}
                 checkerboardSize={checkerboardSize}
                 checkerboardColor1={checkerboardColor1}

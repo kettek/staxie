@@ -4,7 +4,7 @@
   import type { data } from '../../wailsjs/go/models.ts'
   import type { LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type BrushType, type Tool, SelectionTool } from '../types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type BrushType, type Tool, SelectionTool, SprayTool } from '../types/tools'
   import { Button, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte';
 
@@ -46,6 +46,8 @@
   export let secondaryColorIndex: number
   export let brushSize: number
   export let brushType: BrushType
+  export let sprayRadius: number
+  export let sprayDensity: number
 
   let rootCanvas: HTMLCanvasElement
   let overlayCanvas: HTMLCanvasElement = document.createElement('canvas')
@@ -314,6 +316,8 @@
           currentTool.pointerDown({file, brushSize, brushType, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof EraserTool) {
           currentTool.pointerDown({file, brushSize, brushType}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+        } else if (currentTool instanceof SprayTool) {
+          currentTool.pointerDown({file, radius: sprayRadius, density: sprayDensity, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof FillTool) {
           currentTool.pointerDown({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof PickerTool) {
@@ -377,6 +381,8 @@
             currentTool.pointerMove({file, brushSize, brushType, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof EraserTool) {
             currentTool.pointerMove({file, brushSize, brushType}, {x: mousePixelX, y: mousePixelY, id: 0 })
+          } else if (currentTool instanceof SprayTool) {
+            currentTool.pointerMove({file, radius: sprayRadius, density: sprayDensity, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
           } else if (currentTool instanceof FillTool) {
             currentTool.pointerMove({file, colorIndex: primaryColorIndex}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof PickerTool) {

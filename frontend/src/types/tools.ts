@@ -1,6 +1,6 @@
 import { PixelPlaceUndoable, type LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from "./file"
 import { Preview } from "./preview"
-import { FilledCircle, FilledSquare, type PixelPosition } from "./shapes"
+import { FilledCircle, FilledSquare, RandomSpray, type PixelPosition } from "./shapes"
 
 export interface ToolContext {
   file: LoadedFile
@@ -26,6 +26,12 @@ export interface Tool {
 export interface BrushToolContext {
   brushSize: number
   brushType: BrushType
+  colorIndex: number
+}
+
+export interface SprayToolContext {
+  radius: number
+  density: number
   colorIndex: number
 }
 
@@ -139,6 +145,50 @@ export class EraserTool extends BrushTool {
   }
   pointerMove(ctx: ToolContext & EraserToolContext, ptr: Pointer) {
     super.pointerMove({...ctx, colorIndex: 0}, ptr)
+  }
+}
+
+export class SprayTool implements Tool {
+  private active: boolean
+  private lastX: number
+  private lastY: number
+
+  isActive(): boolean {
+    return this.active
+  }
+
+  pointerDown(ctx: ToolContext & SprayToolContext, ptr: Pointer) {
+    this.active = true
+    this.lastX = ptr.x
+    this.lastY = ptr.y
+    ctx.file.capture()
+    let pixels = RandomSpray(ptr.x, ptr.y, ctx.radius, ctx.density, ctx.colorIndex)
+    pixels = pixels.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
+    ctx.file.push(new PixelsPlaceUndoable(pixels))
+  }
+  pointerMove(ctx: ToolContext & SprayToolContext, ptr: Pointer) {
+    let dx = this.lastX - ptr.x
+    let dy = this.lastY - ptr.y
+    this.lastX = ptr.x
+    this.lastY = ptr.y
+
+    let angle = Math.atan2(dy, dx)
+    let dist = Math.sqrt(dx*dx + dy*dy)
+    let steps = Math.ceil(dist)
+    for (let i = 0; i < steps; i++) {
+      let x = Math.floor(this.lastX + Math.cos(angle) * i)
+      let y = Math.floor(this.lastY + Math.sin(angle) * i)
+
+      if (x < 0 || y < 0 || x >= ctx.file.canvas.width || y >= ctx.file.canvas.height) continue
+
+      let pixels = RandomSpray(x, y, ctx.radius, ctx.density, ctx.colorIndex)
+      pixels = pixels.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
+      ctx.file.push(new PixelsPlaceUndoable(pixels))
+    }
+  }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {
+    ctx.file.release()
+    this.active = false
   }
 }
 
