@@ -19,15 +19,17 @@
   export let open: boolean = false
 
   $: {
-    canvas = new Canvas(width, height)
-    canvas.addNewPaletteColor(0, 0, 0, 0)
+    if (open) {
+      canvas = new Canvas(width, height)
+      canvas.addNewPaletteColor(0, 0, 0, 0)
+      canvas.isIndexed = indexed
+      file = data.StackistFileV1.createFrom({
+        width: width,
+        height: height,
+        groups: {}
+      })
+    }
   }
-  $: canvas.isIndexed = indexed
-  $: file = data.StackistFileV1.createFrom({
-    width: width,
-    height: height,
-    groups: {}
-  })
 
   onMount(() => {
     canvas = new Canvas(width, height)
