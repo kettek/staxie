@@ -278,7 +278,7 @@
         <Shortcut global cmd='move up' keys={['arrowup']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 0, y: -1, id: 0})} />
         <Shortcut global cmd='move down' keys={['arrowdown']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 0, y: 1, id: 0})} />
         <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>swapTool(toolBrush)} />
-        <Shortcut global cmd='brushToPicker' keys={['alt']} on:trigger={()=>currentTool===toolBrush?swapTool(toolPicker):null} on:release={()=>previousTool===toolBrush&&currentTool===toolPicker?swapTool(toolBrush):null} />
+        <Shortcut global cmd='brushToPicker' keys={['alt']} on:trigger={()=>(currentTool===toolBrush||currentTool===toolSpray)?swapTool(toolPicker):null} on:release={()=>(previousTool===toolBrush||previousTool===toolSpray)&&currentTool===toolPicker?swapTool(previousTool):null} />
         <Shortcut global cmd='previousPrimaryPaletteEntry' keys={['alt+wheelup']} on:trigger={()=>stepPalette(-1, true)}/>
         <Shortcut global cmd='nextPrimaryPaletteEntry' keys={['alt+wheeldown']} on:trigger={()=>stepPalette(1, true)}/>
         <Shortcut global cmd='previousSecondaryPaletteEntry' keys={['alt+shift+wheelup']} on:trigger={()=>stepPalette(-1, false)}/>
