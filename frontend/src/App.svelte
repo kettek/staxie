@@ -29,6 +29,7 @@
   import GridSettingsModal from './components/GridSettingsModal.svelte';
   import ThemeSettingsModal from './components/ThemeSettingsModal.svelte';
   import BackgroundSettingsModal from './components/BackgroundSettingsModal.svelte';
+  import New from './sections/New.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -80,6 +81,7 @@
   }
   
   let showImport: boolean = false
+  let showNew: boolean = false
   let importValid: boolean = false
   let importFile: data.StackistFileV1 = null
   let importFilepath: string = ''
@@ -142,8 +144,19 @@
     if (importValid) {
       files = [...files, new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importFile})]
       focusedFileIndex = files.length - 1
+      importCanvas = null
+      importFile = null
     }
     showImport = false
+  }
+
+  function engageNew() {
+    files = [...files, new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importFile})]
+    focusedFileIndex = files.length - 1
+    importCanvas = null
+    importFile = null
+
+    showNew = false
   }
   
   function engageCopy() {
@@ -208,7 +221,7 @@
   <menu class="mainMenu">
     <OverflowMenu size="sm">
       <div slot="menu">File</div>
-      <OverflowMenuItem text="New"/>
+      <OverflowMenuItem text="New..." on:click={() => showNew = true}/>
       <OverflowMenuItem text="Open..."/>
       <OverflowMenuItem text="Import from PNG..." on:click={() => showImport = true}/>
       <OverflowMenuItem text="Save"/>
@@ -378,6 +391,9 @@
     bind:filepath={importFilepath}
     bind:canvas={importCanvas}
   />
+</ComposedModal>
+<ComposedModal bind:open={showNew} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
+  <New bind:open={showNew} bind:canvas={importCanvas} bind:file={importFile} />
 </ComposedModal>
 
 <style>
