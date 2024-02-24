@@ -139,12 +139,6 @@
     ctx.drawImage(file.canvas.canvas, offsetX, offsetY)
     ctx.restore()
 
-    // Draw our selection overlay.
-    if (file.selection.active) {
-      ctx.imageSmoothingEnabled = false
-      ctx.drawImage(file.selection.marchingCanvas, offsetX*zoom, offsetY*zoom)
-    }
-
     // FIXME: Reorganize overlay drawing to have two types: regular composition, such as this pixel brush preview, and difference composition for cursors and bounding boxes.
     // Draw brush preview.
     if (currentTool instanceof BrushTool) {
@@ -201,6 +195,12 @@
         ctx.lineTo(offsetX*zoom+file.canvas.width*zoom, offsetY*zoom+y*zoom)
       }
       ctx.stroke()
+    }
+
+    // Draw our selection overlay.
+    if (file.selection.active) {
+      ctx.imageSmoothingEnabled = false
+      ctx.drawImage(file.selection.marchingCanvas, offsetX*zoom, offsetY*zoom)
     }
 
     // Draw our overlay with difference composition so visibility is better.
