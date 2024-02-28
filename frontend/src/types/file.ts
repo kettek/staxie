@@ -237,9 +237,40 @@ export class AddSwatchUndoable implements Undoable<LoadedFile> {
     file.canvas.addNewPaletteColor(this.red, this.green, this.blue, this.alpha)
   }
   unapply(file: LoadedFile) {
-    file.canvas.removePaletteColor(-1)
+   file.canvas.removePaletteIndex(-1)
   }
 }
+
+// TODO
+/*export class RemoveSwatchUndoable implements Undoable<LoadedFile> {
+  private index: number
+  private replaceIndex: number
+  
+  private oldRed: number
+  private oldGreen: number
+  private oldBlue: number
+  private oldAlpha: number
+
+  constructor(index: number, replaceIndex: number) {
+    this.index = index
+    this.replaceIndex = replaceIndex
+  }
+  apply(file: LoadedFile) {
+    let r = file.canvas.palette[this.index] & 0xFF
+    let g = (file.canvas.palette[this.index] >> 8) & 0xFF
+    let b = (file.canvas.palette[this.index] >> 16) & 0xFF
+    let a = (file.canvas.palette[this.index] >> 24) & 0xFF
+    this.oldRed = r
+    this.oldGreen = g
+    this.oldBlue = b
+    this.oldAlpha = a
+
+    file.canvas.removePaletteIndex(this.index, this.replaceIndex)
+  }
+  unapply(file: LoadedFile) {
+    file.canvas.insertPaletteColor(this.index, this.oldRed, this.oldGreen, this.oldBlue, this.oldAlpha)
+  }
+}*/
 
 export class SwapSwatchUndoable implements Undoable<LoadedFile> {
   private index1: number

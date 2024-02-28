@@ -3,6 +3,8 @@
   import { ReplaceSwatchUndoable, type LoadedFile, AddSwatchUndoable, MoveSwatchUndoable } from '../types/file'
   import { createEventDispatcher } from 'svelte'
   import type { Undoable } from '../types/undo'
+  import { ContextMenu, ContextMenuOption, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
+  import DeletePaletteEntryModal from '../components/DeletePaletteEntryModal.svelte'
 
   export let file: LoadedFile
   let lastFile: LoadedFile
@@ -47,6 +49,9 @@
   }
   
   function paletteClick(event: MouseEvent) {
+    if (event.button === 2) {
+      return
+    }
     const target = event.target as HTMLSpanElement
     const index = parseInt(target.getAttribute('x-index') || '0')
     if (event.shiftKey) {
@@ -124,6 +129,19 @@
       }
     }
   }
+  
+  let showDeleteDialog: boolean = false
+  let targetIndex: number = -1
+  function onContextMenu(e: CustomEvent) {
+    targetIndex = parseInt((e.detail as HTMLSpanElement).getAttribute('x-index') || '-1')
+  }
+  function showDeleteSwatchDialog(e: CustomEvent) {
+    showDeleteDialog = true
+  }
+  
+  // These are entry refs for sharing the ContextMenu.
+  let _refs = []
+  $: refs = _refs.filter(Boolean)
 </script>
 
 <main on:wheel={handleWheel}>
@@ -136,13 +154,17 @@
       </span>
     {/if}
     {#if swatchIndex !== draggingIndex}
-      <span on:click={paletteClick} x-index={swatchIndex} class='entry{swatchIndex===primaryColorIndex?' primary':''}{swatchIndex===secondaryColorIndex?' secondary':''}{swatchIndex===draggingIndex?' hide':''}' use:swatchDrag>
+      <span bind:this={_refs[swatchIndex]} on:click={paletteClick} x-index={swatchIndex} class='entry{swatchIndex===primaryColorIndex?' primary':''}{swatchIndex===secondaryColorIndex?' secondary':''}{swatchIndex===draggingIndex?' hide':''}' use:swatchDrag on:contextmenu|preventDefault>
         <span class="checkerboard"></span>
         <span style="background-color: rgba({swatch&0xFF},{(swatch>>8)&0xFF},{(swatch>>16)&0xFF},{((swatch>>24)&0xFF)/255})" class="color"></span>
         <span class='label'>{swatchIndex}</span>
       </span>
     {/if}
   {/each}
+  <ContextMenu target={_refs} on:open={onContextMenu}>
+    <ContextMenuOption labelText="Delete..." on:click={showDeleteSwatchDialog} kind='danger' />
+  </ContextMenu>
+  <DeletePaletteEntryModal bind:open={showDeleteDialog} paletteIndex={targetIndex} file={file}/>
 </main>
 
 <style>

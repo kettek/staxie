@@ -151,7 +151,18 @@ export class Canvas {
   addNewPaletteColor(r: number, g: number, b: number, a: number) {
     this.palette = new Uint32Array([...this.palette, new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]])
   }
-  removePaletteColor(index: number) {
+  insertPaletteColor(index: number, r: number, g: number, b: number, a: number) {
+    let newPalette = new Uint32Array(this.palette.length + 1)
+    for (let i = 0; i < index; i++) {
+      newPalette[i] = this.palette[i]
+    }
+    newPalette[index] = new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]
+    for (let i = index; i < this.palette.length; i++) {
+      newPalette[i + 1] = this.palette[i]
+    }
+    this.palette = newPalette
+  }
+  removePaletteIndex(index: number) {
     if (index < 0) {
       index = this.palette.length - index
     }
