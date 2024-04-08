@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component shows swatches of a given palette and provides controls for selecting, moving, and deleting swatches.
+-->
 <script lang='ts'>
   import type { Color } from '../types/palette'
   import { ReplaceSwatchUndoable, type LoadedFile, AddSwatchUndoable, MoveSwatchUndoable } from '../types/file'

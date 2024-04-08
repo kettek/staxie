@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component provides a draggable floating panel that contains arbitrary content.
+-->
 <script lang='ts'>
   import {
     ModalHeader,

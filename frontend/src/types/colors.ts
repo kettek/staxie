@@ -1,3 +1,4 @@
+// floatsToBytes converts 0-1 to a 0-255 range.
 function floatsToBytes(colors: number[]): number[] {
   if (colors.length <= 0) return colors
   if (colors[0] <= 1.0) {
@@ -8,6 +9,7 @@ function floatsToBytes(colors: number[]): number[] {
   return colors
 }
 
+// bytesToFloats converts 0-255 to a 0-1 range.
 function bytesToFloats(colors: number[]): number[] {
   if (colors.length <= 0) return colors
   if (colors[0] > 1.0) {
@@ -18,6 +20,7 @@ function bytesToFloats(colors: number[]): number[] {
   return colors
 }
 
+// HSV2RGB converts HSV to RGB.
 export function HSV2RGB(hsv: number[]): number[] {
   let hh: number, p: number, q: number, t: number, ff: number, i: number
   let rgb: number[] = []
@@ -75,6 +78,7 @@ export function HSV2RGB(hsv: number[]): number[] {
   return floatsToBytes(rgb)
 }
 
+// RGB2HSV converts RGB to HSV.
 export function RGB2HSV(rgb: number[]): number[] {
   rgb = bytesToFloats(rgb)
 

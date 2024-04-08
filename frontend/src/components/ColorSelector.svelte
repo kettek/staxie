@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component provides HSV controls for adjusting RGBA input values.
+-->
 <script lang='ts'>
   import { HSV2RGB, RGB2HSV } from "../types/colors"
 

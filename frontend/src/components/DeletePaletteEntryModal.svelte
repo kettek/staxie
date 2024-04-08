@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component provides a modal for deleting a swatch from the palette.
+-->
 <script lang='ts'>
   import { Checkbox, Column, Dropdown, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte";
   import type { LoadedFile } from "../types/file"

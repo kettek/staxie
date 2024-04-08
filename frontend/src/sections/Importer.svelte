@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component provides importing an indexed or RGBA PNG file with options for how to interpret columns and rows as groups and animations.
+-->
 <script lang='ts'>
   import { GetFilePath, OpenFileBytes } from '../../wailsjs/go/main/App.js'
   import { data } from '../../wailsjs/go/models.js'

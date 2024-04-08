@@ -1,3 +1,4 @@
+// UndoableStack provides an undo/redo system.
 export class UndoableStack<T> {
   private target: T;
   private stack: Undoable<T>[] = [];
@@ -97,11 +98,13 @@ export class UndoableStack<T> {
   }
 }
 
+// Undoable is an interface for undoable actions stored in the stack.
 export interface Undoable<T> {
   apply(t: T): void;
   unapply(t: T): void;
 }
 
+// UndoableGroup is a group of undoable actions. This is used to group multiple actions, such as drawing with a pen, into one undoable action.
 export class UndoableGroup<T> {
   private items: Undoable<T>[];
 

@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component shows a given color swatch/index and provides controls for adding and replacing swatches within the palette.
+-->
 <script lang='ts'>
   import { Button } from "carbon-components-svelte";
   import { AddLarge, ColorSwitch } from "carbon-icons-svelte";

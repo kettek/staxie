@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component provides a visualization of the current brush size and shape and controls for changing them.
+-->
 <script lang='ts'>
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte";
   import { FilledCircle, FilledSquare, type PixelPosition } from "../types/shapes"

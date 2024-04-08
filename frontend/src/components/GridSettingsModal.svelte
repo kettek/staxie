@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component provides a modal for adjusting the grid settings.
+-->
 <script lang='ts'>
   import { Column, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte";
 

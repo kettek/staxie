@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component is a full 2D pixel editor.
+-->
 <script lang='ts'>
   import { onMount } from 'svelte'
 

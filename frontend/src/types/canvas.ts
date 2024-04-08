@@ -1,5 +1,10 @@
 import type { PixelPosition } from "./shapes"
 
+/**
+ * @type {Canvas}
+ * 
+ * Canvas provides a way to store and manipulate 2D pixel data.
+ */
 export class Canvas {
   width: number
   height: number
@@ -36,21 +41,27 @@ export class Canvas {
     return canvas
   }
   
+  // clear sets all pixels to 0.
   clear() {
     for (let i = 0; i < this.pixels.length; i++) {
       this.pixels[i] = 0
     }
   }
   
+  // refreshCanvas redraws the canvas with the current pixel data.
   refreshCanvas() {
     this.canvas.width = this.width
     this.canvas.height = this.height
     let ctx = this.canvas.getContext('2d')
     ctx.putImageData(this.imageData, 0, 0)
   }
+
+  // setPalette sets the palette to the provided value.
   setPalette(palette: Uint32Array) {
     this.palette = palette
   }
+  
+  // getPaletteAsRGBA returns the RGBA values of the palette color at the provided index.
   getPaletteAsRGBA(index: number): { r: number, g: number, b: number, a: number } {
     if (index < 0 || index >= this.palette.length) {
       return { r: 0, g: 0, b: 0, a: 0 }
@@ -63,12 +74,16 @@ export class Canvas {
       a: (color >> 24) & 0xFF
     }
   }
+  
+  // setPaletteFromUint8Array sets the palette to the provided value.
   setPaletteFromUint8Array(palette: Uint8Array) {
     this.palette = new Uint32Array(palette.length / 4)
     for (let i = 0; i < palette.length; i += 4) {
       this.palette[i / 4] = new Uint32Array(palette.buffer.slice(i, i + 4))[0]
     }
   }
+  
+  // setPixelsFromUint8Array sets the pixel data to the provided value.
   setPixelsFromUint8Array(pixels: Uint8Array) {
     this.pixels = pixels
     this.imageData = new ImageData(this.width, this.height)
@@ -80,12 +95,16 @@ export class Canvas {
       this.imageData.data[i * 4 + 3] = (color >> 24) & 0xFF
     }
   }
+  
+  // getPixel gets the index at the provided pixel position.
   getPixel(x: number, y: number): number {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
       return -1
     }
     return this.pixels[y * this.width + x]
   }
+  
+  // setPixel sets the index at the provided pixel position.
   setPixel(x: number, y: number, index: number) {
     this.pixels[y * this.width + x] = index
     let color = this.palette[index]
@@ -98,6 +117,8 @@ export class Canvas {
     this.imageData.data[(y * this.width + x) * 4 + 2] = b
     this.imageData.data[(y * this.width + x) * 4 + 3] = a
   }
+  
+  // setPixelRGBA sets the given pixel position to the provided RGBA values. If the RGBA values do not exist in the palette, they are automatically added.
   setPixelRGBA(x: number, y: number, r: number, g: number, b: number, a: number) {
     this.pixels[y * this.width + x] = this.addPaletteColor(r, g, b, a)
     this.imageData.data[(y * this.width + x) * 4 + 0] = r
@@ -105,6 +126,8 @@ export class Canvas {
     this.imageData.data[(y * this.width + x) * 4 + 2] = b
     this.imageData.data[(y * this.width + x) * 4 + 3] = a
   }
+  
+  // addPaletteColor adds the provided RGBA values to the palette if it does not already exist, and returns the index of the color in the palette.
   addPaletteColor(r: number, g: number, b: number, a: number): number {
     // Check if the color is already in the palette
     for (let i = 0; i < this.palette.length; i++) {
@@ -124,6 +147,8 @@ export class Canvas {
 
     return index
   }
+  
+  // getClosestPaletteColor returns the RGBA and index values of the closest color in the palette to the provided RGBA values.
   getClosestPaletteColor(r: number, g: number, b: number, a: number): {r: number, g: number, b: number, a: number, index: number} {
     let similarityMap = this.palette.map((color) => {
       let r2 = color & 0xFF
@@ -148,9 +173,13 @@ export class Canvas {
       index: closestIndex
     }
   }
+  
+  // addNewPaletteColor adds the provided RGBA values to the palette.
   addNewPaletteColor(r: number, g: number, b: number, a: number) {
     this.palette = new Uint32Array([...this.palette, new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]])
   }
+  
+  // insertPaletteColor inserts the provided RGBA values into the palette at the provided index.
   insertPaletteColor(index: number, r: number, g: number, b: number, a: number) {
     let newPalette = new Uint32Array(this.palette.length + 1)
     for (let i = 0; i < index; i++) {
@@ -162,6 +191,8 @@ export class Canvas {
     }
     this.palette = newPalette
   }
+  
+  // removePaletteIndex removes the palette entry at the provided index. This also updates the pixel data to reflect the change.
   removePaletteIndex(index: number) {
     if (index < 0) {
       index = this.palette.length - index
@@ -182,9 +213,13 @@ export class Canvas {
       }
     }
   }
+  
+  // replacePaletteColor replaces the palette entry at the provided index with the provided RGBA values.
   replacePaletteColor(index: number, r: number, g: number, b: number, a: number) {
     this.palette[index] = new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]
   }
+  
+  // hasPaletteColor returns whether the palette contains the provided RGBA values.
   hasPaletteColor(r: number, g: number, b: number, a: number): boolean {
     for (let color of this.palette) {
       if ((color & 0xFF) === r && ((color >> 8) & 0xFF) === g && ((color >> 16) & 0xFF) === b && ((color >> 24) & 0xFF) === a) {
@@ -193,11 +228,15 @@ export class Canvas {
     }
     return false
   }
+  
+  // swapPaletteColors swaps the palette entries at the provided indices.
   swapPaletteColors(index1: number, index2: number) {
     let temp = this.palette[index1]
     this.palette[index1] = this.palette[index2]
     this.palette[index2] = temp
   }
+  
+  // movePaletteColor moves the palette entry at the provided index to the new index.
   movePaletteColor(from: number, to: number) {
     let temp = this.palette[from]
     if (from < to) {
@@ -211,9 +250,13 @@ export class Canvas {
     }
     this.palette[to] = temp
   }
+  
+  // setFakePalette updates the fake palette to the provided value.
   setFakePalette(palette: Uint32Array | undefined) {
     this.fakePalette = palette
   }
+  
+  // refreshImageData updates the ImageData with the current pixel data.
   refreshImageData() {
     let palette = this.palette
     if (this.fakePalette) {
@@ -231,7 +274,7 @@ export class Canvas {
     }
   }
   
-  // Returns the an ImageData containing the canvas contents clipped to the provided pixel mask.
+  // getImageDataFromMask the ImageData containing the canvas contents clipped to the provided pixel mask.
   getImageDataFromMask(mask: PixelPosition[]): {imageData: ImageData, x: number, y: number, w: number, h: number} {
     // Get minimum x position from mask.
     let minX = 9999999

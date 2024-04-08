@@ -16,6 +16,7 @@ interface Pointer {
 
 export type BrushType = "circle" | "square"
 
+// Tool is an interface that receives pointer events and can act upon a ToolContext (which contains data such as the current file).
 export interface Tool {
   isActive(): boolean
   pointerDown(ctx: ToolContext, ptr: Pointer): void
@@ -23,34 +24,41 @@ export interface Tool {
   pointerUp(ctx: ToolContext, ptr: Pointer): void
 }
 
+// BrushToolContext provides context specific to the brush tool.
 export interface BrushToolContext {
   brushSize: number
   brushType: BrushType
   colorIndex: number
 }
 
+// SprayToolContext provides context specific to the spray tool.
 export interface SprayToolContext {
   radius: number
   density: number
   colorIndex: number
 }
 
+// EraserToolContext provides context specific to the eraser tool.
 export interface EraserToolContext {
   brushSize: number
   brushType: BrushType
 }
 
+// FloodToolContext provides context specific to the flood tool.
 export interface FloodToolContext {
   colorIndex: number
 }
 
+// SelectionToolContext provides context specific to the selection tool.
 export interface SelectionToolContext {
 }
 
+// PickerToolContext provides context specific to the picker tool.
 export interface PickerToolContext {
   setColorIndex(index: number): void
 }
 
+// BrushTool is a tool that allows the user to draw with a brush.
 export class BrushTool implements Tool {
   private lastX: number
   private lastY: number
@@ -139,6 +147,7 @@ export class BrushTool implements Tool {
   }
 }
 
+// EraserTool is basically the BrushTool, but with the color index set to 0 (meaning a transparent pixel).
 export class EraserTool extends BrushTool {
   pointerDown(ctx: ToolContext & EraserToolContext, ptr: Pointer) {
     super.pointerDown({...ctx, colorIndex: 0}, ptr)
@@ -148,6 +157,7 @@ export class EraserTool extends BrushTool {
   }
 }
 
+// SprayTool implements a spray can tool.
 export class SprayTool implements Tool {
   private active: boolean
   private lastX: number
@@ -192,6 +202,7 @@ export class SprayTool implements Tool {
   }
 }
 
+// FillTool implements a flood fill tool.
 export class FillTool implements Tool {
   private active: boolean
   isActive(): boolean {
@@ -239,6 +250,7 @@ export class FillTool implements Tool {
   }
 }
 
+// PickerTool allows picking the color index from the canvas.
 export class PickerTool implements Tool {
   private active: boolean
   isActive(): boolean {
@@ -263,6 +275,7 @@ export class PickerTool implements Tool {
   }
 }
 
+// SelectionTool allows selecting an area of the canvas.
 export class SelectionTool implements Tool {
   private active: boolean
   private startX: number
@@ -332,6 +345,7 @@ export class SelectionTool implements Tool {
   }
 }
 
+// MagicWandTool implements a magic wand tool.
 export class MagicWandTool implements Tool {
   private active: boolean
 
@@ -385,6 +399,7 @@ export class MagicWandTool implements Tool {
   }
 }
 
+// MoveTool implements a tool to move pixels within a selection.
 export class MoveTool implements Tool {
   private active: boolean
   private startX: number

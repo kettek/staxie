@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component provides a sprite stack view of a file.
+-->
 <script lang='ts'>
   import { Grid, Row, Column, Checkbox, Slider } from "carbon-components-svelte"
   import type { LoadedFile } from "src/types/file"

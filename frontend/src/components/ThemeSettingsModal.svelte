@@ -1,3 +1,8 @@
+<!--
+  @component
+  
+  This component is a modal that provides settings for changing the theme.
+-->
 <script lang='ts'>
   import { Column, Dropdown, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte";
 

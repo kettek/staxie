@@ -1,5 +1,6 @@
 import type { PixelPosition } from "./shapes"
 
+// SelectionArea is basically a canvas and pixel mask that is used to represent a selection area. It provides marching ants to visualize the selection.
 export class SelectionArea {
   public marchingCanvas: HTMLCanvasElement
   private marchStep: number = 0

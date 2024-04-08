@@ -1,3 +1,8 @@
+<!--
+  @component
+
+  This component is a modal settings dialog for changing the background color.
+-->
 <script lang='ts'>
   import { Column, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte";
 

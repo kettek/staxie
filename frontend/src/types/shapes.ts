@@ -1,9 +1,11 @@
+// PixelPosition represents a coordinate and index.
 export interface PixelPosition {
   x: number
   y: number
   index: number
 }
 
+// FilledCircle returns an array of PixelPositions that correspond to a filled circle.
 export function FilledCircle(x: number, y: number, radius: number, index: number): PixelPosition[] {
   let pixels: PixelPosition[] = []
 
@@ -18,6 +20,7 @@ export function FilledCircle(x: number, y: number, radius: number, index: number
   return pixels
 }
 
+// FilledSquare returns an array of PixelPositions that correspond to a filled square.
 export function FilledSquare(x: number, y: number, size: number, index: number): PixelPosition[] {
   let pixels: PixelPosition[] = []
   
@@ -32,6 +35,7 @@ export function FilledSquare(x: number, y: number, size: number, index: number):
   return pixels
 }
 
+// RandomSpray returns an array of PixelPositions that correspond to a random spray of pixels.
 export function RandomSpray(x: number, y: number, radius: number, density: number, index: number): PixelPosition[] {
   let pixels: PixelPosition[] = []
 
