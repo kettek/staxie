@@ -301,12 +301,15 @@
     let buttons: Set<number> = new Set()
     let x: number = 0
     let y: number = 0
+    let entered: boolean = false
 
     node.addEventListener('mouseenter', (e: MouseEvent) => {
+      entered = true
       // hide cursor
       document.body.style.cursor = 'none'
     })
     node.addEventListener('mouseleave', (e: MouseEvent) => {
+      entered = false
       // show cursor
       document.body.style.cursor = 'default'
     })
@@ -364,6 +367,7 @@
 
     window.addEventListener('mousemove', (e: MouseEvent) => {
       if (!canvas) return
+      if (!entered && buttons.size === 0) return
       // Get mouse position relative to canvas.
       {
         let rect = canvas.getBoundingClientRect()
