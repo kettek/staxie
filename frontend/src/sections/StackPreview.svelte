@@ -14,6 +14,9 @@
   let rotation: number = 0
   let zoom: number = 1
   let layerDistance: number = 1
+
+  let automaticShading: boolean = true
+  let minShade: number = 0.5
   
   export let baseSizeOutlineColor: string = '#00FFFF77'
   export let showBaseSizeOutline: boolean = true
@@ -74,6 +77,13 @@
                 ctx.translate(x, y)
                 ctx.scale(zoom, zoom)
                 ctx.rotate(rotation * Math.PI / 180)
+                
+                if (automaticShading) {
+                  // FIXME: Adjust this math to use configurable min/max values.
+                  let shade = 128 + Math.min(255, 128 * (layerIndex / frame.layers.length))
+                  ctx.filter = `brightness(${minShade + (1-minShade) * (shade/255)})`
+                }
+
                 ctx.drawImage(file.canvas.canvas, layer.x, layer.y, file.data.width, file.data.height, -file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
                 ctx.restore()
                 y -= 1 * layerDistance * zoom
@@ -114,6 +124,7 @@
       <Slider labelText="Global Zoom" min={1} max={10} step={1} bind:value={zoom} fullWidth></Slider>
       <Slider labelText="Global Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
       <Slider labelText="Global Layer Distance" min={0} max={2} step={0.1} bind:value={layerDistance} fullWidth></Slider>
+      <Checkbox bind:checked={automaticShading} labelText="Automatic Shading"></Checkbox>
     </Column>
   </Row>
 </Grid>
