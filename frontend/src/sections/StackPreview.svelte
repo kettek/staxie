@@ -15,6 +15,11 @@
   let zoom: number = 1
   let layerDistance: number = 1
   
+  export let baseSizeOutlineColor: string = '#00FFFF77'
+  export let showBaseSizeOutline: boolean = true
+  export let sizeOutlineColor: string = '#FFFF0077'
+  export let showSizeOutline: boolean = true
+  
   let canvas: HTMLCanvasElement
   function draw() {
     if (!canvas) return
@@ -42,7 +47,29 @@
         for (let [groupName, group] of Object.entries(file.data.groups)) {
           for (let [animationName, animation] of Object.entries(group.animations)) {
             for (let frame of animation.frames) {
-              for (let layer of frame.layers) {
+              for (let layerIndex = 0; layerIndex < frame.layers.length; layerIndex++) {
+                let layer = frame.layers[layerIndex]
+                if (layerIndex === 0) {
+                  if (showBaseSizeOutline) {
+                    ctx.save()
+                    ctx.translate(x, y)
+                    ctx.scale(zoom, zoom)
+                    ctx.strokeStyle = baseSizeOutlineColor
+                    ctx.lineWidth = 1
+                    ctx.strokeRect(-file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
+                    ctx.restore()
+                  }
+                  if (showSizeOutline) {
+                    ctx.save()
+                    ctx.translate(x, y)
+                    ctx.scale(zoom, zoom)
+                    ctx.rotate(rotation * Math.PI / 180)
+                    ctx.strokeStyle = sizeOutlineColor
+                    ctx.lineWidth = 1
+                    ctx.strokeRect(-file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
+                    ctx.restore()
+                  }
+                }
                 ctx.save()
                 ctx.translate(x, y)
                 ctx.scale(zoom, zoom)

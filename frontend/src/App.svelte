@@ -30,6 +30,7 @@
   import ThemeSettingsModal from './components/ThemeSettingsModal.svelte';
   import BackgroundSettingsModal from './components/BackgroundSettingsModal.svelte';
   import New from './sections/New.svelte';
+  import PreviewSettingsModal from './components/PreviewSettingsModal.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -88,6 +89,7 @@
   let importCanvas: Canvas = null
   
   let showPreview: boolean = false
+  let showPreviewSettings: boolean = false
   let showGridSettings: boolean = false
   let showCheckerboardSettings: boolean = false
   let showThemeSettings: boolean = false
@@ -104,6 +106,11 @@
   let checkerboardSize: number = 8
   let checkerboardColor1: string = '#888888'
   let checkerboardColor2: string = '#444444'
+  
+  let previewShowBaseSizeOutline: boolean = true
+  let previewBaseSizeOutlineColor: string = '#00FFFF77'
+  let previewShowSizeOutline: boolean = true
+  let previewSizeOutlineColor: string = '#FFFF0077'
 
   let backgroundColor: string = '#111111'
   
@@ -257,6 +264,7 @@
     <OverflowMenu size="sm">
       <div slot="menu">Windows</div>
       <OverflowMenuItem text="Preview" on:click={() => showPreview = true}/>
+      <OverflowMenuItem text="Preview Settings..." on:click={() => showPreviewSettings = true}/>
     </OverflowMenu>
   </menu>
   <section class='content'>
@@ -370,8 +378,23 @@
         noPadding
         bind:open={showPreview}
       >
-        <StackPreview files={files} />
+        <StackPreview
+          files={files}
+          showBaseSizeOutline={previewShowBaseSizeOutline}
+          baseSizeOutlineColor={previewBaseSizeOutlineColor}
+          showSizeOutline={previewShowSizeOutline}
+          sizeOutlineColor={previewSizeOutlineColor}
+        />
       </FloatingPanel>
+    {/if}
+    {#if showPreviewSettings}
+      <PreviewSettingsModal
+        bind:open={showPreviewSettings}
+        bind:showBaseSizeOutline={previewShowBaseSizeOutline}
+        bind:baseSizeOutlineColor={previewBaseSizeOutlineColor}
+        bind:showSizeOutline={previewShowSizeOutline}
+        bind:sizeOutlineColor={previewSizeOutlineColor}
+      />
     {/if}
     {#if showGridSettings}
       <GridSettingsModal bind:open={showGridSettings} bind:majorSize={gridMajorSize} bind:minorSize={gridMinorSize} bind:majorColor={gridMajorColor} bind:minorColor={gridMinorColor} />
