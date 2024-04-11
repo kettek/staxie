@@ -58,7 +58,7 @@
                     ctx.translate(x, y)
                     ctx.scale(zoom, zoom)
                     ctx.strokeStyle = baseSizeOutlineColor
-                    ctx.lineWidth = 1
+                    ctx.lineWidth = 1 / zoom
                     ctx.strokeRect(-file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
                     ctx.restore()
                   }
@@ -68,7 +68,7 @@
                     ctx.scale(zoom, zoom)
                     ctx.rotate(rotation * Math.PI / 180)
                     ctx.strokeStyle = sizeOutlineColor
-                    ctx.lineWidth = 1
+                    ctx.lineWidth = 1 / zoom
                     ctx.strokeRect(-file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
                     ctx.restore()
                   }
