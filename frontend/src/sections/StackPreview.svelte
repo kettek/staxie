@@ -10,6 +10,14 @@
   
   export let files: LoadedFile[]
   let shownFiles: Record<string, boolean> = {}
+  let filePositions: Record<string, {x: number, y: number, z: number}> = {}
+  $: {
+    for (let file of files) {
+      if (shownFiles[file.title] && !filePositions[file.title]) {
+        filePositions[file.title] = {x: 0, y: 0, z: 0}
+      }
+    }
+  }
   
   let rotation: number = 0
   let zoom: number = 1
@@ -43,7 +51,8 @@
     
     let x = canvas.width/2
     let y = canvas.height/2
-    for (let file of files) {
+    let sortedFiles = files.filter(file => shownFiles[file.title]).sort((a, b) => filePositions[a.title].z - filePositions[b.title].z)
+    for (let file of sortedFiles) {
       if (shownFiles[file.title]) {
         // For now, just get the first frame of the first animation.
         let done = false
@@ -56,6 +65,7 @@
                   if (showBaseSizeOutline) {
                     ctx.save()
                     ctx.translate(x, y)
+                    ctx.translate(filePositions[file.title].x, filePositions[file.title].y)
                     ctx.scale(zoom, zoom)
                     ctx.strokeStyle = baseSizeOutlineColor
                     ctx.lineWidth = 1 / zoom
@@ -65,6 +75,7 @@
                   if (showSizeOutline) {
                     ctx.save()
                     ctx.translate(x, y)
+                    ctx.translate(filePositions[file.title].x, filePositions[file.title].y)
                     ctx.scale(zoom, zoom)
                     ctx.rotate(rotation * Math.PI / 180)
                     ctx.strokeStyle = sizeOutlineColor
@@ -75,6 +86,7 @@
                 }
                 ctx.save()
                 ctx.translate(x, y)
+                ctx.translate(filePositions[file.title].x, filePositions[file.title].y)
                 ctx.scale(zoom, zoom)
                 ctx.rotate(rotation * Math.PI / 180)
                 
@@ -93,12 +105,53 @@
             }
             if (done) break
           }
-          x += file.data.width
           y = canvas.height/2
           if (done) break
         }
       }
     }
+  }
+  
+  function hitsFile(x: number, y: number): string {
+    x *= zoom
+    y *= zoom
+    for (let file of files) {
+      let name = file.title
+      if (!shownFiles[name]) continue
+      let px = canvas.width/2
+      let py = canvas.height/2
+      px += filePositions[name].x
+      py += filePositions[name].y
+      px -= file.data.width/2
+      py -= file.data.height/2
+      px *= zoom
+      py *= zoom
+      if (x >= px && x <= px + file.data.width*zoom && y >= py && y <= py + file.data.height*zoom) {
+        return name
+      }
+    }
+    return ""
+  }
+  
+  function mousedown(e: MouseEvent) {
+    let file = hitsFile(e.offsetX, e.offsetY)
+    if (file) {
+      filePositions[file].z = Object.values(filePositions).reduce((acc, val) => Math.max(acc, val.z), 0) + 1
+    }
+
+    let mouseup = (e: MouseEvent) => {
+      window.removeEventListener('mouseup', mouseup)
+      window.removeEventListener('mousemove', mousemove)
+    }
+    let mousemove = (e: MouseEvent) => {
+      let file = hitsFile(e.offsetX, e.offsetY)
+      if (file) {
+        filePositions[file].x = e.offsetX - canvas.width/2
+        filePositions[file].y = e.offsetY - canvas.height/2
+      }
+    }
+    window.addEventListener('mouseup', mouseup)
+    window.addEventListener('mousemove', mousemove)
   }
   
   onMount(()=>{
@@ -120,7 +173,7 @@
       {/each}
     </Column>
     <Column>
-      <canvas bind:this={canvas}></canvas>
+      <canvas bind:this={canvas} on:mousedown={mousedown}></canvas>
       <Slider labelText="Global Zoom" min={1} max={10} step={1} bind:value={zoom} fullWidth></Slider>
       <Slider labelText="Global Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
       <Slider labelText="Global Layer Distance" min={0} max={2} step={0.1} bind:value={layerDistance} fullWidth></Slider>
