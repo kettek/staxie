@@ -84,7 +84,6 @@
     function stop(e: MouseEvent) {
       resizing = false
       dragging = false
-      node.style.cursor = 'auto'
     }
     function move(e: MouseEvent) {
       if (!dragging) return
