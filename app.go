@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"spriteStackist/pkg/data"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -73,4 +74,25 @@ func (a *App) OpenFileBytes(p string) ([]byte, error) {
 		return nil, err
 	}
 	return b, nil
+}
+
+func (a *App) SaveFilePath(p string) (string, error) {
+	file, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		DefaultDirectory: filepath.Dir(p),
+		DefaultFilename:  filepath.Base(p),
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: "pee enn gees",
+				Pattern:     "*.png",
+			},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+	return file, nil
+}
+
+func (a *App) SaveFileBytes(p string, b []byte) error {
+	return os.WriteFile(p, b, 0644)
 }

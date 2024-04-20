@@ -13,3 +13,7 @@ export function OpenFileBytes(arg1:string):Promise<Array<number>>;
 export function ReadBytes(arg1:string):Promise<Array<number>>;
 
 export function Save(arg1:string,arg2:data.StackistFileV1):Promise<void>;
+
+export function SaveFileBytes(arg1:string,arg2:Array<number>):Promise<void>;
+
+export function SaveFilePath(arg1:string):Promise<string>;

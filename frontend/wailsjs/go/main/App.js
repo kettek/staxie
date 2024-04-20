@@ -25,3 +25,11 @@ export function ReadBytes(arg1) {
 export function Save(arg1, arg2) {
   return window['go']['main']['App']['Save'](arg1, arg2);
 }
+
+export function SaveFileBytes(arg1, arg2) {
+  return window['go']['main']['App']['SaveFileBytes'](arg1, arg2);
+}
+
+export function SaveFilePath(arg1) {
+  return window['go']['main']['App']['SaveFilePath'](arg1);
+}

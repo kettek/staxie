@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { data } from '../wailsjs/go/models.js'
   import Editor2D from './sections/Editor2D.svelte'
-  import Importer from './sections/Importer.svelte';
+  import Importer from './sections/Importer.svelte'
+  import Exporter from './sections/Exporter.svelte'
   import PaletteSection from './sections/Palette.svelte'
   import FloatingPanel from './components/FloatingPanel.svelte'
   import { Palette, PaletteEntry, defaultPalette, type Color } from './types/palette'
@@ -31,6 +32,7 @@
   import BackgroundSettingsModal from './components/BackgroundSettingsModal.svelte';
   import New from './sections/New.svelte';
   import PreviewSettingsModal from './components/PreviewSettingsModal.svelte';
+  import { SaveFileBytes } from '../wailsjs/go/main/App.js'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -82,11 +84,15 @@
   }
   
   let showImport: boolean = false
+  let showExport: boolean = false
   let showNew: boolean = false
   let importValid: boolean = false
   let importFile: data.StackistFileV1 = null
   let importFilepath: string = ''
   let importCanvas: Canvas = null
+  
+  let exportPath: string = ''
+  let exportFormat: 'png' = 'png'
   
   let showPreview: boolean = false
   let showPreviewSettings: boolean = false
@@ -139,7 +145,13 @@
   let files: LoadedFile[] = []
   let focusedFileIndex: number = -1
   let focusedFile: LoadedFile = null
-  $: focusedFile = files[focusedFileIndex] ?? null
+  $: {
+    if (files[focusedFileIndex] && focusedFile !== files[focusedFileIndex]) {
+      exportPath = files[focusedFileIndex].filepath
+      console.log('set exportPath', exportPath)
+    }
+    focusedFile = files[focusedFileIndex] ?? null
+  }
   
   function selectFile(file: LoadedFile, index: number) {
     if (index < 0 || index >= files.length) return
@@ -155,6 +167,18 @@
       importFile = null
     }
     showImport = false
+  }
+  
+  async function engageExport() {
+    try {
+      let data = await focusedFile.canvas.toPNG()
+      
+      SaveFileBytes(exportPath, [...data])
+    } catch(e) {
+      alert(e)
+    }
+
+    showExport = false
   }
 
   function engageNew() {
@@ -235,6 +259,7 @@
       <OverflowMenuItem text="New..." on:click={() => showNew = true}/>
       <OverflowMenuItem text="Open..."/>
       <OverflowMenuItem text="Import from PNG..." on:click={() => showImport = true}/>
+      <OverflowMenuItem text="Export to PNG" disabled={focusedFile===null} on:click={() => showExport = true}/>
       <OverflowMenuItem text="Save"/>
       <OverflowMenuItem text="Save As..."/>
       <OverflowMenuItem hasDivider danger text="Quit" on:click={engageQuit}/>
@@ -420,6 +445,14 @@
     bind:canvas={importCanvas}
   />
 </ComposedModal>
+<ComposedModal bind:open={showExport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageExport}>
+  <Exporter
+    bind:open={showExport}
+    bind:path={exportPath}
+    bind:format={exportFormat}
+  />
+</ComposedModal>
+
 <ComposedModal bind:open={showNew} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
   <New bind:open={showNew} bind:canvas={importCanvas} bind:file={importFile} />
 </ComposedModal>
