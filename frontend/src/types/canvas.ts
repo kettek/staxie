@@ -1,6 +1,7 @@
 import type { PixelPosition } from "./shapes"
-import { unzlibSync, zlibSync } from 'fflate'
-import { crc32 } from 'easy-crc'
+import { zlibSync } from 'fflate'
+import * as crc32 from 'crc-32'
+import { Buffer } from 'buffer/'
 import { SaveFileBytes } from "../../wailsjs/go/main/App.js"
 
 /**
@@ -360,101 +361,98 @@ export class Canvas {
       })
     }
     
-    throw new Error('indexed export not yet implemented')
+    // Otherwise do some lazy indexed PNG generation. FIXME: This is ham-fisted and not the proper way to encode PNGs...
+    return new Promise((resolve, reject) => {
+      let out = Buffer.alloc(0)
 
-    // Otherwise do some lazy indexed PNG generation.
-    let out = Buffer.alloc(0)
-    
-    let buffer = Buffer.alloc(21)
-    let bufferOffset = 0
-    let chunkStart = 0
-    let chunkEnd = 0
-    
-    // Write header
-    buffer = Buffer.alloc(8)
-    bufferOffset = buffer.writeUInt8(0x89, bufferOffset)
-    bufferOffset = buffer.writeUInt8(0x50, bufferOffset)
-    bufferOffset = buffer.writeUInt8(0x4E, bufferOffset)
-    bufferOffset = buffer.writeUInt8(0x47, bufferOffset)
-    bufferOffset = buffer.writeUInt8(0x0D, bufferOffset)
-    bufferOffset = buffer.writeUInt8(0x0A, bufferOffset)
-    bufferOffset = buffer.writeUInt8(0x1A, bufferOffset)
-    bufferOffset = buffer.writeUInt8(0x0A, bufferOffset)
-    out = Buffer.concat([out, buffer])
-    
-    // Chunk o'clock (length, type, data, crc. crc = network-order CRC-32 of type + data)
-    // Write IHDR
-    buffer = Buffer.alloc(12 + 13), bufferOffset = 0
-    bufferOffset = buffer.writeUInt32BE(13, bufferOffset)
-    chunkStart = bufferOffset
-    bufferOffset += buffer.write('IHDR', bufferOffset, 'latin1')
-    bufferOffset = buffer.writeUInt32BE(this.width, bufferOffset)
-    bufferOffset = buffer.writeUInt32BE(this.height, bufferOffset)
-    bufferOffset = buffer.writeUInt8(8, bufferOffset) // Indexed 8-bit depth for palette entries
-    bufferOffset = buffer.writeUInt8(3, bufferOffset) // Color type of indexed
-    bufferOffset = buffer.writeUInt8(0, bufferOffset) // Compression method DEFLATE
-    bufferOffset = buffer.writeUInt8(0, bufferOffset) // Filter method of 0
-    bufferOffset = buffer.writeUInt8(0, bufferOffset) // No interlace method
-    chunkEnd = bufferOffset
-    bufferOffset = buffer.writeUInt32BE(crc32('CRC-32', buffer.slice(chunkStart, chunkEnd)), bufferOffset)
-    out = Buffer.concat([out, buffer])
-    
-    // TODO: Actually implement this code ripped from my own garbage encoder simple-indexed-png-encode.
-    
-    // Write PLTE
-    /*let palettesSize = this.palette.length - this.palette.length/4
-    buffer = Buffer.alloc(12 + palettesSize), bufferOffset = 0
-    bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
-    chunkStart = bufferOffset
-    bufferOffset += buffer.write('PLTE', bufferOffset, 'latin1')
-    for (let i = 0; i < palettes.length; i++) {
-      bufferOffset = buffer.writeUInt8(palettes[i++], bufferOffset) // R
-      bufferOffset = buffer.writeUInt8(palettes[i++], bufferOffset) // G
-      bufferOffset = buffer.writeUInt8(palettes[i++], bufferOffset) // B
-      // Alpha is skipped.
-    }
-    chunkEnd = bufferOffset
-    bufferOffset = buffer.writeUInt32BE(crc32('CRC-32', buffer.slice(chunkStart, chunkEnd)), bufferOffset)
-    out = Buffer.concat([out, buffer])
-    // Write tRNS
-    palettesSize = palettes.length/4
-    buffer = Buffer.alloc(12 + palettesSize), bufferOffset = 0
-    bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
-    chunkStart = bufferOffset
-    bufferOffset += buffer.write('tRNS', bufferOffset, 'latin1')
-    for (let i = 3; i < palettes.length; i += 4) {
-      bufferOffset = buffer.writeUInt8(palettes[i], bufferOffset) // A
-    }
-    chunkEnd = bufferOffset
-    bufferOffset = buffer.writeUInt32BE(crc32('CRC-32', buffer.slice(chunkStart, chunkEnd)), bufferOffset)
-    out = Buffer.concat([out, buffer])
-    // Build our deflate data
-    let data = Buffer.alloc(pixels.length + height)
-    let dataOffset = 0
-    for (let i = 0; i < height; i++) {
-      dataOffset = data.writeUInt8(0, dataOffset) // No Filter
-      for (let j = 0, end = width; j < end; j++) {
-        dataOffset = data.writeUInt8(pixels[i*width+j], dataOffset)
+      let buffer = Buffer.alloc(21)
+      let bufferOffset = 0
+      let chunkStart = 0
+      let chunkEnd = 0
+      // Write header
+      buffer = Buffer.alloc(8)
+      bufferOffset = buffer.writeUInt8(0x89, bufferOffset)
+      bufferOffset = buffer.writeUInt8(0x50, bufferOffset)
+      bufferOffset = buffer.writeUInt8(0x4E, bufferOffset)
+      bufferOffset = buffer.writeUInt8(0x47, bufferOffset)
+      bufferOffset = buffer.writeUInt8(0x0D, bufferOffset)
+      bufferOffset = buffer.writeUInt8(0x0A, bufferOffset)
+      bufferOffset = buffer.writeUInt8(0x1A, bufferOffset)
+      bufferOffset = buffer.writeUInt8(0x0A, bufferOffset)
+      out = Buffer.concat([out, buffer])
+      // Chunk o'clock (length, type, data, crc. crc = network-order CRC-32 of type + data)
+      // Write IHDR
+      buffer = Buffer.alloc(12 + 13), bufferOffset = 0
+      bufferOffset = buffer.writeUInt32BE(13, bufferOffset)
+      chunkStart = bufferOffset
+      bufferOffset += buffer.write('IHDR', bufferOffset)
+      bufferOffset = buffer.writeUInt32BE(this.width, bufferOffset)
+      bufferOffset = buffer.writeUInt32BE(this.height, bufferOffset)
+      bufferOffset = buffer.writeUInt8(8, bufferOffset) // Indexed 8-bit depth for palette entries
+      bufferOffset = buffer.writeUInt8(3, bufferOffset) // Color type of indexed
+      bufferOffset = buffer.writeUInt8(0, bufferOffset) // Compression method DEFLATE
+      bufferOffset = buffer.writeUInt8(0, bufferOffset) // Filter method of 0
+      bufferOffset = buffer.writeUInt8(0, bufferOffset) // No interlace method
+      chunkEnd = bufferOffset
+      bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
+      out = Buffer.concat([out, buffer])
+      // Write PLTE
+      let palettesSize = this.palette.length * 3
+      buffer = Buffer.alloc(12 + palettesSize), bufferOffset = 0
+      bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
+      chunkStart = bufferOffset
+      bufferOffset += buffer.write('PLTE', bufferOffset)
+      for (let i = 0; i < this.palette.length; i++) {
+        bufferOffset = buffer.writeUInt8(this.palette[i] & 0xFF, bufferOffset)
+        bufferOffset = buffer.writeUInt8((this.palette[i] >> 8) & 0xFF, bufferOffset)
+        bufferOffset = buffer.writeUInt8((this.palette[i] >> 16) & 0xFF, bufferOffset)
+        // Alpha is skipped.
       }
-    }
-    let deflatedData = await deflateAsync(data)
-    // Write IDAT // Our DEFLATE and 0->raw scanline data
-    buffer = Buffer.alloc(8), bufferOffset = 0
-    bufferOffset = buffer.writeUInt32BE(deflatedData.length, bufferOffset)
-    chunkStart = bufferOffset
-    bufferOffset += buffer.write('IDAT', bufferOffset, 'latin1')
-    buffer = Buffer.concat([buffer, deflatedData, Buffer.alloc(4)])
-    bufferOffset = bufferOffset + deflatedData.length
-    chunkEnd = bufferOffset
-    bufferOffset = buffer.writeUInt32BE(crc32('CRC-32', buffer.slice(chunkStart, chunkEnd)), bufferOffset)
-    out = Buffer.concat([out, buffer])
-    // Write IEND
-    buffer = Buffer.alloc(12), bufferOffset = 0
-    bufferOffset = buffer.writeUInt32BE(0, bufferOffset)
-    chunkStart = bufferOffset
-    bufferOffset += buffer.write('IEND', bufferOffset, 'latin1')
-    chunkEnd = bufferOffset
-    bufferOffset = buffer.writeUInt32BE(crc32('CRC-32', buffer.slice(chunkStart, chunkEnd)), bufferOffset)
-    out = Buffer.concat([out, buffer])*/
+      chunkEnd = bufferOffset
+      bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
+      out = Buffer.concat([out, buffer])
+      // Write tRNS
+      palettesSize = this.palette.length
+      buffer = Buffer.alloc(12 + palettesSize), bufferOffset = 0
+      bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
+      chunkStart = bufferOffset
+      bufferOffset += buffer.write('tRNS', bufferOffset)
+      for (let i = 0; i < this.palette.length; i++) {
+        bufferOffset = buffer.writeUInt8((this.palette[i] >> 24) & 0xFF, bufferOffset)
+      }
+      chunkEnd = bufferOffset
+      bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
+      out = Buffer.concat([out, buffer])
+      // Build our deflate data
+      let data = Buffer.alloc(this.pixels.length + this.height)
+      let dataOffset = 0
+      for (let i = 0; i < this.height; i++) {
+        dataOffset = data.writeUInt8(0, dataOffset) // No Filter
+        for (let j = 0, end = this.width; j < end; j++) {
+          dataOffset = data.writeUInt8(this.pixels[i*this.width+j], dataOffset)
+        }
+      }
+      //let deflatedData = deflateSync(data, {level: 9})
+      let deflatedData = zlibSync(data, {level: 9})
+      // Write IDAT // Our DEFLATE and 0->raw scanline data
+      buffer = Buffer.alloc(8), bufferOffset = 0
+      bufferOffset = buffer.writeUInt32BE(deflatedData.length, bufferOffset)
+      chunkStart = bufferOffset
+      bufferOffset += buffer.write('IDAT', bufferOffset)
+      buffer = Buffer.concat([buffer, deflatedData, Buffer.alloc(4)])
+      bufferOffset = bufferOffset + deflatedData.length
+      chunkEnd = bufferOffset
+      bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
+      out = Buffer.concat([out, buffer])
+      // Write IEND
+      buffer = Buffer.alloc(12), bufferOffset = 0
+      bufferOffset = buffer.writeUInt32BE(0, bufferOffset)
+      chunkStart = bufferOffset
+      bufferOffset += buffer.write('IEND', bufferOffset)
+      chunkEnd = bufferOffset
+      bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
+      out = Buffer.concat([out, buffer])
+      resolve(new Uint8Array(out))
+    })
   }
 }
