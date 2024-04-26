@@ -110,14 +110,14 @@ export namespace data {
 		}
 	}
 	
-	export class StackistFileV1 {
+	export class StaxieFileV1 {
 	    version: string;
 	    groups: {[key: string]: Group};
 	    width: number;
 	    height: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new StackistFileV1(source);
+	        return new StaxieFileV1(source);
 	    }
 	
 	    constructor(source: any = {}) {

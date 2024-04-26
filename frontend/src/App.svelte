@@ -87,7 +87,7 @@
   let showExport: boolean = false
   let showNew: boolean = false
   let importValid: boolean = false
-  let importFile: data.StackistFileV1 = null
+  let importFile: data.StaxieFileV1 = null
   let importFilepath: string = ''
   let importCanvas: Canvas = null
   

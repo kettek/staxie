@@ -4,15 +4,13 @@ import {data} from '../models';
 
 export function GetFilePath():Promise<string>;
 
-export function Greet(arg1:string):Promise<string>;
-
-export function Load(arg1:string):Promise<data.StackistFileV1>;
+export function Load(arg1:string):Promise<data.StaxieFileV1>;
 
 export function OpenFileBytes(arg1:string):Promise<Array<number>>;
 
 export function ReadBytes(arg1:string):Promise<Array<number>>;
 
-export function Save(arg1:string,arg2:data.StackistFileV1):Promise<void>;
+export function Save(arg1:string,arg2:data.StaxieFileV1):Promise<void>;
 
 export function SaveFileBytes(arg1:string,arg2:Array<number>):Promise<void>;
 

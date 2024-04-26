@@ -6,10 +6,6 @@ export function GetFilePath() {
   return window['go']['main']['App']['GetFilePath']();
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
-}
-
 export function Load(arg1) {
   return window['go']['main']['App']['Load'](arg1);
 }

@@ -8,7 +8,7 @@ export interface LoadedFileOptions {
   filepath: string
   title: string
   canvas: Canvas
-  data: data.StackistFileV1
+  data: data.StaxieFileV1
 }
 
 export class LoadedFile extends UndoableStack<LoadedFile> {
@@ -17,7 +17,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
   canvas: Canvas
   selection: SelectionArea
   preview: Preview
-  data: data.StackistFileV1
+  data: data.StaxieFileV1
   
   constructor(options: LoadedFileOptions) {
     super()

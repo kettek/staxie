@@ -1,6 +1,6 @@
 package data
 
-type StackistFileV1 struct {
+type StaxieFileV1 struct {
 	Version string           `json:"version"` // The version of the file format.
 	Groups  map[string]Group `json:"groups"`
 	Width   int              `json:"width"`

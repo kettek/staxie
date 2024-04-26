@@ -1,4 +1,4 @@
-module spriteStackist
+module github.com/kettek/staxie
 
 go 1.21
 

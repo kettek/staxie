@@ -19,7 +19,7 @@
   let width: number = 64
   let height: number = 64
   let indexed: boolean = true
-  export let file: data.StackistFileV1
+  export let file: data.StaxieFileV1
   export let canvas: Canvas
   export let open: boolean = false
 
@@ -28,7 +28,7 @@
       canvas = new Canvas(width, height)
       canvas.addNewPaletteColor(0, 0, 0, 0)
       canvas.isIndexed = indexed
-      file = data.StackistFileV1.createFrom({
+      file = data.StaxieFileV1.createFrom({
         width: width,
         height: height,
         groups: {}
@@ -40,7 +40,7 @@
     canvas = new Canvas(width, height)
     canvas.addNewPaletteColor(0, 0, 0, 0)
     canvas.isIndexed = indexed
-    file = data.StackistFileV1.createFrom({
+    file = data.StaxieFileV1.createFrom({
       width: width,
       height: height,
       groups: {}

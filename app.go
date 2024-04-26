@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"spriteStackist/pkg/data"
+
+	"github.com/kettek/staxie/pkg/data"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -27,16 +28,11 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+func (a *App) Load(name string) *data.StaxieFileV1 {
+	return &data.StaxieFileV1{}
 }
 
-func (a *App) Load(name string) *data.StackistFileV1 {
-	return &data.StackistFileV1{}
-}
-
-func (a *App) Save(name string, file *data.StackistFileV1) error {
+func (a *App) Save(name string, file *data.StaxieFileV1) error {
 	b, err := json.Marshal(file)
 	if err != nil {
 		return err

@@ -36,7 +36,7 @@
   let width: number = 16
   let height: number = 16
   let rowBasedFrames: boolean = true
-  export let file: data.StackistFileV1
+  export let file: data.StaxieFileV1
   export let filepath: string = ''
   export let canvas: Canvas
   let img: HTMLImageElement
@@ -132,7 +132,7 @@
   }
 
   function remakeFile() {
-    file = data.StackistFileV1.createFrom({
+    file = data.StaxieFileV1.createFrom({
       width: width,
       height: height,
       groups: {}
