@@ -1,7 +1,9 @@
 # Staxie
-This is a sprite/pixel editor designed to be used to create **sprite stacks**. Sprite stacks are simply 2D layers that make up a pseudo-3D object by rendering each 2D layer at a slight vertical offset, thereby creating the illusion of depth. This sprite stack can then be rotated, shaded per layer, and more.
+This is a WIP sprite/pixel editor designed to be used to create **sprite stacks**. Sprite stacks are simply 2D layers that make up a pseudo-3D object by rendering each 2D layer at a slight vertical offset, thereby creating the illusion of depth. This sprite stack can then be rotated, shaded per layer, and more.
 
 ![tank sprite stack](tank.gif)
+
+At the moment, the stack interface is still being developed, however sprite editing is functional along with sprite stack previewing.
 
 ## Live Development
 
