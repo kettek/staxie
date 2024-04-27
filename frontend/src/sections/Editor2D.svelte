@@ -347,13 +347,14 @@
         return
       }
       if (e.altKey) return
-      if (e.deltaY < 0) {
+      // FIXME: Do we have to invert this for Mac OS?
+      if (e.deltaY > 0) {
         if (e.shiftKey) {
           offsetX--
         } else {
           offsetY--
         }
-      } else if (e.deltaY > 0) {
+      } else if (e.deltaY < 0) {
         if (e.shiftKey) {
           offsetX++
         } else {
