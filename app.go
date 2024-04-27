@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/kettek/staxie/pkg/data"
+
+	"runtime/debug"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -26,7 +29,6 @@ func NewApp() *App {
 	if bld, ok := debug.ReadBuildInfo(); ok {
 		version := bld.Main.Version
 		for _, kv := range bld.Settings {
-			fmt.Println("ugh", kv)
 			switch kv.Key {
 			case "vcs.revision":
 				version = kv.Value
@@ -45,6 +47,7 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	runtime.EventsOn(a.ctx, "window:resize", a.onResize)
 }
 
 func (a *App) Load(name string) *data.StaxieFileV1 {
@@ -112,6 +115,51 @@ func (a *App) SaveFileBytes(p string, b []byte) error {
 	return os.WriteFile(p, b, 0644)
 }
 
+func (a *App) onResize(v ...interface{}) {
+	w, h := runtime.WindowGetSize(a.ctx)
+	isFullscreen := runtime.WindowIsFullscreen(a.ctx)
+	isMaximized := runtime.WindowIsMaximised(a.ctx)
+	isMinimized := runtime.WindowIsMinimised(a.ctx)
+
+	settings := data.WindowingFromAny(data.Settings["Windowing"])
+
+	settings.Fullscreen = &isFullscreen
+	settings.Maximized = &isMaximized
+	settings.Minimized = &isMinimized
+	if !isFullscreen && !isMaximized && !isMinimized {
+		settings.Width = &w
+		settings.Height = &h
+	}
+	data.Settings["Windowing"] = settings
+	if err := data.SaveSettings(); err != nil {
+		log.Println("Error saving settings:", err)
+	}
+}
+
 func (a *App) Version() string {
 	return a.versionString
+}
+func (a *App) SetSetting(key string, value string) {
+	data.Settings[key] = value
+	data.SaveSettings()
+}
+
+func (a *App) ClearSetting(key string) {
+	delete(data.Settings, key)
+	data.SaveSettings()
+}
+
+func (a *App) GetSetting(key string) any {
+	return data.Settings[key]
+}
+
+func (a *App) ToggleFullscreen() {
+	// NOTE: we lazily call onResize here to update the underlying settings.
+	if runtime.WindowIsFullscreen(a.ctx) {
+		runtime.WindowUnfullscreen(a.ctx)
+		a.onResize(nil)
+		return
+	}
+	runtime.WindowFullscreen(a.ctx)
+	a.onResize(nil)
 }

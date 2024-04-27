@@ -1,5 +1,7 @@
 <script lang="ts">
-  import type { data } from '../wailsjs/go/models.js'
+  import { data } from '../wailsjs/go/models.js'
+  import { ToggleFullscreen } from '../wailsjs/go/main/App.js'
+  import { EventsEmit } from '../wailsjs/runtime/runtime.js'
   import Editor2D from './sections/Editor2D.svelte'
   import Importer from './sections/Importer.svelte'
   import Exporter from './sections/Exporter.svelte'
@@ -33,6 +35,7 @@
   import New from './sections/New.svelte';
   import PreviewSettingsModal from './components/PreviewSettingsModal.svelte';
   import { SaveFileBytes } from '../wailsjs/go/main/App.js'
+  import { onMount } from 'svelte'
   import About from './sections/About.svelte'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
@@ -251,6 +254,13 @@
     blue = (entry >> 16) & 0xFF
     alpha = (entry >> 24) & 0xFF
   }
+  
+  onMount(async () => {
+    window.addEventListener('resize', (e: UIEvent) => {
+      EventsEmit('window:resize', {width: window.innerWidth, height: window.innerHeight})
+    })
+  })
+
 </script>
 
 <Theme bind:theme/>
@@ -287,6 +297,7 @@
       <OverflowMenuItem text="Change Checkerboard..." on:click={()=>showCheckerboardSettings = true} />
       <OverflowMenuItem hasDivider text="Background..." on:click={()=>showBackgroundSettings = true} />
       <OverflowMenuItem hasDivider text="Theme..." on:click={()=>showThemeSettings = true} />
+      <OverflowMenuItem hasDivider text="Fullscreen" on:click={()=>ToggleFullscreen()} />
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Windows</div>
@@ -348,6 +359,7 @@
         <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>engageDelete(false)} />
         <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>engagePaste()} />
         <Shortcut global cmd='quit' keys={['ctrl+q']} on:trigger={()=>engageQuit()} />
+        <Shortcut global cmd='fullscreen' keys={['f11']} on:trigger={()=>ToggleFullscreen()} />
       </Shortcuts>
     </menu>
     <section class='middle'>
