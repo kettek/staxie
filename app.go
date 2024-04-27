@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -47,7 +46,7 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	runtime.EventsOn(a.ctx, "window:resize", a.onResize)
+	log.Println("startup called")
 }
 
 func (a *App) Load(name string) *data.StaxieFileV1 {
@@ -57,13 +56,15 @@ func (a *App) Load(name string) *data.StaxieFileV1 {
 func (a *App) Save(name string, file *data.StaxieFileV1) error {
 	b, err := json.Marshal(file)
 	if err != nil {
+		log.Println("Error marshalling file:", err)
 		return err
 	}
 
-	fmt.Println("write", string(b))
 	if err := os.WriteFile(name, b, 0644); err != nil {
+		log.Println("Error saving file:", err)
 		return err
 	}
+	log.Println("Saved file:", name)
 	return nil
 }
 
@@ -136,23 +137,29 @@ func (a *App) onResize(v ...interface{}) {
 	}
 }
 
+// Version returns the version string. This is set at compile time.
 func (a *App) Version() string {
 	return a.versionString
 }
+
+// SetSetting sets a setting in the settings store.
 func (a *App) SetSetting(key string, value string) {
 	data.Settings[key] = value
 	data.SaveSettings()
 }
 
+// ClearSetting clears a setting in the settings store.
 func (a *App) ClearSetting(key string) {
 	delete(data.Settings, key)
 	data.SaveSettings()
 }
 
+// GetSetting gets a setting from the settings store.
 func (a *App) GetSetting(key string) any {
 	return data.Settings[key]
 }
 
+// ToggleFullscreen toggles the fullscreen state of the window.
 func (a *App) ToggleFullscreen() {
 	// NOTE: we lazily call onResize here to update the underlying settings.
 	if runtime.WindowIsFullscreen(a.ctx) {

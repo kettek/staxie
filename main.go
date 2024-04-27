@@ -3,6 +3,12 @@ package main
 import (
 	"embed"
 	"fmt"
+	"io"
+	"io/fs"
+	"log"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/kettek/staxie/pkg/data"
 	"github.com/wailsapp/wails/v2"
@@ -14,7 +20,46 @@ import (
 var assets embed.FS
 
 func main() {
+	// Set logging to output to both a file and stdout.
+	if err := os.MkdirAll(filepath.Join(data.AppDirectory, "logs"), 0755); err != nil {
+		log.Println("Error creating log directory:", err)
+	} else {
+		// Clear out log files older than 7 days.
+		if filepath.WalkDir(filepath.Join(data.AppDirectory, "logs"), func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			info, err := d.Info()
+			if err != nil {
+				return err
+			}
+			if time.Since(info.ModTime()) > 7*24*time.Hour {
+				if err := os.Remove(path); err != nil {
+					log.Println("Error removing log file:", err)
+				}
+			}
+			return nil
+		}); err != nil {
+			log.Println("Error cleaning up log files:", err)
+		}
+
+		writer1 := os.Stdout
+		date := time.Now().Unix()
+		writer2, err := os.Create(filepath.Join(data.AppDirectory, "logs", fmt.Sprintf("%d.log", date)))
+		if err != nil {
+			log.Println("Error creating log file:", err)
+		} else {
+			log.SetOutput(io.MultiWriter(writer1, writer2))
+		}
+	}
+
+	log.Println("Starting Staxie...")
+
 	// Load settings.
+	log.Println("Loading settings...")
 	if err := data.LoadSettings(data.SettingsStore{
 		"Windowing": data.DefaultWindowing,
 	}); err != nil {
@@ -35,6 +80,7 @@ func main() {
 	app := NewApp()
 
 	// Create application with options
+	log.Println("Running Wails...")
 	err := wails.Run(&options.App{
 		Title:  "Staxie",
 		Width:  *windowSettings.Width,
@@ -51,6 +97,6 @@ func main() {
 	})
 
 	if err != nil {
-		println("Error:", err.Error())
+		log.Println(err)
 	}
 }
