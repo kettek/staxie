@@ -29,3 +29,7 @@ export function SaveFileBytes(arg1, arg2) {
 export function SaveFilePath(arg1) {
   return window['go']['main']['App']['SaveFilePath'](arg1);
 }
+
+export function Version() {
+  return window['go']['main']['App']['Version']();
+}

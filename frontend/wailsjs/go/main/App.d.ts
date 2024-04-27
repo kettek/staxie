@@ -15,3 +15,5 @@ export function Save(arg1:string,arg2:data.StaxieFileV1):Promise<void>;
 export function SaveFileBytes(arg1:string,arg2:Array<number>):Promise<void>;
 
 export function SaveFilePath(arg1:string):Promise<string>;
+
+export function Version():Promise<string>;

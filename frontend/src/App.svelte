@@ -33,6 +33,7 @@
   import New from './sections/New.svelte';
   import PreviewSettingsModal from './components/PreviewSettingsModal.svelte';
   import { SaveFileBytes } from '../wailsjs/go/main/App.js'
+  import About from './sections/About.svelte'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -86,6 +87,7 @@
   let showImport: boolean = false
   let showExport: boolean = false
   let showNew: boolean = false
+  let showAbout: boolean = false
   let importValid: boolean = false
   let importFile: data.StaxieFileV1 = null
   let importFilepath: string = ''
@@ -291,6 +293,10 @@
       <OverflowMenuItem text="Preview" on:click={() => showPreview = true}/>
       <OverflowMenuItem text="Preview Settings..." on:click={() => showPreviewSettings = true}/>
     </OverflowMenu>
+    <OverflowMenu size="sm">
+      <div slot="menu">Help</div>
+      <OverflowMenuItem text="About" on:click={() => showAbout = true}/>
+    </OverflowMenu>
   </menu>
   <section class='content'>
     <section class='left'>
@@ -455,6 +461,10 @@
 
 <ComposedModal bind:open={showNew} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
   <New bind:open={showNew} bind:canvas={importCanvas} bind:file={importFile} />
+</ComposedModal>
+
+<ComposedModal bind:open={showAbout} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
+  <About bind:open={showAbout} />
 </ComposedModal>
 
 <style>

@@ -14,12 +14,31 @@ import (
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx           context.Context
+	versionString string
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	a := &App{
+		versionString: "unknown",
+	}
+	if bld, ok := debug.ReadBuildInfo(); ok {
+		version := bld.Main.Version
+		for _, kv := range bld.Settings {
+			fmt.Println("ugh", kv)
+			switch kv.Key {
+			case "vcs.revision":
+				version = kv.Value
+			case "vcs.modified":
+				if kv.Value == "true" {
+					version += "-dirty"
+				}
+			}
+		}
+		a.versionString = version
+	}
+	return a
 }
 
 // startup is called when the app starts. The context is saved
@@ -91,4 +110,8 @@ func (a *App) SaveFilePath(p string) (string, error) {
 
 func (a *App) SaveFileBytes(p string, b []byte) error {
 	return os.WriteFile(p, b, 0644)
+}
+
+func (a *App) Version() string {
+	return a.versionString
 }
