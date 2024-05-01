@@ -10,15 +10,14 @@
   import type { Undoable } from '../types/undo'
   import { ContextMenu, ContextMenuOption, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
   import DeletePaletteEntryModal from '../components/DeletePaletteEntryModal.svelte'
+  
+  import { brushSettings } from '../stores/brush'
 
   export let file: LoadedFile
   let lastFile: LoadedFile
   export let refresh: {}
   $: { refresh ? file = file : null }
   
-  export let primaryColorIndex: number = 1
-  export let secondaryColorIndex: number = 0
-
   const dispatch = createEventDispatcher()
 
   const fileChanged = (item: Undoable<LoadedFile>) => {
@@ -60,23 +59,23 @@
     const target = event.target as HTMLSpanElement
     const index = parseInt(target.getAttribute('x-index') || '0')
     if (event.shiftKey) {
-      secondaryColorIndex = index
-      dispatch('select', { index: secondaryColorIndex })
+      $brushSettings.secondaryIndex = index
+      dispatch('select', { index: $brushSettings.secondaryIndex })
     } else {
-      primaryColorIndex = index
-      dispatch('select', { index: primaryColorIndex })
+      $brushSettings.primaryIndex = index
+      dispatch('select', { index: $brushSettings.primaryIndex })
     }
   }
   function handleWheel(event: WheelEvent) {
     if (event.deltaX < 0) {
-      secondaryColorIndex = (secondaryColorIndex - 1 + palette.length) % palette.length
+      $brushSettings.secondaryIndex = ($brushSettings.secondaryIndex - 1 + palette.length) % palette.length
     } else if (event.deltaX > 0) {
-      secondaryColorIndex = (secondaryColorIndex + 1) % palette.length
+      $brushSettings.secondaryIndex = ($brushSettings.secondaryIndex + 1) % palette.length
     }
     if (event.deltaY < 0) {
-      primaryColorIndex = (primaryColorIndex - 1 + palette.length) % palette.length
+      $brushSettings.primaryIndex = ($brushSettings.primaryIndex - 1 + palette.length) % palette.length
     } else if (event.deltaY > 0) {
-      primaryColorIndex = (primaryColorIndex + 1) % palette.length
+      $brushSettings.primaryIndex = ($brushSettings.primaryIndex + 1) % palette.length
     }
   }
 
@@ -159,7 +158,8 @@
       </span>
     {/if}
     {#if swatchIndex !== draggingIndex}
-      <span bind:this={_refs[swatchIndex]} on:click={paletteClick} x-index={swatchIndex} class='entry{swatchIndex===primaryColorIndex?' primary':''}{swatchIndex===secondaryColorIndex?' secondary':''}{swatchIndex===draggingIndex?' hide':''}' use:swatchDrag on:contextmenu|preventDefault>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <span bind:this={_refs[swatchIndex]} on:click={paletteClick} x-index={swatchIndex} class='entry{swatchIndex===$brushSettings.primaryIndex?' primary':''}{swatchIndex===$brushSettings.secondaryIndex?' secondary':''}{swatchIndex===draggingIndex?' hide':''}' use:swatchDrag on:contextmenu|preventDefault>
         <span class="checkerboard"></span>
         <span style="background-color: rgba({swatch&0xFF},{(swatch>>8)&0xFF},{(swatch>>16)&0xFF},{((swatch>>24)&0xFF)/255})" class="color"></span>
         <span class='label'>{swatchIndex}</span>

@@ -9,9 +9,10 @@
   import { ReplaceSwatchUndoable, type LoadedFile, AddSwatchUndoable } from "../types/file";
   import { createEventDispatcher } from "svelte";
 
+  import { brushSettings } from '../stores/brush'
+
   export let file: LoadedFile
 
-  export let index: number = 0
   export let red: number = 255
   export let green: number = 0
   export let blue: number = 255
@@ -31,7 +32,7 @@
   }
 
   function replaceSwatch() {
-    file.push(new ReplaceSwatchUndoable(index, red, green, blue, alpha))
+    file.push(new ReplaceSwatchUndoable($brushSettings.primaryIndex, red, green, blue, alpha))
     dispatch('refresh', {})
     ;(document.activeElement as HTMLElement).blur()
   }
@@ -41,7 +42,7 @@
   <div class="color" style="background-color: rgba({red},{green},{blue},{alpha})">
     <div class="label" style="color: rgb({255-red}, {255-green}, {255-blue})">
       {#if swatchExists}
-        {index}
+        {$brushSettings.primaryIndex}
       {/if}
     </div>
   </div>

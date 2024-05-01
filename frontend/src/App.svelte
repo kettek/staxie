@@ -8,6 +8,8 @@
   import PaletteSection from './sections/Palette.svelte'
   import FloatingPanel from './components/FloatingPanel.svelte'
   import { Palette, PaletteEntry, defaultPalette, type Color } from './types/palette'
+  
+  import { brushSettings } from './stores/brush'
 
   import { LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable } from './types/file'
 
@@ -41,14 +43,12 @@
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
   let palette: Palette = defaultPalette()
-  let primaryColorIndex: number = 1
-  let secondaryColorIndex: number = 0
   
   let primaryColor: Color = {r: 0, g: 0, b: 0, a: 0}
   let secondaryColor: Color = {r: 0, g: 0, b: 0, a: 0}
   
-  $: primaryColor = palette?.[primaryColorIndex]
-  $: secondaryColor = palette?.[secondaryColorIndex]
+  $: primaryColor = palette?.[$brushSettings.primaryIndex]
+  $: secondaryColor = palette?.[$brushSettings.secondaryIndex]
 
   let red: number = 0
   let green: number = 0
@@ -77,13 +77,13 @@
   // Oh no, what are you doing, step palette~
   function stepPalette(step: number, primary: boolean) {
     if (primary) {
-      primaryColorIndex += step
-      if (primaryColorIndex < 0) primaryColorIndex = focusedFile?.canvas.palette.length-1
-      if (primaryColorIndex >= focusedFile?.canvas.palette.length) primaryColorIndex = 0
+      $brushSettings.primaryIndex += step
+      if ($brushSettings.primaryIndex < 0) $brushSettings.primaryIndex = focusedFile?.canvas.palette.length-1
+      if ($brushSettings.primaryIndex >= focusedFile?.canvas.palette.length) $brushSettings.primaryIndex = 0
     } else {
-      secondaryColorIndex += step
-      if (secondaryColorIndex < 0) secondaryColorIndex = focusedFile?.canvas.palette.length-1
-      if (secondaryColorIndex >= focusedFile?.canvas.palette.length) secondaryColorIndex = 0
+      $brushSettings.secondaryIndex += step
+      if ($brushSettings.secondaryIndex < 0) $brushSettings.secondaryIndex = focusedFile?.canvas.palette.length-1
+      if ($brushSettings.secondaryIndex >= focusedFile?.canvas.palette.length) $brushSettings.secondaryIndex = 0
     }
   }
   
@@ -319,10 +319,10 @@
           { id: 1, text: "test palette"},
         ]}
       />
-      <PaletteSection refresh={refreshPalette} bind:primaryColorIndex bind:secondaryColorIndex file={focusedFile} fakePalette={fakePalette} on:select={handlePaletteSelect} />
+      <PaletteSection refresh={refreshPalette} file={focusedFile} fakePalette={fakePalette} on:select={handlePaletteSelect} />
       <article>
         <ColorSelector bind:red bind:green bind:blue bind:alpha />
-        <ColorIndex bind:red bind:green bind:blue bind:alpha index={primaryColorIndex} file={focusedFile} on:refresh={()=>refreshPalette={}} />
+        <ColorIndex bind:red bind:green bind:blue bind:alpha file={focusedFile} on:refresh={()=>refreshPalette={}} />
       </article>
     </section>
     <menu class='toolbar'>
@@ -365,11 +365,11 @@
     <section class='middle'>
       <menu class='toolsettings'>
         {#if currentTool === toolBrush || currentTool === toolErase}
-          <BrushSize bind:brushSize bind:brushType/>
-          <NumberInput size="sm" min={1} max={100} step={1} bind:value={brushSize}/>
+          <BrushSize bind:brushSize={$brushSettings.size} bind:brushType={$brushSettings.type}/>
+          <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.size}/>
         {:else if currentTool === toolSpray}
-          radius:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={sprayRadius}/>
-          density:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={sprayDensity}/>
+          radius:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.sprayRadius}/>
+          density:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.sprayDensity}/>
         {/if}
       </menu>
       <Tabs bind:selected={focusedFileIndex}>
@@ -392,13 +392,7 @@
               <Editor2D
                 bind:file={file}
                 refresh={refresh}
-                bind:primaryColorIndex={primaryColorIndex}
-                bind:secondaryColorIndex={secondaryColorIndex}
                 bind:currentTool={currentTool}
-                brushSize={brushSize}
-                brushType={brushType}
-                sprayDensity={sprayDensity}
-                sprayRadius={sprayRadius}
                 showCheckerboard={showCheckerboard}
                 checkerboardSize={checkerboardSize}
                 checkerboardColor1={checkerboardColor1}

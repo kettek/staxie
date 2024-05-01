@@ -29,6 +29,7 @@ export interface BrushToolContext {
   brushSize: number
   brushType: BrushType
   colorIndex: number
+  color: [number, number, number, number]
 }
 
 // SprayToolContext provides context specific to the spray tool.
@@ -36,6 +37,7 @@ export interface SprayToolContext {
   radius: number
   density: number
   colorIndex: number
+  color: [number, number, number, number]
 }
 
 // EraserToolContext provides context specific to the eraser tool.
@@ -47,6 +49,7 @@ export interface EraserToolContext {
 // FloodToolContext provides context specific to the flood tool.
 export interface FloodToolContext {
   colorIndex: number
+  color: [number, number, number, number]
 }
 
 // SelectionToolContext provides context specific to the selection tool.
