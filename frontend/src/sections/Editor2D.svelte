@@ -5,7 +5,8 @@
 -->
 <script lang='ts'>
   import { onMount } from 'svelte'
-  import { brushSettings } from '../stores/brush.js'
+  import { brushSettings } from '../stores/brush'
+  import { editor2DSettings } from '../stores/editor2d'
 
   import type { data } from '../../wailsjs/go/models.ts'
   import type { LoadedFile } from '../types/file'
@@ -20,22 +21,9 @@
   export let layer: data.Layer*/
   export const refresh: {} = {}
 
-  export let showCheckerboard: boolean = true
-  export let checkerboardSize: number = 8
-  export let checkerboardColor1: string = '#888888'
-  export let checkerboardColor2: string = '#444444'
-
-  export let backgroundColor: string = '#111111'
-
-  export let showGrid: boolean = true
-  export let gridMajorSize: number = 16
-  export let gridMajorColor: string = '#333333'
-  export let gridMinorSize: number = 1
-  export let gridMinorColor: string = '#222222'
-
   $: ((...args) => {
     canvasDirty = true
-  })(showCheckerboard, checkerboardSize, checkerboardColor1, checkerboardColor2, backgroundColor)
+  })($editor2DSettings.showCheckerboard, $editor2DSettings.checkerboardSize, $editor2DSettings.checkerboardColor1, $editor2DSettings.checkerboardColor2, $editor2DSettings.backgroundColor)
 
   let offsetX: number
   let offsetY: number
@@ -168,29 +156,29 @@
     }
 
     // Draw our grid.
-    if (showGrid) {
+    if ($editor2DSettings.showGrid) {
       // Minor grid lines.
-      ctx.strokeStyle = gridMinorColor
+      ctx.strokeStyle = $editor2DSettings.gridMinorColor
       ctx.lineWidth = 0.5
       ctx.beginPath()
-      for (let x = gridMinorSize; x < file.canvas.width; x += gridMinorSize) {
+      for (let x = $editor2DSettings.gridMinorSize; x < file.canvas.width; x += $editor2DSettings.gridMinorSize) {
         ctx.moveTo(offsetX*zoom+x*zoom, offsetY*zoom)
         ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+file.canvas.height*zoom)
       }
-      for (let y = gridMinorSize; y < file.canvas.height; y += gridMinorSize) {
+      for (let y = $editor2DSettings.gridMinorSize; y < file.canvas.height; y += $editor2DSettings.gridMinorSize) {
         ctx.moveTo(offsetX*zoom, offsetY*zoom+y*zoom)
         ctx.lineTo(offsetX*zoom+file.canvas.width*zoom, offsetY*zoom+y*zoom)
       }
       ctx.stroke()
       // Major grid lines.
-      ctx.strokeStyle = gridMajorColor
+      ctx.strokeStyle = $editor2DSettings.gridMajorColor
       ctx.lineWidth = 0.5
       ctx.beginPath()
-      for (let x = gridMajorSize; x < file.canvas.width; x += gridMajorSize) {
+      for (let x = $editor2DSettings.gridMajorSize; x < file.canvas.width; x += $editor2DSettings.gridMajorSize) {
         ctx.moveTo(offsetX*zoom+x*zoom, offsetY*zoom)
         ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+file.canvas.height*zoom)
       }
-      for (let y = gridMajorSize; y < file.canvas.height; y += gridMajorSize) {
+      for (let y = $editor2DSettings.gridMajorSize; y < file.canvas.height; y += $editor2DSettings.gridMajorSize) {
         ctx.moveTo(offsetX*zoom, offsetY*zoom+y*zoom)
         ctx.lineTo(offsetX*zoom+file.canvas.width*zoom, offsetY*zoom+y*zoom)
       }
@@ -214,31 +202,31 @@
     let ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    ctx.fillStyle = backgroundColor
+    ctx.fillStyle = $editor2DSettings.backgroundColor
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     // Draw checkboard.
     ctx.save()
     ctx.imageSmoothingEnabled = false
     ctx.scale(zoom, zoom)
-    if (showCheckerboard) {
+    if ($editor2DSettings.showCheckerboard) {
       ctx.beginPath()
-      ctx.fillStyle = checkerboardColor1
+      ctx.fillStyle = $editor2DSettings.checkerboardColor1
       ctx.rect(offsetX, offsetY, file.canvas.width, file.canvas.height)
       ctx.fill()
 
-      let rows = file.canvas.height / checkerboardSize
-      let cols = file.canvas.width / checkerboardSize
+      let rows = file.canvas.height / $editor2DSettings.checkerboardSize
+      let cols = file.canvas.width / $editor2DSettings.checkerboardSize
       ctx.beginPath()
-      ctx.fillStyle = checkerboardColor2
+      ctx.fillStyle = $editor2DSettings.checkerboardColor2
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           if (r % 2 === 0 && c % 2 === 1 || r % 2 === 1 && c % 2 === 0) {
             ctx.rect(
-              offsetX+c * checkerboardSize,
-              offsetY+r * checkerboardSize,
-              checkerboardSize,
-              checkerboardSize,
+              offsetX+c * $editor2DSettings.checkerboardSize,
+              offsetY+r * $editor2DSettings.checkerboardSize,
+              $editor2DSettings.checkerboardSize,
+              $editor2DSettings.checkerboardSize,
             )
           }
         }

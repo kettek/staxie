@@ -4,28 +4,17 @@
   This component provides a modal for adjusting the grid settings.
 -->
 <script lang='ts'>
-  import { Column, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte";
+  import { Column, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte"
+  import { editor2DSettings } from "../stores/editor2d"
 
-  export let majorSize: number = 16
-  export let minorSize: number = 8
-  export let majorColor: string = "#0000ff"
-  export let minorColor: string = "#006666"
-
-  let pendingMajorSize: number = majorSize
-  let pendingMinorSize: number = minorSize
-  let pendingMajorColor: string = majorColor
-  let pendingMinorColor: string = minorColor
-
-  $: {
-    pendingMajorSize = majorSize
-    pendingMinorSize = minorSize
-    pendingMajorColor = majorColor
-    pendingMinorColor = minorColor
-  }
+  let pendingMajorSize: number = $editor2DSettings.gridMajorSize
+  let pendingMinorSize: number = $editor2DSettings.gridMinorSize
+  let pendingMajorColor: string = $editor2DSettings.gridMajorColor
+  let pendingMinorColor: string = $editor2DSettings.gridMinorColor
 
   let changed: boolean = false
   $: {
-    changed = majorSize !== pendingMajorSize || minorSize !== pendingMinorSize || majorColor !== pendingMajorColor || minorColor !== pendingMinorColor
+    changed = $editor2DSettings.gridMajorSize !== pendingMajorSize || $editor2DSettings.gridMinorSize !== pendingMinorSize || $editor2DSettings.gridMajorColor !== pendingMajorColor || $editor2DSettings.gridMinorColor !== pendingMinorColor
   }
 
   export let open: boolean = false
@@ -40,10 +29,10 @@
   on:close={() => open = false}
   on:click:button--secondary={() => open = false}
   on:submit={() => {
-    majorSize = pendingMajorSize
-    minorSize = pendingMinorSize
-    majorColor = pendingMajorColor
-    minorColor = pendingMinorColor
+    $editor2DSettings.gridMajorSize = pendingMajorSize
+    $editor2DSettings.gridMinorSize = pendingMinorSize
+    $editor2DSettings.gridMajorColor = pendingMajorColor
+    $editor2DSettings.gridMinorColor = pendingMinorColor
     open = false
   }}
   primaryButtonDisabled={!changed}

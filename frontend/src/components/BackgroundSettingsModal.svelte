@@ -4,19 +4,14 @@
   This component is a modal settings dialog for changing the background color.
 -->
 <script lang='ts'>
-  import { Column, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte";
+  import { Column, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte"
+  import { editor2DSettings } from "../stores/editor2d"
 
-  export let color: string = "#888888"
-
-  let pendingColor: string = color
-
-  $: {
-    pendingColor = color
-  }
+  let pendingColor: string = $editor2DSettings.backgroundColor
 
   let changed: boolean = false
   $: {
-    changed = color !== pendingColor
+    changed = $editor2DSettings.backgroundColor !== pendingColor
   }
 
   export let open: boolean = false
@@ -31,7 +26,7 @@
   on:close={() => open = false}
   on:click:button--secondary={() => open = false}
   on:submit={() => {
-    color = pendingColor
+    $editor2DSettings.backgroundColor = pendingColor
     open = false
   }}
   primaryButtonDisabled={!changed}

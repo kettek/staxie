@@ -10,6 +10,7 @@
   import { Palette, PaletteEntry, defaultPalette, type Color } from './types/palette'
   
   import { brushSettings } from './stores/brush'
+  import { editor2DSettings } from './stores/editor2d.js'
 
   import { LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable } from './types/file'
 
@@ -106,25 +107,11 @@
   let showThemeSettings: boolean = false
   let showBackgroundSettings: boolean = false
 
-  let showGrid: boolean = true
-  let showCheckerboard: boolean = true
-
-  let gridMajorSize: number = 16
-  let gridMinorSize: number = 8
-  let gridMajorColor: string = '#0000ff'
-  let gridMinorColor: string = '#006666'
-
-  let checkerboardSize: number = 8
-  let checkerboardColor1: string = '#888888'
-  let checkerboardColor2: string = '#444444'
-  
   let previewShowBaseSizeOutline: boolean = true
   let previewBaseSizeOutlineColor: string = '#00FFFF77'
   let previewShowSizeOutline: boolean = true
   let previewSizeOutlineColor: string = '#FFFF0077'
 
-  let backgroundColor: string = '#111111'
-  
   let toolSelection = new SelectionTool()
   let toolMagicWand = new MagicWandTool()
   let toolFill = new FillTool()
@@ -288,11 +275,11 @@
     <OverflowMenu size="sm">
       <div slot="menu">View</div>
       <OverflowMenuItem>
-        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={showGrid} labelText="Grid" />
+        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor2DSettings.showGrid} labelText="Grid" />
       </OverflowMenuItem>
       <OverflowMenuItem text="Change Grid..." on:click={()=>showGridSettings = true} />
       <OverflowMenuItem hasDivider>
-        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={showCheckerboard} labelText="Checkerboard" />
+        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor2DSettings.showCheckerboard} labelText="Checkerboard" />
       </OverflowMenuItem>
       <OverflowMenuItem text="Change Checkerboard..." on:click={()=>showCheckerboardSettings = true} />
       <OverflowMenuItem hasDivider text="Background..." on:click={()=>showBackgroundSettings = true} />
@@ -393,16 +380,6 @@
                 bind:file={file}
                 refresh={refresh}
                 bind:currentTool={currentTool}
-                showCheckerboard={showCheckerboard}
-                checkerboardSize={checkerboardSize}
-                checkerboardColor1={checkerboardColor1}
-                checkerboardColor2={checkerboardColor2}
-                showGrid={showGrid}
-                backgroundColor={backgroundColor}
-                gridMajorColor={gridMajorColor}
-                gridMinorColor={gridMinorColor}
-                gridMajorSize={gridMajorSize}
-                gridMinorSize={gridMinorSize}
               />
             </TabContent>
           {/each}
@@ -434,13 +411,13 @@
       />
     {/if}
     {#if showGridSettings}
-      <GridSettingsModal bind:open={showGridSettings} bind:majorSize={gridMajorSize} bind:minorSize={gridMinorSize} bind:majorColor={gridMajorColor} bind:minorColor={gridMinorColor} />
+      <GridSettingsModal bind:open={showGridSettings}/>
     {/if}
     {#if showCheckerboardSettings}
-      <CheckerboardSettingsModal bind:open={showCheckerboardSettings} bind:size={checkerboardSize} bind:color1={checkerboardColor1} bind:color2={checkerboardColor2} />
+      <CheckerboardSettingsModal bind:open={showCheckerboardSettings}/>
     {/if}
     {#if showBackgroundSettings}
-      <BackgroundSettingsModal bind:open={showBackgroundSettings} bind:color={backgroundColor} />
+      <BackgroundSettingsModal bind:open={showBackgroundSettings}/>
     {/if}
     {#if showThemeSettings}
       <ThemeSettingsModal bind:open={showThemeSettings} bind:theme={theme} />

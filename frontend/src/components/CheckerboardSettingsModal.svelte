@@ -4,25 +4,16 @@
   This component is a modal that provides settings for changing the checkerboard background.
 -->
 <script lang='ts'>
-  import { Column, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte";
+  import { Column, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte"
+  import { editor2DSettings } from "../stores/editor2d"
 
-  export let size: number = 8
-  export let color1: string = "#888888"
-  export let color2: string = "#444444"
-
-  let pendingSize: number = size
-  let pendingColor1: string = color1
-  let pendingColor2: string = color2
-
-  $: {
-    pendingSize = size
-    pendingColor1 = color1
-    pendingColor2 = color2
-  }
+  let pendingSize: number = $editor2DSettings.checkerboardSize
+  let pendingColor1: string = $editor2DSettings.checkerboardColor1
+  let pendingColor2: string = $editor2DSettings.checkerboardColor2
 
   let changed: boolean = false
   $: {
-    changed = size !== pendingSize || color1 !== pendingColor1 || color2 !== pendingColor2
+    changed = $editor2DSettings.checkerboardSize !== pendingSize || $editor2DSettings.checkerboardColor1 !== pendingColor1 || $editor2DSettings.checkerboardColor2 !== pendingColor2
   }
 
   export let open: boolean = false
@@ -37,9 +28,9 @@
   on:close={() => open = false}
   on:click:button--secondary={() => open = false}
   on:submit={() => {
-    size = pendingSize
-    color1 = pendingColor1
-    color2 = pendingColor2
+    $editor2DSettings.checkerboardSize = pendingSize
+    $editor2DSettings.checkerboardColor1 = pendingColor1
+    $editor2DSettings.checkerboardColor2 = pendingColor2
     open = false
   }}
   primaryButtonDisabled={!changed}
