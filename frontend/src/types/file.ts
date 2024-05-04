@@ -81,6 +81,24 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
     }
   }
   
+  setAnimation(name: string) {
+    if (this.group) {
+      this.animation = this.group.animations[name]
+      this.animationName = name
+      this.setFrameIndex(this.animation.frames.length - 1)
+    }
+  }
+  
+  setGroup(name: string) {
+    this.group = this.data.groups[name]
+    this.groupName = name
+    if (this.group[this.animationName]) {
+      this.setAnimation(this.animationName)
+    } else {
+      this.setAnimation(Object.keys(this.group.animations)[0])
+    }
+  }
+  
   undo() {
     super.undo()
     this.canvas.refreshCanvas()

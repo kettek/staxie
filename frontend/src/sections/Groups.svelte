@@ -2,9 +2,9 @@
   import { FaceAdd, FolderAdd, GroupObjectsNew } from "carbon-icons-svelte";
   import type { LoadedFile } from "../types/file"
   import { Button, TreeView } from "carbon-components-svelte"
+  import { fileStates } from "../stores/file"
 
   export let file: LoadedFile
-  $: console.log(file)
   
   let activeId: string | number = 0
   let selectedIds: (string|number)[] = []
@@ -28,10 +28,12 @@
   
   function handleSelect(e) {
     if (!e.detail.leaf) { // Group
-      console.log('select group', e.detail.id)
+      file.setGroup(e.detail.id)
     } else { // Animation
-      console.log('select animation', e.detail.id.substring(e.detail.id.indexOf('__')+2))
+      const name = e.detail.id.substring(e.detail.id.indexOf('__')+2)
+      file.setAnimation(name)
     }
+    fileStates.refresh()
   }
   
 </script>
@@ -64,9 +66,6 @@
         bind:activeId
         bind:selectedIds
         on:select={handleSelect}
-        on:toggle={(e) => console.log(e.detail)}
-        on:focus={(e) => console.log(e.detail)}
-        on:keydown={(e) => console.log(e.detail)}
       />
     {/if}
   </section>
