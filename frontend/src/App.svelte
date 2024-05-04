@@ -40,6 +40,8 @@
   import { SaveFileBytes } from '../wailsjs/go/main/App.js'
   import { onMount } from 'svelte'
   import About from './sections/About.svelte'
+  import Groups from './sections/Groups.svelte'
+  import { fileStates } from './stores/file'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -134,27 +136,26 @@
 
   let refresh = {}
 
-  let files: LoadedFile[] = []
   let focusedFileIndex: number = -1
   let focusedFile: LoadedFile = null
   $: {
-    if (files[focusedFileIndex] && focusedFile !== files[focusedFileIndex]) {
-      exportPath = files[focusedFileIndex].filepath
+    if ($fileStates[focusedFileIndex] && focusedFile !== $fileStates[focusedFileIndex]) {
+      exportPath = $fileStates[focusedFileIndex].filepath
       console.log('set exportPath', exportPath)
     }
-    focusedFile = files[focusedFileIndex] ?? null
+    focusedFile = $fileStates[focusedFileIndex] ?? null
   }
   
   function selectFile(file: LoadedFile, index: number) {
-    if (index < 0 || index >= files.length) return
+    if (index < 0 || index >= $fileStates.length) return
     focusedFileIndex = index
     refresh = {}
   }
 
   function engageImport() {
     if (importValid) {
-      files = [...files, new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importFile})]
-      focusedFileIndex = files.length - 1
+      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importFile}))
+      focusedFileIndex = $fileStates.length - 1
       importCanvas = null
       importFile = null
     }
@@ -174,8 +175,8 @@
   }
 
   function engageNew() {
-    files = [...files, new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importFile})]
-    focusedFileIndex = files.length - 1
+    fileStates.addFile(new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importFile}))
+    focusedFileIndex = $fileStates.length - 1
     importCanvas = null
     importFile = null
 
@@ -224,9 +225,9 @@
   }
 
   function closeFile(index: number) {
-    files = files.filter((_,i)=>i!==index)
+    fileStates.removeFile(index)
     if (focusedFileIndex === index) {
-      focusedFileIndex = Math.min(files.length-1, focusedFileIndex)
+      focusedFileIndex = Math.min($fileStates.length-1, focusedFileIndex)
     }
   }
 
@@ -360,7 +361,7 @@
         {/if}
       </menu>
       <Tabs bind:selected={focusedFileIndex}>
-        {#each files as file, index}
+        {#each $fileStates as file, index}
           <Tab on:click={()=>selectFile(file, index)}>
             <span class='tab'>
               <span>{file.title}</span>
@@ -369,7 +370,7 @@
           </Tab>
         {/each}
         <svelte:fragment slot="content">
-          {#each files as file, index}
+          {#each $fileStates as file, index}
             <Shortcuts group='editor2D' active={focusedFile===file}>
               <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
               <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
@@ -386,6 +387,9 @@
         </svelte:fragment>
       </Tabs>
     </section>
+    <section class='right'>
+      <Groups file={focusedFile} />
+    </section>
     {#if showPreview}
       <FloatingPanel
         label="Stack Preview"
@@ -393,7 +397,6 @@
         bind:open={showPreview}
       >
         <StackPreview
-          files={files}
           showBaseSizeOutline={previewShowBaseSizeOutline}
           baseSizeOutlineColor={previewBaseSizeOutlineColor}
           showSizeOutline={previewShowSizeOutline}
@@ -468,10 +471,14 @@
   }
   .content {
     display: grid;
-    grid-template-columns: 1fr auto 4fr;
+    grid-template-columns: 1fr auto 4fr 1fr;
     grid-template-rows: minmax(0, 1fr);
   }
   .left {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .right {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
@@ -494,7 +501,7 @@
   }
   .middle {
     display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
   }
   .tab {
     display: inline-grid;

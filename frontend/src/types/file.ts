@@ -18,16 +18,67 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
   selection: SelectionArea
   preview: Preview
   data: data.StaxieFileV1
-  
+  //
+  group?: data.Group
+  groupName: string
+  animation?: data.Animation
+  animationName: string
+  layer?: data.Layer
+  layerIndex: number
+  frame?: data.Frame
+  frameIndex: number
+
   constructor(options: LoadedFileOptions) {
     super()
     this.setTarget(this)
     this.data = options.data
+    if (Object.keys(this.data.groups).length > 0) {
+      for (let [key, value] of Object.entries(this.data.groups)) {
+        this.group = value
+        this.groupName = key
+        break
+      }
+      if (this.group) {
+        for (let [key, value] of Object.entries(this.group.animations)) {
+          this.animation = value
+          this.animationName = key
+          break
+        }
+        if (this.animation) {
+          this.frameIndex = this.animation.frames.length - 1
+          if (this.frameIndex >= 0) {
+            this.frame = this.animation.frames[this.frameIndex]
+            if (this.frame.layers.length > 0) {
+              this.layer = this.frame.layers[0]
+              this.layerIndex = 0
+            }
+          }
+        }
+      }
+    }
     this.filepath = options.filepath
     this.title = options.title
     this.canvas = options.canvas
     this.preview = new Preview()
     this.selection = new SelectionArea(options.canvas.width, options.canvas.height, 1)
+  }
+  
+  setFrameIndex(index: number) {
+    if (this.animation) {
+      this.frameIndex = index
+      this.frame = this.animation.frames[index]
+      if (this.layerIndex >= this.frame.layers.length) {
+        this.layerIndex = this.frame.layers.length - 1
+      }
+      this.layer = this.frame.layers[this.layerIndex]
+    }
+  }
+
+  setLayerIndex(index: number) {
+    if (this.frame) {
+      this.layerIndex = index
+      this.layer = this.frame.layers[index]
+    }
   }
   
   undo() {

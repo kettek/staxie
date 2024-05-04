@@ -9,11 +9,12 @@
   import { editor2DSettings } from '../stores/editor2d'
 
   import type { data } from '../../wailsjs/go/models.ts'
+  import { fileStates } from '../stores/file'
   import type { LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type BrushType, type Tool, SelectionTool, SprayTool } from '../types/tools'
   import { Button, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
-  import { ZoomIn, ZoomOut } from 'carbon-icons-svelte';
+  import { Add, AddAlt, AddLarge, FaceAdd, NewTab, ZoomIn, ZoomOut } from 'carbon-icons-svelte';
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -411,6 +412,16 @@
     })
   }
   
+  function setLayer(layerIndex: number) {
+    file.setLayerIndex(layerIndex)
+    fileStates.refresh()
+  }
+
+  function setFrame(frameIndex: number) {
+    file.setFrameIndex(frameIndex)
+    fileStates.refresh()
+  }
+  
   onMount(() => {
     let frameID: number = 0
     let frameDraw = () => {
@@ -425,7 +436,47 @@
 </script>
 
 <main>
-  <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>
+  <section class='view'>
+    <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>
+    <section class='layersContainer'>
+      <Button
+        kind="ghost"
+        size="small"
+        icon={NewTab}
+        iconDescription="Add Layer"
+        tooltipPosition="top"
+        tooltipAlignment="end"
+      />
+      <section class='layers'>
+        {#if file.frame}
+          {#each file.frame.layers as layer, layerIndex}
+            <article class='layer{layerIndex===file.layerIndex?' --selected':''}' on:click={()=>setLayer(layerIndex)}>
+              <span class='layerIndex'>{layerIndex+1}</span>
+            </article>
+          {/each}
+        {/if}
+      </section>
+    </section>
+    <section class='framesContainer'>
+      <Button
+        kind="ghost"
+        size="small"
+        icon={AddAlt}
+        iconDescription="Add Frame"
+        tooltipPosition="top"
+        tooltipAlignment="end"
+      />
+      <section class='frames'>
+        {#if file.animation}
+          {#each file.animation.frames as frame, frameIndex}
+            <article class='frame{frameIndex===file.frameIndex?' --selected':''}' on:click={()=>setFrame(frameIndex)}>
+              <span class='frameIndex'>{frameIndex+1}</span>
+            </article>
+          {/each}
+        {/if}
+      </section>
+    </section>
+  </section>
   <menu>
     <NumberInput
       min={0}
@@ -460,10 +511,97 @@
   main {
     width: 100%;
     height: 100%;
-    overflow: hidden;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .view {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: minmax(0, 1fr);
+    user-select: none;
+  }
+  .layersContainer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .layers {
+    font-family: monospace;
+    font-size: 0.75rem;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .layers::-webkit-scrollbar {
+    width: 0.2rem !important;
+  }
+  .layers::-webkit-scrollbar-track {
+    background: var(--cds-ui-01) !important;
+  }
+  .layers::-webkit-scrollbar-thumb {
+  }
+  .layers::-webkit-scrollbar-thumb:hover {
+    background: var(--cds-hover-primary) !important;
+  }
+  .layers::-webkit-scrollbar-thumb:active {
+    background: var(--cds-active-primary) !important;
+  }
+  .layer {
+    text-align: center;
+    padding: 0.2rem;
+    border-bottom: 1px solid var(--cds-ui-01);
+    background: var(--cds-ui-02);
+  }
+  .layer.--selected {
+    background: var(--cds-active-primary);
+  }
+  .layer:hover {
+    background: var(--cds-hover-primary);
+    cursor: pointer;
+  }
+  .framesContainer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .frames {
+    font-family: monospace;
+    font-size: 0.75rem;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    min-width: 1.5em;
+  }
+  .frames::-webkit-scrollbar {
+    width: 0.2rem !important;
+  }
+  .frames::-webkit-scrollbar-track {
+    background: var(--cds-ui-01) !important;
+  }
+  .frames::-webkit-scrollbar-thumb {
+    background: var(--cds-hover-primary-text) !important;
+  }
+  .frames::-webkit-scrollbar-thumb:hover {
+    background: var(--cds-hover-primary) !important;
+  }
+  .frames::-webkit-scrollbar-thumb:active {
+    background: var(--cds-active-primary) !important;
+  }
+  .frame {
+    text-align: center;
+    padding: 0.2rem;
+    border-bottom: 1px solid var(--cds-ui-01);
+    background: var(--cds-ui-02);
+  }
+  .frame.--selected {
+    background: var(--cds-active-primary);
+  }
+  .frame:hover {
+    background: var(--cds-hover-primary);
+    cursor: pointer;
   }
   canvas {
     width: 100%;

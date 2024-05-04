@@ -5,14 +5,13 @@
 -->
 <script lang='ts'>
   import { Grid, Row, Column, Checkbox, Slider } from "carbon-components-svelte"
-  import type { LoadedFile } from "src/types/file"
+  import { fileStates } from "../stores/file"
   import { onMount } from "svelte";
   
-  export let files: LoadedFile[]
   let shownFiles: Record<string, boolean> = {}
   let filePositions: Record<string, {x: number, y: number, z: number}> = {}
   $: {
-    for (let file of files) {
+    for (let file of $fileStates) {
       if (shownFiles[file.title] && !filePositions[file.title]) {
         filePositions[file.title] = {x: 0, y: 0, z: 0}
       }
@@ -51,7 +50,7 @@
     
     let x = canvas.width/2
     let y = canvas.height/2
-    let sortedFiles = files.filter(file => shownFiles[file.title]).sort((a, b) => filePositions[a.title].z - filePositions[b.title].z)
+    let sortedFiles = $fileStates.filter(file => shownFiles[file.title]).sort((a, b) => filePositions[a.title].z - filePositions[b.title].z)
     for (let file of sortedFiles) {
       if (shownFiles[file.title]) {
         // For now, just get the first frame of the first animation.
@@ -115,7 +114,7 @@
   function hitsFile(x: number, y: number): string {
     x *= zoom
     y *= zoom
-    for (let file of files) {
+    for (let file of $fileStates) {
       let name = file.title
       if (!shownFiles[name]) continue
       let px = canvas.width/2
@@ -168,7 +167,7 @@
 <Grid narrow condensed fullWidth>
   <Row narrow condensed>
     <Column sm>
-      {#each files as file, i}
+      {#each $fileStates as file, i}
         <Checkbox bind:checked={shownFiles[file.title]} labelText={file.title.length>20?'…'+file.title.substring(file.title.length-20):file.title}></Checkbox>
       {/each}
     </Column>
