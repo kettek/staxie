@@ -20,7 +20,7 @@
   
   let rotation: number = 0
   let zoom: number = 1
-  let layerDistance: number = 1
+  let sliceDistance: number = 1
 
   let automaticShading: boolean = true
   let minShade: number = 0.5
@@ -58,9 +58,9 @@
         for (let [groupName, group] of Object.entries(file.data.groups)) {
           for (let [animationName, animation] of Object.entries(group.animations)) {
             for (let frame of animation.frames) {
-              for (let layerIndex = 0; layerIndex < frame.layers.length; layerIndex++) {
-                let layer = frame.layers[layerIndex]
-                if (layerIndex === 0) {
+              for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
+                let slice = frame.slices[sliceIndex]
+                if (sliceIndex === 0) {
                   if (showBaseSizeOutline) {
                     ctx.save()
                     ctx.translate(x, y)
@@ -91,13 +91,13 @@
                 
                 if (automaticShading) {
                   // FIXME: Adjust this math to use configurable min/max values.
-                  let shade = 128 + Math.min(255, 128 * (layerIndex / frame.layers.length))
+                  let shade = 128 + Math.min(255, 128 * (sliceIndex / frame.slices.length))
                   ctx.filter = `brightness(${minShade + (1-minShade) * (shade/255)})`
                 }
 
-                ctx.drawImage(file.canvas.canvas, layer.x, layer.y, file.data.width, file.data.height, -file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
+                ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.data.width, file.data.height, -file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
                 ctx.restore()
-                y -= 1 * layerDistance * zoom
+                y -= 1 * sliceDistance * zoom
               }
               done = true
               if (done) break
@@ -175,7 +175,7 @@
       <canvas bind:this={canvas} on:mousedown={mousedown}></canvas>
       <Slider labelText="Global Zoom" min={1} max={10} step={1} bind:value={zoom} fullWidth></Slider>
       <Slider labelText="Global Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
-      <Slider labelText="Global Layer Distance" min={0} max={2} step={0.1} bind:value={layerDistance} fullWidth></Slider>
+      <Slider labelText="Global Slice Distance" min={0} max={2} step={0.1} bind:value={sliceDistance} fullWidth></Slider>
       <Checkbox bind:checked={automaticShading} labelText="Automatic Shading"></Checkbox>
     </Column>
   </Row>

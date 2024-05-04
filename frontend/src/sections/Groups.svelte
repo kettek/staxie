@@ -93,11 +93,11 @@
   }
   .groups {
   }
-  .layers {
+  .slices {
     display: flex;
     flex-wrap: wrap;
   }
-  .layer {
+  .slice {
     padding: 0.25rem;
     width: 2rem;
     height: 2rem;

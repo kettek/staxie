@@ -1,12 +1,12 @@
 export namespace data {
 	
-	export class Layer {
+	export class Slice {
 	    x: number;
 	    y: number;
 	    shadingMultiplier: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new Layer(source);
+	        return new Slice(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -17,7 +17,7 @@ export namespace data {
 	    }
 	}
 	export class Frame {
-	    layers: Layer[];
+	    slices: Slice[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Frame(source);
@@ -25,7 +25,7 @@ export namespace data {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.layers = this.convertValues(source["layers"], Layer);
+	        this.slices = this.convertValues(source["slices"], Slice);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

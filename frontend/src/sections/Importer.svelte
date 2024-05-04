@@ -109,12 +109,12 @@
     cols = img.width / width
 
     if (rows % 1 !== 0) {
-      error = 'layer size'
+      error = 'slice size'
       error2 = 'invalid row count of: ' + rows
       return
     } 
     if (cols % 1 !== 0) {
-      error = 'layer size'
+      error = 'slice size'
       error2 = 'invalid cols count of: ' + cols
       return
     }
@@ -145,9 +145,9 @@
       })
       for (let ai = 0; ai < animations; ai++) {
         let frames = []
-        let layers = []
+        let slices = []
         for (let i = 0; i < (!rowBasedFrames ? rows : cols); i++) {
-          layers.push({
+          slices.push({
             x: cx*width,
             y: cy*height,
             shadingMultiplier: 1.0,
@@ -159,7 +159,7 @@
           }
         }
         frames.push({
-          layers,
+          slices,
         })
 
         if (rowBasedFrames) {
@@ -214,7 +214,7 @@
               bind:value={width}
               on:change={recalc}
               invalidText="Minimum of 1, yo."
-              label="Layer Width"
+              label="Slice Width"
             />
             <NumberInput
               size="sm"
@@ -222,7 +222,7 @@
               bind:value={height}
               on:change={recalc}
               invalidText="Minimum of 1, yo."
-              label="Layer Height"
+              label="Slice Height"
             />
             <Checkbox
               bind:checked={rowBasedFrames}

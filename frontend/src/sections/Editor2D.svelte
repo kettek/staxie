@@ -19,7 +19,7 @@
   export let file: LoadedFile
   /*export let animation: data.Animation
   export let frame: data.Frame
-  export let layer: data.Layer*/
+  export let slice: data.Slice*/
   export const refresh: {} = {}
 
   $: ((...args) => {
@@ -412,8 +412,8 @@
     })
   }
   
-  function setLayer(layerIndex: number) {
-    file.setLayerIndex(layerIndex)
+  function setSlice(sliceIndex: number) {
+    file.setSliceIndex(sliceIndex)
     fileStates.refresh()
   }
 
@@ -438,20 +438,20 @@
 <main>
   <section class='view'>
     <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>
-    <section class='layersContainer'>
+    <section class='slicesContainer'>
       <Button
         kind="ghost"
         size="small"
         icon={NewTab}
-        iconDescription="Add Layer"
+        iconDescription="Add Slice"
         tooltipPosition="top"
         tooltipAlignment="end"
       />
-      <section class='layers'>
+      <section class='slices'>
         {#if file.frame}
-          {#each file.frame.layers as layer, layerIndex}
-            <article class='layer{layerIndex===file.layerIndex?' --selected':''}' on:click={()=>setLayer(layerIndex)}>
-              <span class='layerIndex'>{layerIndex+1}</span>
+          {#each file.frame.slices as slice, sliceIndex}
+            <article class='slice{sliceIndex===file.sliceIndex?' --selected':''}' on:click={()=>setSlice(sliceIndex)}>
+              <span class='sliceIndex'>{sliceIndex+1}</span>
             </article>
           {/each}
         {/if}
@@ -521,12 +521,12 @@
     grid-template-rows: minmax(0, 1fr);
     user-select: none;
   }
-  .layersContainer {
+  .slicesContainer {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
-  .layers {
+  .slices {
     font-family: monospace;
     font-size: 0.75rem;
     overflow-y: scroll;
@@ -534,30 +534,30 @@
     display: flex;
     flex-direction: column;
   }
-  .layers::-webkit-scrollbar {
+  .slices::-webkit-scrollbar {
     width: 0.2rem !important;
   }
-  .layers::-webkit-scrollbar-track {
+  .slices::-webkit-scrollbar-track {
     background: var(--cds-ui-01) !important;
   }
-  .layers::-webkit-scrollbar-thumb {
+  .slices::-webkit-scrollbar-thumb {
   }
-  .layers::-webkit-scrollbar-thumb:hover {
+  .slices::-webkit-scrollbar-thumb:hover {
     background: var(--cds-hover-primary) !important;
   }
-  .layers::-webkit-scrollbar-thumb:active {
+  .slices::-webkit-scrollbar-thumb:active {
     background: var(--cds-active-primary) !important;
   }
-  .layer {
+  .slice {
     text-align: center;
     padding: 0.2rem;
     border-bottom: 1px solid var(--cds-ui-01);
     background: var(--cds-ui-02);
   }
-  .layer.--selected {
+  .slice.--selected {
     background: var(--cds-active-primary);
   }
-  .layer:hover {
+  .slice:hover {
     background: var(--cds-hover-primary);
     cursor: pointer;
   }

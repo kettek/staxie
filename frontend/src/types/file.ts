@@ -23,8 +23,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
   groupName: string
   animation?: data.Animation
   animationName: string
-  layer?: data.Layer
-  layerIndex: number
+  slice?: data.Slice
+  sliceIndex: number
   frame?: data.Frame
   frameIndex: number
 
@@ -48,9 +48,9 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
           this.frameIndex = this.animation.frames.length - 1
           if (this.frameIndex >= 0) {
             this.frame = this.animation.frames[this.frameIndex]
-            if (this.frame.layers.length > 0) {
-              this.layer = this.frame.layers[0]
-              this.layerIndex = 0
+            if (this.frame.slices.length > 0) {
+              this.slice = this.frame.slices[0]
+              this.sliceIndex = 0
             }
           }
         }
@@ -67,17 +67,17 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
     if (this.animation) {
       this.frameIndex = index
       this.frame = this.animation.frames[index]
-      if (this.layerIndex >= this.frame.layers.length) {
-        this.layerIndex = this.frame.layers.length - 1
+      if (this.sliceIndex >= this.frame.slices.length) {
+        this.sliceIndex = this.frame.slices.length - 1
       }
-      this.layer = this.frame.layers[this.layerIndex]
+      this.slice = this.frame.slices[this.sliceIndex]
     }
   }
 
-  setLayerIndex(index: number) {
+  setSliceIndex(index: number) {
     if (this.frame) {
-      this.layerIndex = index
-      this.layer = this.frame.layers[index]
+      this.sliceIndex = index
+      this.slice = this.frame.slices[index]
     }
   }
   
