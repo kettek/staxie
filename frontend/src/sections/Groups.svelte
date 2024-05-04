@@ -1,10 +1,38 @@
 <script lang='ts'>
   import { FaceAdd, FolderAdd, GroupObjectsNew } from "carbon-icons-svelte";
   import type { LoadedFile } from "../types/file"
-  import { Button } from "carbon-components-svelte"
+  import { Button, TreeView } from "carbon-components-svelte"
 
   export let file: LoadedFile
   $: console.log(file)
+  
+  let activeId: string | number = 0
+  let selectedIds: (string|number)[] = []
+  let children = []
+  $: {
+    if (file) {
+      children = Object.entries(file.data.groups).map(([groupName, group]) => {
+        return {
+          id: groupName,
+          text: groupName,
+          children: Object.entries(group.animations).map(([animationName, animation]) => {
+            return {
+              id: groupName+'__'+animationName,
+              text: animationName
+            }
+          })
+        }
+      })
+    }
+  }
+  
+  function handleSelect(e) {
+    if (!e.detail.leaf) { // Group
+      console.log('select group', e.detail.id)
+    } else { // Animation
+      console.log('select animation', e.detail.id.substring(e.detail.id.indexOf('__')+2))
+    }
+  }
   
 </script>
 
@@ -30,18 +58,16 @@
   </menu>
   <section class='groups'>
     {#if file}
-      {#each Object.entries(file.data.groups) as [groupName, group]}
-        <article class='group'>
-          <span class='groupName'>{groupName}</span>
-          <section class='animations'>
-            {#each Object.entries(group.animations) as [animationName, animation]}
-              <article class='animation'>
-                <span class='animationName'>{animationName}</span>
-              </article>
-            {/each}
-          </section>
-        </article>
-      {/each}
+      <TreeView
+        size="compact"
+        {children}
+        bind:activeId
+        bind:selectedIds
+        on:select={handleSelect}
+        on:toggle={(e) => console.log(e.detail)}
+        on:focus={(e) => console.log(e.detail)}
+        on:keydown={(e) => console.log(e.detail)}
+      />
     {/if}
   </section>
 </main>
