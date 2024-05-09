@@ -541,6 +541,7 @@
     background: var(--cds-ui-01) !important;
   }
   .slices::-webkit-scrollbar-thumb {
+    background: var(--cds-text-03) !important;
   }
   .slices::-webkit-scrollbar-thumb:hover {
     background: var(--cds-hover-primary) !important;
@@ -582,7 +583,7 @@
     background: var(--cds-ui-01) !important;
   }
   .frames::-webkit-scrollbar-thumb {
-    background: var(--cds-hover-primary-text) !important;
+    background: var(--cds-text-03) !important;
   }
   .frames::-webkit-scrollbar-thumb:hover {
     background: var(--cds-hover-primary) !important;
