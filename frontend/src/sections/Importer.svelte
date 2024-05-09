@@ -5,7 +5,6 @@
 -->
 <script lang='ts'>
   import { GetFilePath, OpenFileBytes } from '../../wailsjs/go/main/App.js'
-  import { data } from '../../wailsjs/go/models.js'
   import { onMount } from 'svelte'
   
   import { IndexedPNG, type StaxAnimation, type StaxFrame, type StaxGroup, type StaxSlice } from '../types/png'

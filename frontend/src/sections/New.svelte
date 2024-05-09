@@ -5,7 +5,6 @@
 -->
 <script lang='ts'>
   import { onMount } from 'svelte';
-  import type { IndexedPNG } from '../types/png.js'
   import { Canvas } from '../types/canvas'
 
   import {

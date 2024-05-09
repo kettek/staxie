@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"os"
 	"path/filepath"
@@ -47,25 +46,6 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	log.Println("startup called")
-}
-
-func (a *App) Load(name string) *data.StaxieFileV1 {
-	return &data.StaxieFileV1{}
-}
-
-func (a *App) Save(name string, file *data.StaxieFileV1) error {
-	b, err := json.Marshal(file)
-	if err != nil {
-		log.Println("Error marshalling file:", err)
-		return err
-	}
-
-	if err := os.WriteFile(name, b, 0644); err != nil {
-		log.Println("Error saving file:", err)
-		return err
-	}
-	log.Println("Saved file:", name)
-	return nil
 }
 
 func (a *App) ReadBytes(name string) ([]byte, error) {

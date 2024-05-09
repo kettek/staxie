@@ -8,7 +8,6 @@
   import { brushSettings } from '../stores/brush'
   import { editor2DSettings } from '../stores/editor2d'
 
-  import type { data } from '../../wailsjs/go/models.ts'
   import { fileStates } from '../stores/file'
   import type { LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { data } from '../wailsjs/go/models.js'
   import { ToggleFullscreen } from '../wailsjs/go/main/App.js'
   import { EventsEmit } from '../wailsjs/runtime/runtime.js'
   import Editor2D from './sections/Editor2D.svelte'

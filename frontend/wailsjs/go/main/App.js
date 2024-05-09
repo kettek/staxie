@@ -14,20 +14,12 @@ export function GetSetting(arg1) {
   return window['go']['main']['App']['GetSetting'](arg1);
 }
 
-export function Load(arg1) {
-  return window['go']['main']['App']['Load'](arg1);
-}
-
 export function OpenFileBytes(arg1) {
   return window['go']['main']['App']['OpenFileBytes'](arg1);
 }
 
 export function ReadBytes(arg1) {
   return window['go']['main']['App']['ReadBytes'](arg1);
-}
-
-export function Save(arg1, arg2) {
-  return window['go']['main']['App']['Save'](arg1, arg2);
 }
 
 export function SaveFileBytes(arg1, arg2) {

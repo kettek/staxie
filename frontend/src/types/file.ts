@@ -1,4 +1,3 @@
-import type { data } from '../../wailsjs/go/models.ts'
 import type { Canvas } from './canvas'
 import type { IndexedPNG, StaxAnimation, StaxFrame, StaxGroup, StaxSlice } from './png'
 import { Preview } from './preview'
