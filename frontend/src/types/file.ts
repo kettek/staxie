@@ -65,6 +65,16 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
       }
     }
     // Process groups to get slice position information.
+    this.cacheSlicePositions()
+
+    this.filepath = options.filepath
+    this.title = options.title
+    this.canvas = options.canvas
+    this.preview = new Preview()
+    this.selection = new SelectionArea(options.canvas.width, options.canvas.height, 1)
+  }
+  
+  cacheSlicePositions() {
     let y = 0
     for (let group of this.groups) {
       for (let animation of group.animations) {
@@ -79,13 +89,6 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
         }
       }
     }
-    console.log(this.groups)
-
-    this.filepath = options.filepath
-    this.title = options.title
-    this.canvas = options.canvas
-    this.preview = new Preview()
-    this.selection = new SelectionArea(options.canvas.width, options.canvas.height, 1)
   }
   
   setFrameIndex(index: number) {
