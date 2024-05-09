@@ -8,7 +8,7 @@
   import { data } from '../../wailsjs/go/models.js'
   import { onMount } from 'svelte'
   
-  import { IndexedPNG } from '../types/png'
+  import { IndexedPNG, type StaxAnimation, type StaxFrame, type StaxGroup, type StaxSlice } from '../types/png'
   import { Canvas } from '../types/canvas'
   
   import { Button, NumberInput, Checkbox, RadioButtonGroup, RadioButton } from 'carbon-components-svelte'
@@ -36,9 +36,10 @@
   let width: number = 16
   let height: number = 16
   let rowBasedFrames: boolean = true
-  export let file: data.StaxieFileV1
   export let filepath: string = ''
   export let canvas: Canvas
+  export let png: IndexedPNG
+  export let staxGroups: StaxGroup[] = []
   let img: HTMLImageElement
   let path: string = ''
   let error: string = ""
@@ -66,7 +67,7 @@
       img = await loadImage(bytes)
       
       let arr = Uint8Array.from(atob(bytes), (v) => v.charCodeAt(0))
-      let png = new IndexedPNG(arr)
+      png = new IndexedPNG(arr)
       await png.decode()
       
       canvas = new Canvas(png.width, png.height)
@@ -132,25 +133,20 @@
   }
 
   function remakeFile() {
-    file = data.StaxieFileV1.createFrom({
-      width: width,
-      height: height,
-      groups: {}
-    })
     let cx = 0
     let cy = 0
     for (let gi = 0; gi < groups; gi++) {
-      let group: data.Group = data.Group.createFrom({
-        animations: {},
-      })
+      let group: StaxGroup = {
+        name: "group "+gi,
+        animations: [],
+        sliceCount: rowBasedFrames ? cols : rows,
+      }
       for (let ai = 0; ai < animations; ai++) {
-        let frames = []
-        let slices = []
+        let frames: StaxFrame[] = []
+        let slices: StaxSlice[] = []
         for (let i = 0; i < (!rowBasedFrames ? rows : cols); i++) {
           slices.push({
-            x: cx*width,
-            y: cy*height,
-            shadingMultiplier: 1.0,
+            shading: 255,
           })
           if (rowBasedFrames) {
             cx++
@@ -170,13 +166,14 @@
           cy = 0
         }
 
-        let animation: data.Animation = data.Animation.createFrom({
+        let animation: StaxAnimation = {
+          name: "animation "+ai,
           frames,
-          time: 100,
-        })
-        group.animations["animation "+ai] = animation
+          frameTime: 100,
+        }
+        group.animations.push(animation)
       }
-      file.groups["group "+gi] = group
+      staxGroups.push(group)
     }
   }
 

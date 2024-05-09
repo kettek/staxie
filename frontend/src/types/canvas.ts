@@ -3,6 +3,7 @@ import { zlibSync } from 'fflate'
 import * as crc32 from 'crc-32'
 import { Buffer } from 'buffer/'
 import { SaveFileBytes } from "../../wailsjs/go/main/App.js"
+import type { LoadedFile } from './file'
 
 /**
  * @type {Canvas}
@@ -349,19 +350,8 @@ export class Canvas {
     return {x: minX, y: minY}
   }
   
-  async toPNG(): Promise<Uint8Array> {
-    // Just use the canvas rendered to a PNG if non-indexed.
-    if (!this.isIndexed) {
-      return new Promise((resolve, reject) => {
-        this.canvas.toBlob((blob) => {
-          blob.arrayBuffer().then((buffer) => {
-            resolve(new Uint8Array(buffer))
-          }).catch(reject)
-        })
-      })
-    }
-    
-    // Otherwise do some lazy indexed PNG generation. FIXME: This is ham-fisted and not the proper way to encode PNGs...
+  async toPNG(file: LoadedFile): Promise<Uint8Array> {
+    // Do some lazy indexed PNG generation. FIXME: This is ham-fisted and not the proper way to encode PNGs...
     return new Promise((resolve, reject) => {
       let out = Buffer.alloc(0)
 
@@ -369,6 +359,7 @@ export class Canvas {
       let bufferOffset = 0
       let chunkStart = 0
       let chunkEnd = 0
+      let deflatedData: Uint8Array
       // Write header
       buffer = Buffer.alloc(8)
       bufferOffset = buffer.writeUInt8(0x89, bufferOffset)
@@ -388,52 +379,112 @@ export class Canvas {
       bufferOffset += buffer.write('IHDR', bufferOffset)
       bufferOffset = buffer.writeUInt32BE(this.width, bufferOffset)
       bufferOffset = buffer.writeUInt32BE(this.height, bufferOffset)
-      bufferOffset = buffer.writeUInt8(8, bufferOffset) // Indexed 8-bit depth for palette entries
-      bufferOffset = buffer.writeUInt8(3, bufferOffset) // Color type of indexed
+      bufferOffset = buffer.writeUInt8(this.isIndexed?8:8, bufferOffset) // Indexed 8-bit depth for palette entries
+      bufferOffset = buffer.writeUInt8(this.isIndexed?3:6, bufferOffset) // Color type of indexed or RGBA
       bufferOffset = buffer.writeUInt8(0, bufferOffset) // Compression method DEFLATE
       bufferOffset = buffer.writeUInt8(0, bufferOffset) // Filter method of 0
       bufferOffset = buffer.writeUInt8(0, bufferOffset) // No interlace method
       chunkEnd = bufferOffset
       bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
       out = Buffer.concat([out, buffer])
-      // Write PLTE
-      let palettesSize = this.palette.length * 3
-      buffer = Buffer.alloc(12 + palettesSize), bufferOffset = 0
-      bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
-      chunkStart = bufferOffset
-      bufferOffset += buffer.write('PLTE', bufferOffset)
-      for (let i = 0; i < this.palette.length; i++) {
-        bufferOffset = buffer.writeUInt8(this.palette[i] & 0xFF, bufferOffset)
-        bufferOffset = buffer.writeUInt8((this.palette[i] >> 8) & 0xFF, bufferOffset)
-        bufferOffset = buffer.writeUInt8((this.palette[i] >> 16) & 0xFF, bufferOffset)
-        // Alpha is skipped.
-      }
-      chunkEnd = bufferOffset
-      bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
-      out = Buffer.concat([out, buffer])
-      // Write tRNS
-      palettesSize = this.palette.length
-      buffer = Buffer.alloc(12 + palettesSize), bufferOffset = 0
-      bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
-      chunkStart = bufferOffset
-      bufferOffset += buffer.write('tRNS', bufferOffset)
-      for (let i = 0; i < this.palette.length; i++) {
-        bufferOffset = buffer.writeUInt8((this.palette[i] >> 24) & 0xFF, bufferOffset)
-      }
-      chunkEnd = bufferOffset
-      bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
-      out = Buffer.concat([out, buffer])
-      // Build our deflate data
-      let data = Buffer.alloc(this.pixels.length + this.height)
-      let dataOffset = 0
-      for (let i = 0; i < this.height; i++) {
-        dataOffset = data.writeUInt8(0, dataOffset) // No Filter
-        for (let j = 0, end = this.width; j < end; j++) {
-          dataOffset = data.writeUInt8(this.pixels[i*this.width+j], dataOffset)
+      
+      // Write out our stAx chunk.
+      bufferOffset = buffer.writeUInt8(0, bufferOffset) // Write version 0 stAx
+      bufferOffset = buffer.writeUInt16BE(file.frameWidth, bufferOffset) // write frame width
+      bufferOffset = buffer.writeUInt16BE(file.frameHeight, bufferOffset) // write frame height
+      bufferOffset = buffer.writeUInt16BE(file.groups.length, bufferOffset) // write group count
+      // Write our groups.
+      for (let i = 0; i < file.groups.length; i++) {
+        let group = file.groups[i]
+        // Write our group name's length and name data.
+        bufferOffset = buffer.writeUInt8(group.name.length, bufferOffset)
+        for (let j = 0; j < group.name.length; j++) {
+          bufferOffset = buffer.writeUInt8(group.name.charCodeAt(j), bufferOffset)
+        }
+        // Write layer count in the group.
+        bufferOffset = buffer.writeUInt16BE(group.sliceCount, bufferOffset)
+        // Write animation count and animations.
+        bufferOffset = buffer.writeUInt16BE(group.animations.length, bufferOffset)
+        for (let j = 0; j < group.animations.length; j++) {
+          let animation = group.animations[j]
+          // Write animation name's length and name data.
+          bufferOffset = buffer.writeUInt8(animation.name.length, bufferOffset)
+          for (let k = 0; k < animation.name.length; k++) {
+            bufferOffset = buffer.writeUInt8(animation.name.charCodeAt(k), bufferOffset)
+          }
+          // Write frame time.
+          bufferOffset = buffer.writeUInt32BE(animation.frameTime, bufferOffset)
+          // Write frame count.
+          bufferOffset = buffer.writeUInt16BE(animation.frames.length, bufferOffset)
+          // Write frames.
+          for (let k = 0; k < animation.frames.length; k++) {
+            let frame = animation.frames[k]
+            // Write the frame's layer data (only shading data atm).
+            for (let l = 0; l < frame.slices.length; k++) {
+              bufferOffset = buffer.writeUInt8(frame.slices[l].shading, bufferOffset)
+            }
+          }
         }
       }
-      //let deflatedData = deflateSync(data, {level: 9})
-      let deflatedData = zlibSync(data, {level: 9})
+      
+      if (this.isIndexed) {
+        // Write PLTE
+        let palettesSize = this.palette.length * 3
+        buffer = Buffer.alloc(12 + palettesSize), bufferOffset = 0
+        bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
+        chunkStart = bufferOffset
+        bufferOffset += buffer.write('PLTE', bufferOffset)
+        for (let i = 0; i < this.palette.length; i++) {
+          bufferOffset = buffer.writeUInt8(this.palette[i] & 0xFF, bufferOffset)
+          bufferOffset = buffer.writeUInt8((this.palette[i] >> 8) & 0xFF, bufferOffset)
+          bufferOffset = buffer.writeUInt8((this.palette[i] >> 16) & 0xFF, bufferOffset)
+          // Alpha is skipped.
+        }
+        chunkEnd = bufferOffset
+        bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
+        out = Buffer.concat([out, buffer])
+        // Write tRNS
+        palettesSize = this.palette.length
+        buffer = Buffer.alloc(12 + palettesSize), bufferOffset = 0
+        bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
+        chunkStart = bufferOffset
+        bufferOffset += buffer.write('tRNS', bufferOffset)
+        for (let i = 0; i < this.palette.length; i++) {
+          bufferOffset = buffer.writeUInt8((this.palette[i] >> 24) & 0xFF, bufferOffset)
+        }
+        chunkEnd = bufferOffset
+        bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
+        out = Buffer.concat([out, buffer])
+        // Build our deflate data
+        let data = Buffer.alloc(this.pixels.length + this.height)
+        let dataOffset = 0
+        for (let i = 0; i < this.height; i++) {
+          dataOffset = data.writeUInt8(0, dataOffset) // No Filter
+          for (let j = 0, end = this.width; j < end; j++) {
+            dataOffset = data.writeUInt8(this.pixels[i*this.width+j], dataOffset)
+          }
+        }
+        deflatedData = zlibSync(data, {level: 9})
+      } else {
+        // Build our RGBA deflate data
+        let data = Buffer.alloc(this.pixels.length*4 + this.height)
+        let dataOffset = 0
+        for (let i = 0; i < this.height; i++) {
+          dataOffset = data.writeUInt8(0, dataOffset) // No Filter
+          for (let j = 0, end = this.width; j < end; j++) {
+            let color = this.palette[this.pixels[i*this.width+j]]
+            let r = color & 0xFF
+            let g = (color >> 8) & 0xFF
+            let b = (color >> 16) & 0xFF
+            let a = (color >> 24) & 0xFF
+            dataOffset = data.writeUInt8(r, dataOffset)
+            dataOffset = data.writeUInt8(g, dataOffset)
+            dataOffset = data.writeUInt8(b, dataOffset)
+            dataOffset = data.writeUInt8(a, dataOffset)
+          }
+        }
+        deflatedData = zlibSync(data, {level: 9})
+      }
       // Write IDAT // Our DEFLATE and 0->raw scanline data
       buffer = Buffer.alloc(8), bufferOffset = 0
       bufferOffset = buffer.writeUInt32BE(deflatedData.length, bufferOffset)

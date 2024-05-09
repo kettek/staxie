@@ -42,6 +42,7 @@
   import About from './sections/About.svelte'
   import Groups from './sections/Groups.svelte'
   import { fileStates } from './stores/file'
+  import type { IndexedPNG, StaxGroup } from './types/png.js'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -95,7 +96,8 @@
   let showNew: boolean = false
   let showAbout: boolean = false
   let importValid: boolean = false
-  let importFile: data.StaxieFileV1 = null
+  let importPNG: IndexedPNG = null
+  let importGroups: StaxGroup[] = []
   let importFilepath: string = ''
   let importCanvas: Canvas = null
   
@@ -154,17 +156,18 @@
 
   function engageImport() {
     if (importValid) {
-      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importFile}))
+      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importPNG, groups: importGroups}))
       focusedFileIndex = $fileStates.length - 1
       importCanvas = null
-      importFile = null
+      importPNG = null
+      importGroups = []
     }
     showImport = false
   }
   
   async function engageExport() {
     try {
-      let data = await focusedFile.canvas.toPNG()
+      let data = await focusedFile.canvas.toPNG(focusedFile)
       
       SaveFileBytes(exportPath, [...data])
     } catch(e) {
@@ -175,10 +178,11 @@
   }
 
   function engageNew() {
-    fileStates.addFile(new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importFile}))
+    fileStates.addFile(new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importPNG, groups: importGroups}))
     focusedFileIndex = $fileStates.length - 1
     importCanvas = null
-    importFile = null
+    importPNG = null
+    importGroups = []
 
     showNew = false
   }
@@ -432,7 +436,8 @@
   <Importer
     bind:open={showImport}
     bind:valid={importValid}
-    bind:file={importFile}
+    bind:png={importPNG}
+    bind:staxGroups={importGroups}
     bind:filepath={importFilepath}
     bind:canvas={importCanvas}
   />
@@ -446,7 +451,7 @@
 </ComposedModal>
 
 <ComposedModal bind:open={showNew} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
-  <New bind:open={showNew} bind:canvas={importCanvas} bind:file={importFile} />
+  <New bind:open={showNew} bind:canvas={importCanvas} />
 </ComposedModal>
 
 <ComposedModal bind:open={showAbout} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>

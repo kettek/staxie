@@ -1,5 +1,6 @@
 import type { data } from '../../wailsjs/go/models.ts'
 import type { Canvas } from './canvas'
+import type { IndexedPNG, StaxAnimation, StaxFrame, StaxGroup, StaxSlice } from './png'
 import { Preview } from './preview'
 import { SelectionArea } from './selection'
 import { UndoableStack, type Undoable } from './undo'
@@ -8,7 +9,8 @@ export interface LoadedFileOptions {
   filepath: string
   title: string
   canvas: Canvas
-  data: data.StaxieFileV1
+  data: IndexedPNG
+  groups?: StaxGroup[]
 }
 
 export class LoadedFile extends UndoableStack<LoadedFile> {
@@ -17,34 +19,37 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
   canvas: Canvas
   selection: SelectionArea
   preview: Preview
-  data: data.StaxieFileV1
+  data?: IndexedPNG
   //
-  group?: data.Group
+  groups: StaxGroup[] = []
+  group?: StaxGroup
   groupName: string
-  animation?: data.Animation
+  animation?: StaxAnimation
   animationName: string
-  slice?: data.Slice
+  slice?: StaxSlice
   sliceIndex: number
-  frame?: data.Frame
+  frame?: StaxFrame
   frameIndex: number
+  frameWidth: number
+  frameHeight: number
 
   constructor(options: LoadedFileOptions) {
     super()
     this.setTarget(this)
-    this.data = options.data
-    if (Object.keys(this.data.groups).length > 0) {
-      for (let [key, value] of Object.entries(this.data.groups)) {
-        this.group = value
-        this.groupName = key
-        break
-      }
-      if (this.group) {
-        for (let [key, value] of Object.entries(this.group.animations)) {
-          this.animation = value
-          this.animationName = key
-          break
-        }
-        if (this.animation) {
+    if (options.groups) {
+      this.groups = options.groups
+    }
+    if (this.data) {
+      this.frameWidth = this.data.frameWidth
+      this.frameHeight = this.data.frameHeight
+      this.data = options.data
+      if (this.data.groups.length > 0) {
+        this.group = this.data.groups[0]
+        this.groupName = this.data.groups[0].name
+        
+        if (this.group.animations.length > 0) {
+          this.animation = this.group.animations[0]
+          this.animationName = this.animation.name
           this.frameIndex = this.animation.frames.length - 1
           if (this.frameIndex >= 0) {
             this.frame = this.animation.frames[this.frameIndex]
@@ -83,19 +88,19 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
   
   setAnimation(name: string) {
     if (this.group) {
-      this.animation = this.group.animations[name]
+      this.animation = this.group.animations.find(a => a.name === name)
       this.animationName = name
       this.setFrameIndex(this.animation.frames.length - 1)
     }
   }
   
   setGroup(name: string) {
-    this.group = this.data.groups[name]
+    this.group = this.groups.find(g => g.name === name)
     this.groupName = name
-    if (this.group[this.animationName]) {
+    if (this.group.animations.find(a => a.name === this.animationName)) {
       this.setAnimation(this.animationName)
     } else {
-      this.setAnimation(Object.keys(this.group.animations)[0])
+      this.setAnimation(this.group.animations[0].name)
     }
   }
   

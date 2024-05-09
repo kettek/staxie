@@ -11,14 +11,14 @@
   let children = []
   $: {
     if (file) {
-      children = Object.entries(file.data.groups).map(([groupName, group]) => {
+      children = file.groups.map(group => {
         return {
-          id: groupName,
-          text: groupName,
-          children: Object.entries(group.animations).map(([animationName, animation]) => {
+          id: group.name,
+          text: group.name,
+          children: group.animations.map(animation => {
             return {
-              id: groupName+'__'+animationName,
-              text: animationName
+              id: group.name+'__'+animation.name,
+              text: animation.name
             }
           })
         }
@@ -47,6 +47,7 @@
       iconDescription="Add Group"
       tooltipPosition="bottom"
       tooltipAlignment="end"
+      disabled={!file}
     />
     <hr />
     <Button
@@ -56,6 +57,7 @@
       iconDescription="Add Animation"
       tooltipPosition="bottom"
       tooltipAlignment="end"
+      disabled={!file || !file.group}
     />
   </menu>
   <section class='groups'>

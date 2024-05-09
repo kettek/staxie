@@ -439,14 +439,15 @@
   <section class='view'>
     <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>
     <section class='slicesContainer'>
-      <Button
+      <!--<Button
         kind="ghost"
         size="small"
         icon={NewTab}
         iconDescription="Add Slice"
         tooltipPosition="top"
         tooltipAlignment="end"
-      />
+        disabled={!file || !file.frame}
+      />-->
       <section class='slices'>
         {#if file.frame}
           {#each file.frame.slices as slice, sliceIndex}
@@ -465,6 +466,7 @@
         iconDescription="Add Frame"
         tooltipPosition="top"
         tooltipAlignment="end"
+        disabled={!file || !file.animation}
       />
       <section class='frames'>
         {#if file.animation}
@@ -524,7 +526,7 @@
   .slicesContainer {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: /*auto*/ minmax(0, 1fr);
   }
   .slices {
     font-family: monospace;

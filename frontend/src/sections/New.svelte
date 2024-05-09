@@ -5,7 +5,7 @@
 -->
 <script lang='ts'>
   import { onMount } from 'svelte';
-  import { data } from '../../wailsjs/go/models.js'
+  import type { IndexedPNG } from '../types/png.js'
   import { Canvas } from '../types/canvas'
 
   import {
@@ -19,7 +19,6 @@
   let width: number = 64
   let height: number = 64
   let indexed: boolean = true
-  export let file: data.StaxieFileV1
   export let canvas: Canvas
   export let open: boolean = false
 
@@ -28,11 +27,6 @@
       canvas = new Canvas(width, height)
       canvas.addNewPaletteColor(0, 0, 0, 0)
       canvas.isIndexed = indexed
-      file = data.StaxieFileV1.createFrom({
-        width: width,
-        height: height,
-        groups: {}
-      })
     }
   }
 
@@ -40,11 +34,6 @@
     canvas = new Canvas(width, height)
     canvas.addNewPaletteColor(0, 0, 0, 0)
     canvas.isIndexed = indexed
-    file = data.StaxieFileV1.createFrom({
-      width: width,
-      height: height,
-      groups: {}
-    })
   })
 </script>
 

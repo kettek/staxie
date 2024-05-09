@@ -12,6 +12,26 @@ const range = (left, right, inclusive) => {
   return range;
 }
 
+export type StaxSlice = {
+  shading: number
+}
+
+export type StaxFrame = {
+  slices: StaxSlice[]
+}
+
+export type StaxAnimation = {
+  name: string
+  frames: StaxFrame[]
+  frameTime: number
+}
+
+export type StaxGroup = {
+  animations: StaxAnimation[]
+  name: string
+  sliceCount: number
+}
+
 export class IndexedPNG {
   private data: Uint8Array
   private pos: number
@@ -36,6 +56,10 @@ export class IndexedPNG {
   
   public decodedPalette: Uint8Array
   public decodedPixels: Uint8Array
+  
+  public frameWidth: number
+  public frameHeight: number
+  public groups: StaxGroup[]
 
   constructor(data: Uint8Array) {
     this.data = data;
@@ -122,6 +146,77 @@ export class IndexedPNG {
               this.transparency.rgb = this.read(chunkSize);
               break;
           }
+          break;
+        
+        case 'stAx':
+          // Read in our special stAx chunk.
+          const version = this.data[this.pos++];
+          if (version !== 0) {
+            throw new Error(`stAx version is ${version}, expected 0`);
+          }
+          const frameWidth = this.readUInt16();
+          const frameHeight = this.readUInt16();
+          const groupCount = this.readUInt16();
+          const groups: StaxGroup[] = [];
+          
+          // Read groups.
+          for (let i = 0; i < groupCount; i++) {
+            let group: StaxGroup = {
+              name: 'missing',
+              animations: [],
+              sliceCount: 0,
+            };
+            // Read group name.
+            const nameLength = this.data[this.pos++];
+            let name = '';
+            for (let i = 0; i < nameLength; i++) {
+              name += this.data[this.pos++];
+            }
+            group.name = name
+            // Read slice count.
+            const sliceCount = this.readUInt16();
+            group.sliceCount = sliceCount;
+            // Read animation count.
+            const animationCount = this.readUInt16();
+            const animations: StaxAnimation[] = [];
+            // Read animations.
+            for (let j = 0; j < animationCount; j++) {
+              let animation: StaxAnimation = {
+                name: 'missing',
+                frames: [],
+                frameTime: 0,
+              };
+              const nameLength = this.data[this.pos++];
+              let name = '';
+              for (let i = 0; i < nameLength; i++) {
+                name += this.data[this.pos++];
+              }
+              animation.name = name;
+              const frameTime = this.readUInt32();
+              animation.frameTime = frameTime;
+              const frameCount = this.readUInt16();
+              animation.frames = [];
+              for (let k = 0; k < frameCount; k++) {
+                let frame: StaxFrame = {
+                  slices: [],
+                };
+                const sliceCount = this.readUInt16();
+                for (let l = 0; l < sliceCount; l++) {
+                  let slice: StaxSlice = {
+                    shading: this.data[this.pos++],
+                  };
+                  frame.slices.push(slice);
+                }
+              }
+              animations.push(animation);
+            }
+            group.animations = animations;
+            groups.push(group);
+          }
+          this.frameWidth = frameWidth;
+          this.frameHeight = frameHeight;
+          this.groups = groups;
+
           break;
   
         case 'tEXt':
