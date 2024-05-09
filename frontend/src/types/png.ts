@@ -14,6 +14,8 @@ const range = (left, right, inclusive) => {
 
 export type StaxSlice = {
   shading: number
+  x: number
+  y: number
 }
 
 export type StaxFrame = {
@@ -204,6 +206,8 @@ export class IndexedPNG {
                 for (let l = 0; l < sliceCount; l++) {
                   let slice: StaxSlice = {
                     shading: this.data[this.pos++],
+                    x: 0,
+                    y: 0,
                   };
                   frame.slices.push(slice);
                 }

@@ -32,8 +32,8 @@
   export let valid: boolean = false
   export let open: boolean = false
   
-  let width: number = 16
-  let height: number = 16
+  export let width: number = 16
+  export let height: number = 16
   let rowBasedFrames: boolean = true
   export let filepath: string = ''
   export let canvas: Canvas
@@ -146,6 +146,8 @@
         for (let i = 0; i < (!rowBasedFrames ? rows : cols); i++) {
           slices.push({
             shading: 255,
+            x: 0,
+            y: 0,
           })
           if (rowBasedFrames) {
             cx++

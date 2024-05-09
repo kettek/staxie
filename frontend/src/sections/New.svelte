@@ -15,8 +15,8 @@
     Checkbox,
   } from "carbon-components-svelte"
 
-  let width: number = 64
-  let height: number = 64
+  export let width: number = 64
+  export let height: number = 64
   let indexed: boolean = true
   export let canvas: Canvas
   export let open: boolean = false

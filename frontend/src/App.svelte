@@ -99,6 +99,8 @@
   let importGroups: StaxGroup[] = []
   let importFilepath: string = ''
   let importCanvas: Canvas = null
+  let importFrameWidth: number = 16
+  let importFrameHeight: number = 16
   
   let exportPath: string = ''
   let exportFormat: 'png' = 'png'
@@ -155,7 +157,7 @@
 
   function engageImport() {
     if (importValid) {
-      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importPNG, groups: importGroups}))
+      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importPNG, groups: importGroups, frameWidth: importFrameWidth, frameHeight: importFrameHeight}))
       focusedFileIndex = $fileStates.length - 1
       importCanvas = null
       importPNG = null
@@ -177,7 +179,7 @@
   }
 
   function engageNew() {
-    fileStates.addFile(new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importPNG, groups: importGroups}))
+    fileStates.addFile(new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importPNG, groups: importGroups, frameWidth: importFrameWidth, frameHeight: importFrameHeight}))
     focusedFileIndex = $fileStates.length - 1
     importCanvas = null
     importPNG = null
@@ -439,6 +441,8 @@
     bind:staxGroups={importGroups}
     bind:filepath={importFilepath}
     bind:canvas={importCanvas}
+    bind:width={importFrameWidth}
+    bind:height={importFrameHeight}
   />
 </ComposedModal>
 <ComposedModal bind:open={showExport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageExport}>
@@ -450,7 +454,12 @@
 </ComposedModal>
 
 <ComposedModal bind:open={showNew} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
-  <New bind:open={showNew} bind:canvas={importCanvas} />
+  <New
+    bind:open={showNew}
+    bind:canvas={importCanvas}
+    bind:width={importFrameWidth}
+    bind:height={importFrameHeight}
+  />
 </ComposedModal>
 
 <ComposedModal bind:open={showAbout} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>

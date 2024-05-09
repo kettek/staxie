@@ -10,6 +10,8 @@ export interface LoadedFileOptions {
   canvas: Canvas
   data: IndexedPNG
   groups?: StaxGroup[]
+  frameWidth: number
+  frameHeight: number
 }
 
 export class LoadedFile extends UndoableStack<LoadedFile> {
@@ -38,6 +40,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
     if (options.groups) {
       this.groups = options.groups
     }
+    this.frameWidth = options.frameWidth
+    this.frameHeight = options.frameHeight
     if (this.data) {
       this.frameWidth = this.data.frameWidth
       this.frameHeight = this.data.frameHeight
@@ -60,6 +64,23 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
         }
       }
     }
+    // Process groups to get slice position information.
+    let y = 0
+    for (let group of this.groups) {
+      for (let animation of group.animations) {
+        for (let frame of animation.frames) {
+          let x = 0
+          for (let slice of frame.slices) {
+            x += this.frameWidth
+            slice.x = x
+            slice.y = y
+          }
+          y += this.frameHeight
+        }
+      }
+    }
+    console.log(this.groups)
+
     this.filepath = options.filepath
     this.title = options.title
     this.canvas = options.canvas

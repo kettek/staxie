@@ -55,8 +55,8 @@
       if (shownFiles[file.title]) {
         // For now, just get the first frame of the first animation.
         let done = false
-        for (let [groupName, group] of Object.entries(file.data.groups)) {
-          for (let [animationName, animation] of Object.entries(group.animations)) {
+        for (let group of file.groups) {
+          for (let animation of group.animations) {
             for (let frame of animation.frames) {
               for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
                 let slice = frame.slices[sliceIndex]
@@ -68,7 +68,7 @@
                     ctx.scale(zoom, zoom)
                     ctx.strokeStyle = baseSizeOutlineColor
                     ctx.lineWidth = 1 / zoom
-                    ctx.strokeRect(-file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
+                    ctx.strokeRect(-file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
                     ctx.restore()
                   }
                   if (showSizeOutline) {
@@ -79,7 +79,7 @@
                     ctx.rotate(rotation * Math.PI / 180)
                     ctx.strokeStyle = sizeOutlineColor
                     ctx.lineWidth = 1 / zoom
-                    ctx.strokeRect(-file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
+                    ctx.strokeRect(-file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
                     ctx.restore()
                   }
                 }
@@ -95,7 +95,7 @@
                   ctx.filter = `brightness(${minShade + (1-minShade) * (shade/255)})`
                 }
 
-                ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.data.width, file.data.height, -file.data.width/2, -file.data.height/2, file.data.width, file.data.height)
+                ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.frameWidth, file.frameHeight, -file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
                 ctx.restore()
                 y -= 1 * sliceDistance * zoom
               }
