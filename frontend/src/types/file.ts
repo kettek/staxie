@@ -406,3 +406,100 @@ export class MoveSwatchUndoable implements Undoable<LoadedFile> {
     file.canvas.refreshCanvas()
   }
 }
+
+/** BEGIN STAX-RELATED CANVAS RESIZE TYPE Undoables */
+export class AddGroupUndoable implements Undoable<LoadedFile> {
+  private group: string
+  constructor(group: string) {
+  }
+  apply(file: LoadedFile) {
+    // TODO: Add group to file's groups.
+  }
+  unapply(file: LoadedFile) {
+    // TODO: Remove group from file's groups.
+  }
+}
+
+export class RemoveGroupUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private pixels: { x: number, y: number, index: number }[]
+  constructor(group: string) {
+  }
+  apply(file: LoadedFile) {
+    // TODO: Get our group's total width/height, store the pixels, clear the area, then shift all pixels below this group to its position. Shrink the canvas by height.
+  }
+  unapply(file: LoadedFile) {
+    // TODO: Grow our canvas by pixel width/height, shift all pixels below position + height down by height, then paste the pixels back in.
+  }
+}
+
+export class ChangeGroupSliceUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private slice: number
+  private oldSlice: number
+  constructor(group: string, slice: number) {
+  }
+  apply(file: LoadedFile) {
+    // TODO: If growing, expand the canvas by our animations' count (if they have frames), then shift every animation down by frameHeight*sliceCount. If shrinking, lazily store our entire animations' pixels, then iterate through all animations, clear the pixels for all the removed slices as the end, then shift the pixels in steps with height steps increasing by each frameHeight*sliceCount (e.g., 0 = no shift, 1 += fH*sC, 2 += fH*sC, etc.) before shrinking the canvas equal to animationCountIfHasFrames*frameHeight*sliceCount.
+  }
+  unapply(file: LoadedFile) {
+    // TODO: Reverse of above.
+  }
+}
+
+export class AddAnimationUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private animation: string
+  constructor(group: string, animation: string) {
+  }
+  apply(file: LoadedFile) {
+    // TODO: Insert into group's animations.
+  }
+  unapply(file: LoadedFile) {
+    // TODO: Remove from group's animations.
+  }
+}
+
+export class RemoveAnimationUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private animation: string
+  private pixels: { x: number, y: number, index: number }[]
+  constructor(group: string, animation: string) {
+  }
+  apply(file: LoadedFile) {
+    // TODO: If this animation has frames, we need to save our pixels, then shift all pixels after our height up by our height, then shrink the canvas.
+  }
+  unapply(file: LoadedFile) {
+    // TODO: Expand the canvas, move all following animations + groups down by our height, then paste our pixels back in if we had any.
+  }
+}
+
+export class InsertAnimationFrameUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private animation: string
+  private at: number
+  private pixels: { x: number, y: number, index: number }[]
+  constructor(group: string, animation: string, at: number) {
+  }
+  apply(file: LoadedFile) {
+    // TODO: Resize canvas width by frame width if needed. If frame is at the end of the list, do nothing else. If the frame is before the end of the list, shift all frame pixels to the right by frame width.
+  }
+  unapply(file: LoadedFile) {
+    // TODO: Shrink the canvas width by frame width if last frame and canvas's width is larger than canvas width + frame width. If not, clear our frame's pixel locations and shift all frame pixels to the left by frame width.
+  }
+}
+
+export class RemoveAnimationFrameUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private animation: string
+  private at: number
+  private pixels: { x: number, y: number, index: number }[]
+  constructor(group: string, animation: string, at: number) {
+  }
+  apply(file: LoadedFile) {
+    // TODO: Store pixels. Shrink the canvas width by frame width if last frame and canvas's width is larger than canvas width + frame width. If not, clear our frame's pixel locations and shift all frame pixels to the left by frame width.
+  }
+  unapply(file: LoadedFile) {
+    // TODO: Resize canvas width by frame width if needed. If the frame is before the end of the list, shift all frame pixels to the right by frame width. Re-insert pixels at position.
+  }
+}
