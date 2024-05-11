@@ -488,6 +488,21 @@ export class RemoveAnimationUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class MoveAnimationUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private animation: string
+  private oldIndex: number
+  private newIndex: number
+  constructor(group: string, animation: string, oldIndex: number, newIndex: number) {
+  }
+  apply(file: LoadedFile) {
+    // TODO: See logic for MoveGroupUndoable, but apply to the group's animations.
+  }
+  unapply(file: LoadedFile) {
+    // TODO: See logic for MoveGroupUndoable, but apply to the group's animations.
+  }
+}
+
 export class InsertAnimationFrameUndoable implements Undoable<LoadedFile> {
   private group: string
   private animation: string
