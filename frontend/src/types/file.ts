@@ -433,6 +433,20 @@ export class RemoveGroupUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class MoveGroupUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private oldIndex: number
+  private newIndex: number
+  constructor(group: string, oldIndex: number, newIndex: number) {
+  }
+  apply(file: LoadedFile) {
+    // TODO: Lazymode -- get our pixels for our groups between our two move groups, get our pixels for our first and second move group, clear pixels from first through second, then paste the pixels for our from to our to position, our to to our end position -to's height, then paste the between pixels between the two.
+  }
+  unapply(file: LoadedFile) {
+    // TODO: Part of above lazy mode, clear out old pixels, then position to, from, and between pixels.
+  }
+}
+
 export class ChangeGroupSliceUndoable implements Undoable<LoadedFile> {
   private group: string
   private slice: number
