@@ -30,8 +30,10 @@
     if (!e.detail.leaf) { // Group
       file.setGroup(e.detail.id)
     } else { // Animation
-      const name = e.detail.id.substring(e.detail.id.indexOf('__')+2)
-      file.setAnimation(name)
+      const group = e.detail.id.substring(0, e.detail.id.indexOf('__'))
+      const animation = e.detail.id.substring(e.detail.id.indexOf('__')+2)
+      file.setGroup(group)
+      file.setAnimation(animation)
     }
     fileStates.refresh()
   }
