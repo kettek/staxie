@@ -89,7 +89,7 @@
     />
   </menu>
   <section class='selected'>
-    <NumberInput label='slices' value={file?.group?.sliceCount} on:change={changeSlices}/>
+    <NumberInput label='slices' value={$file?.group?.sliceCount} on:change={changeSlices}/>
   </section>
   <section class='groups'>
     {#if file}

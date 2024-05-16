@@ -29,6 +29,7 @@
   let offsetY: number
   let zoom: number = 1.0
   $: file.selection.resize(file.canvas.width, file.canvas.height, zoom)
+  $: $file ? canvasDirty = true : null
 
   let mouseX: number = 0
   let mouseY: number = 0

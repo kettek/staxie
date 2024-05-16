@@ -1,3 +1,4 @@
+import { type Writable, writable, type Subscriber, type Unsubscriber, type Updater } from 'svelte/store'
 import type { Canvas } from './canvas'
 import type { IndexedPNG, StaxAnimation, StaxFrame, StaxGroup, StaxSlice } from './png'
 import { Preview } from './preview'
@@ -14,7 +15,7 @@ export interface LoadedFileOptions {
   frameHeight: number
 }
 
-export class LoadedFile extends UndoableStack<LoadedFile> {
+export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<LoadedFile> {
   filepath: string
   title: string
   canvas: Canvas
@@ -34,8 +35,19 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
   frameWidth: number
   frameHeight: number
 
+  subscribe: (this: void, run: Subscriber<LoadedFile>) => Unsubscriber
+  set: (this: void, value: LoadedFile) => void
+  update: (this: void, updater: Updater<LoadedFile>) => void
+
   constructor(options: LoadedFileOptions) {
     super()
+    
+    // ... Sure, let's make this a store. I hope this doesn't cause any issues later.
+    const { subscribe, set, update } = writable<LoadedFile>(this)
+    this.subscribe = subscribe
+    this.set = set
+    this.update = update
+
     this.setTarget(this)
     if (options.groups) {
       this.groups = options.groups
@@ -220,16 +232,19 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
     super.undo()
     this.canvas.refreshCanvas()
     this.selection.refresh()
+    this.set(this)
   }
   redo() {
     super.redo()
     this.canvas.refreshCanvas()
     this.selection.refresh()
+    this.set(this)
   }
   push(item: Undoable<LoadedFile>) {
     super.push(item)
     this.canvas.refreshCanvas()
     this.selection.refresh()
+    this.set(this)
   }
 }
 
