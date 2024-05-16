@@ -9,10 +9,10 @@
   import { editor2DSettings } from '../stores/editor2d'
 
   import { fileStates } from '../stores/file'
-  import { AddAnimationFrameUndoable, type LoadedFile } from '../types/file'
+  import { AddAnimationFrameUndoable, RemoveAnimationFrameUndoable, type LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type BrushType, type Tool, SelectionTool, SprayTool } from '../types/tools'
-  import { Button, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
+  import { Button, ContextMenu, ContextMenuOption, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
   import { Add, AddAlt, AddLarge, FaceAdd, NewTab, ZoomIn, ZoomOut } from 'carbon-icons-svelte';
 
   export let file: LoadedFile
@@ -426,6 +426,20 @@
     file.push(new AddAnimationFrameUndoable(file.group.name, file.animation.name))
   }
   
+  let contextFrameOpen: boolean = false
+  let contextFrameIndex: number = -1
+  let contextX: number = 0
+  let contextY: number = 0
+  function onFrameRightClick(e: MouseEvent, frameIndex: number) {
+    contextFrameOpen = true
+    contextX = e.clientX
+    contextY = e.clientY
+    contextFrameIndex = frameIndex
+  }
+  function contextFrameDelete() {
+    file.push(new RemoveAnimationFrameUndoable(file.group.name, file.animation.name, contextFrameIndex))
+  }
+  
   onMount(() => {
     let frameID: number = 0
     let frameDraw = () => {
@@ -476,7 +490,7 @@
       <section class='frames'>
         {#if $file.animation}
           {#each $file.animation.frames as frame, frameIndex}
-            <article class='frame{frameIndex===file.frameIndex?' --selected':''}' on:click={()=>setFrame(frameIndex)}>
+            <article class='frame{frameIndex===file.frameIndex?' --selected':''}' on:click={()=>setFrame(frameIndex)} on:contextmenu|preventDefault={(e)=>onFrameRightClick(e, frameIndex)}>
               <span class='frameIndex'>{frameIndex+1}</span>
             </article>
           {/each}
@@ -512,6 +526,9 @@
       tooltipAlignment="end"
     />
   </menu>
+  <ContextMenu bind:open={contextFrameOpen} bind:x={contextX} bind:y={contextY} target={[]}>
+    <ContextMenuOption labelText="Delete Frame" kind="danger" on:click={contextFrameDelete} />
+  </ContextMenu>
 </main>
 
 <style>

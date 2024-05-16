@@ -221,21 +221,14 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
     let x = 0
     let y = 0
-    let width = 0
-    let height = 0
-    let hasFirst = false
-    for (let fI = 0; fI < frameIndex; fI++) {
-      let frame = animation.frames[fI]
-      for (let slice of frame.slices) {
-        if (!hasFirst) {
-          x = slice.x
-          y = slice.y
-          hasFirst = true
-        }
-        width = Math.max(width, slice.x + this.frameWidth)
-      }
-      height += this.frameHeight
+    let width = g.sliceCount * this.frameWidth 
+    let height = this.frameHeight
+    
+    let frame = animation.frames[frameIndex]
+    if (frame.slices.length === 0) {
+      throw new Error('no slices in frame')
     }
+    y = frame.slices[0].y
     
     return { x, y, width, height }
   }
@@ -936,16 +929,81 @@ export class AddAnimationFrameUndoable implements Undoable<LoadedFile> {
 }
 
 export class RemoveAnimationFrameUndoable implements Undoable<LoadedFile> {
-  private group: string
-  private animation: string
-  private at: number
-  private pixels: { x: number, y: number, index: number }[]
-  constructor(group: string, animation: string, at: number) {
+  private groupName: string
+  private animationName: string
+  private frameIndex: number
+  private frame: StaxFrame
+  private pixels: Uint8Array
+  private pixelsX: number
+  private pixelsY: number
+  private pixelsWidth: number
+  private pixelsHeight: number
+  constructor(groupName: string, animationName: string, frameIndex: number) {
+    this.groupName = groupName
+    this.animationName = animationName
+    this.frameIndex = frameIndex
   }
   apply(file: LoadedFile) {
-    // TODO: Store pixels. Shrink the canvas width by frame width if last frame and canvas's width is larger than canvas width + frame width. If not, clear our frame's pixel locations and shift all frame pixels to the left by frame width.
+    let g = file.groups.find(v=>v.name === this.groupName)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let a = g.animations.find(v=>v.name === this.animationName)
+    if (!a) {
+      throw new Error('animation not found')
+    }
+    if (this.frameIndex < 0 || this.frameIndex >= a.frames.length) {
+      throw new Error('frame oob')
+    }
+    
+    let {x, y, width, height} = file.getFrameArea(this.groupName, this.animationName, this.frameIndex)
+    this.pixels = file.canvas.getPixels(x, y, width, height)
+    this.pixelsX = x
+    this.pixelsY = y
+    this.pixelsWidth = width
+    this.pixelsHeight = height
+    
+    let followingPixelsHeight = file.canvas.height - (y + height)
+    if (followingPixelsHeight > 0) {
+      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
+      // Move 'em back in place.
+      file.canvas.setPixels(x, y, width, followingPixelsHeight, pixels)
+    }
+    // Shrink our canvas by frame's height
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - height)
+    this.frame = a.frames.splice(this.frameIndex, 1)[0]
+
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    // TODO: Resize canvas width by frame width if needed. If the frame is before the end of the list, shift all frame pixels to the right by frame width. Re-insert pixels at position.
+    let g = file.groups.find(v=>v.name === this.groupName)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let a = g.animations.find(v=>v.name === this.animationName)
+    if (!a) {
+      throw new Error('animation not found')
+    }
+    
+    // 1. Get our pixels at pixelsY to end of canvas.
+    let followingPixelsHeight = file.canvas.height - this.pixelsY
+    let pixels: Uint8Array
+    if (followingPixelsHeight > 0) {
+      pixels = file.canvas.getPixels(this.pixelsX, this.pixelsY, file.canvas.width, followingPixelsHeight)
+    }
+
+    // 2. Increase our canvas height to += pixelsHeight
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height+this.pixelsHeight)
+    
+    // 3. Shift earlier pixels if needed.
+    if (pixels) {
+      file.canvas.setPixels(this.pixelsX, this.pixelsY+this.pixelsHeight, file.canvas.width, followingPixelsHeight, pixels)
+    }
+
+    // 4. Re-add stored pixels to pixelY
+    file.canvas.setPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight, this.pixels)
+    a.frames.splice(this.frameIndex, 0, this.frame)
+
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
