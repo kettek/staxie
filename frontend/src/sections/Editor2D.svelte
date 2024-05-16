@@ -9,7 +9,7 @@
   import { editor2DSettings } from '../stores/editor2d'
 
   import { fileStates } from '../stores/file'
-  import { AddAnimationFrameUndoable, RemoveAnimationFrameUndoable, type LoadedFile } from '../types/file'
+  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, RemoveAnimationFrameUndoable, type LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type BrushType, type Tool, SelectionTool, SprayTool } from '../types/tools'
   import { Button, ContextMenu, ContextMenuOption, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
@@ -439,6 +439,9 @@
   function contextFrameDelete() {
     file.push(new RemoveAnimationFrameUndoable(file.group.name, file.animation.name, contextFrameIndex))
   }
+  function contextFrameClear() {
+    file.push(new ClearAnimationFrameUndoable(file.group.name, file.animation.name, contextFrameIndex))
+  }
   
   onMount(() => {
     let frameID: number = 0
@@ -527,6 +530,7 @@
     />
   </menu>
   <ContextMenu bind:open={contextFrameOpen} bind:x={contextX} bind:y={contextY} target={[]}>
+    <ContextMenuOption labelText="Clear Frame" on:click={contextFrameClear} />
     <ContextMenuOption labelText="Delete Frame" kind="danger" on:click={contextFrameDelete} />
   </ContextMenu>
 </main>

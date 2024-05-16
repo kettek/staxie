@@ -1007,3 +1007,55 @@ export class RemoveAnimationFrameUndoable implements Undoable<LoadedFile> {
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
+
+export class ClearAnimationFrameUndoable implements Undoable<LoadedFile> {
+  private groupName: string
+  private animationName: string
+  private frameIndex: number
+  private pixels: Uint8Array
+  private pixelsX: number
+  private pixelsY: number
+  private pixelsWidth: number
+  private pixelsHeight: number
+  constructor(groupName: string, animationName: string, frameIndex: number) {
+    this.groupName = groupName
+    this.animationName = animationName
+    this.frameIndex = frameIndex
+  }
+  apply(file: LoadedFile) {
+    let g = file.groups.find(v=>v.name === this.groupName)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let a = g.animations.find(v=>v.name === this.animationName)
+    if (!a) {
+      throw new Error('animation not found')
+    }
+    if (this.frameIndex < 0 || this.frameIndex >= a.frames.length) {
+      throw new Error('frame oob')
+    }
+    
+    let {x, y, width, height} = file.getFrameArea(this.groupName, this.animationName, this.frameIndex)
+    this.pixels = file.canvas.getPixels(x, y, width, height)
+    this.pixelsX = x
+    this.pixelsY = y
+    this.pixelsWidth = width
+    this.pixelsHeight = height
+    
+    file.canvas.clearPixels(x, y, width, height)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+  unapply(file: LoadedFile) {
+    let g = file.groups.find(v=>v.name === this.groupName)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let a = g.animations.find(v=>v.name === this.animationName)
+    if (!a) {
+      throw new Error('animation not found')
+    }
+    
+    file.canvas.setPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight, this.pixels)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+}
