@@ -9,7 +9,7 @@
   import { editor2DSettings } from '../stores/editor2d'
 
   import { fileStates } from '../stores/file'
-  import type { LoadedFile } from '../types/file'
+  import { AddAnimationFrameUndoable, type LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type BrushType, type Tool, SelectionTool, SprayTool } from '../types/tools'
   import { Button, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
@@ -422,6 +422,10 @@
     fileStates.refresh()
   }
   
+  function addFrame() {
+    file.push(new AddAnimationFrameUndoable(file.group.name, file.animation.name))
+  }
+  
   onMount(() => {
     let frameID: number = 0
     let frameDraw = () => {
@@ -449,8 +453,8 @@
         disabled={!file || !file.frame}
       />-->
       <section class='slices'>
-        {#if file.frame}
-          {#each file.frame.slices as slice, sliceIndex}
+        {#if $file.frame}
+          {#each $file.frame.slices as slice, sliceIndex}
             <article class='slice{sliceIndex===file.sliceIndex?' --selected':''}' on:click={()=>setSlice(sliceIndex)}>
               <span class='sliceIndex'>{sliceIndex+1}</span>
             </article>
@@ -467,10 +471,11 @@
         tooltipPosition="top"
         tooltipAlignment="end"
         disabled={!file || !file.animation}
+        on:click={addFrame}
       />
       <section class='frames'>
-        {#if file.animation}
-          {#each file.animation.frames as frame, frameIndex}
+        {#if $file.animation}
+          {#each $file.animation.frames as frame, frameIndex}
             <article class='frame{frameIndex===file.frameIndex?' --selected':''}' on:click={()=>setFrame(frameIndex)}>
               <span class='frameIndex'>{frameIndex+1}</span>
             </article>

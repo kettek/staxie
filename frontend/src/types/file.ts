@@ -177,17 +177,17 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
     let x = 0
     let y = 0
-    let width = 0
+    let width = g.sliceCount * this.frameWidth 
     let height = 0
     let hasFirst = false
     for (let frame of animation.frames) {
-      for (let slice of frame.slices) {
-        if (!hasFirst) {
+      if (!hasFirst) {
+        for (let slice of frame.slices) {
           x = slice.x
           y = slice.y
           hasFirst = true
+          break
         }
-        width = Math.max(width, slice.x + this.frameWidth)
       }
       height += this.frameHeight
     }
@@ -742,18 +742,65 @@ export class MoveAnimationUndoable implements Undoable<LoadedFile> {
   }
 }
 
-export class InsertAnimationFrameUndoable implements Undoable<LoadedFile> {
+export class AddAnimationFrameUndoable implements Undoable<LoadedFile> {
   private group: string
   private animation: string
-  private at: number
-  private pixels: { x: number, y: number, index: number }[]
-  constructor(group: string, animation: string, at: number) {
+  constructor(group: string, animation: string) {
+    this.group = group
+    this.animation = animation
   }
   apply(file: LoadedFile) {
-    // TODO: Resize canvas width by frame width if needed. If frame is at the end of the list, do nothing else. If the frame is before the end of the list, shift all frame pixels to the right by frame width.
+    let g = file.groups.find(v=>v.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let a = g.animations.find(v=>v.name === this.animation)
+    if (!a) {
+      throw new Error('animation not found')
+    }
+    
+    // Grow our canvas by 1 frameHeight
+    let {x, y, width, height} = file.getAnimationArea(this.group, this.animation)
+    a.frames.push({slices: Array.from({length: g.sliceCount}, (_=>({shading: 1, x: 0, y: 0})))})
+    let newHeight = file.canvas.height + file.frameHeight
+    
+    // Grow our canvas.
+    file.canvas.resizeCanvas(width, newHeight)
+    
+    // Shift all pixels after our animation area down.
+    let followingPixelsHeight = file.canvas.height - (y + height)
+    if (followingPixelsHeight > 0) {
+      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
+      file.canvas.setPixels(x, y+height+file.frameHeight, width, followingPixelsHeight, pixels)
+    }
+    
+    // Clear our new area.
+    file.canvas.clearPixels(x, y+height, width, file.frameHeight)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    // TODO: Shrink the canvas width by frame width if last frame and canvas's width is larger than canvas width + frame width. If not, clear our frame's pixel locations and shift all frame pixels to the left by frame width.
+    let g = file.groups.find(v=>v.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let a = g.animations.find(v=>v.name === this.animation)
+    if (!a) {
+      throw new Error('animation not found')
+    }
+    
+    // Acquire our pixels after our area and potentially shift them back.
+    let {x, y, width, height} = file.getAnimationArea(this.group, this.animation)
+    a.frames.pop()
+    
+    let followingPixelsHeight = file.canvas.height - (y + height)
+    if (followingPixelsHeight > 0) {
+      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
+      // Move 'em back in place.
+      file.canvas.setPixels(x, y+height-file.frameHeight, width, followingPixelsHeight, pixels)
+    }
+    // Shrink our canvas by 1 frameHeight
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - file.frameHeight)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
 
