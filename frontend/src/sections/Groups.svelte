@@ -1,6 +1,6 @@
 <script lang='ts'>
   import { FaceAdd, FolderAdd, GroupObjectsNew } from "carbon-icons-svelte";
-  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable } from "../types/file"
+  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable } from "../types/file"
   import { Button, ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
 
@@ -10,8 +10,8 @@
   let selectedIds: (string|number)[] = []
   let children = []
   $: {
-    if (file) {
-      children = file.groups.map(group => {
+    if ($file) {
+      children = $file.groups.map(group => {
         return {
           id: group.name,
           text: group.name,
@@ -55,6 +55,11 @@
   }
   function contextGroupDelete() {
     file.push(new RemoveGroupUndoable(contextNode.id))
+  }
+  function contextAnimationDelete() {
+    const groupName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
+    const animationName = contextNode.id.substring(contextNode.id.indexOf('__')+2)
+    file.push(new RemoveAnimationUndoable(groupName, animationName))
   }
   
   function onGroupContextMenu(e: CustomEvent) {
@@ -111,7 +116,7 @@
     <ContextMenuOption labelText="Delete Group" kind="danger" on:click={contextGroupDelete} />
   </ContextMenu>
   <ContextMenu bind:open={contextAnimationOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onGroupContextMenu}>
-    <ContextMenuOption labelText="Delete Animation" kind="danger" />
+    <ContextMenuOption labelText="Delete Animation" kind="danger" on:click={contextAnimationDelete} />
   </ContextMenu>
 </main>
 

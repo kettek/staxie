@@ -121,12 +121,24 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
   }
   
+  getAnimation(group: string, name: string): StaxAnimation|undefined {
+    const g = this.getGroup(group)
+    if (g) {
+      return g.animations.find(v=>v.name===name)
+    }
+    return undefined
+  }
+  
   setAnimation(name: string) {
     if (this.group) {
       this.animation = this.group.animations.find(a => a.name === name)
       this.animationName = name
       this.setFrameIndex(this.animation.frames.length - 1)
     }
+  }
+  
+  getGroup(name: string): StaxGroup | undefined {
+    return this.groups.find(g => g.name === name)
   }
   
   setGroup(name: string) {
@@ -716,14 +728,67 @@ export class AddAnimationUndoable implements Undoable<LoadedFile> {
 export class RemoveAnimationUndoable implements Undoable<LoadedFile> {
   private group: string
   private animation: string
-  private pixels: { x: number, y: number, index: number }[]
+  private pixels: Uint8Array
+  private x: number
+  private y: number
+  private width: number
+  private height: number
+  private anim: StaxAnimation
+  private animIndex: number
   constructor(group: string, animation: string) {
+    this.group = group
+    this.animation = animation
   }
   apply(file: LoadedFile) {
-    // TODO: If this animation has frames, we need to save our pixels, then shift all pixels after our height up by our height, then shrink the canvas.
+    let g = file.groups.find(v=>v.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let a = g.animations.find(v=>v.name === this.animation)
+    if (!a) {
+      throw new Error('animation not found')
+    }
+
+    let {x, y, width, height} = file.getAnimationArea(this.group, this.animation)
+    if (height > 0) {
+      this.pixels = file.canvas.getPixels(x, y, width, height)
+      this.x = x
+      this.y = y
+      this.width = width
+      this.height = height
+    }
+    this.anim = a
+    
+    for (let i = 0; i < g.animations.length; i++) {
+      if (g.animations[i].name === this.animation) {
+        this.animIndex = i
+        break
+      }
+    }
+    g.animations.splice(this.animIndex, 1)
+
+    let remainingHeight = file.canvas.height - (y + height)
+    if (remainingHeight > 0) {
+      let pixels = file.canvas.getPixels(x, y+height, width, remainingHeight)
+      file.canvas.setPixels(x, y, width, remainingHeight, pixels)
+    }
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - height)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    // TODO: Expand the canvas, move all following animations + groups down by our height, then paste our pixels back in if we had any.
+    let g = file.groups.find(v=>v.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+
+    if (this.pixels) {
+      file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + this.height)
+      let pixels = file.canvas.getPixels(this.x, this.y, this.width, file.canvas.height - (this.y+this.height))
+      file.canvas.setPixels(this.x, this.y+this.height, this.width, file.canvas.height - (this.y+this.height), pixels)
+      file.canvas.setPixels(this.x, this.y, this.width, this.height, this.pixels)
+    }
+    g.animations.splice(this.animIndex, 0, this.anim)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
 
