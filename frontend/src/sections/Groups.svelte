@@ -1,7 +1,7 @@
 <script lang='ts'>
   import { FaceAdd, FolderAdd, GroupObjectsNew } from "carbon-icons-svelte";
-  import { type LoadedFile, RemoveGroupUndoable } from "../types/file"
-  import { Button, ContextMenu, ContextMenuOption, TreeView } from "carbon-components-svelte"
+  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable } from "../types/file"
+  import { Button, ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
 
   export let file: LoadedFile
@@ -57,6 +57,13 @@
   
   function onGroupContextMenu(e: CustomEvent) {
   }
+  function changeSlices(e: CustomEvent) {
+    if (e.detail < file.group.sliceCount) { // shrink
+      file.push(new ShrinkGroupSliceUndoable(file.group.name, file.group.sliceCount-Number(e.detail)))
+    } else if (e.detail > file.group.sliceCount) { // grow
+      file.push(new GrowGroupSliceUndoable(file.group.name, Number(e.detail)-file.group.sliceCount))
+    }
+  }
 </script>
 
 <main>
@@ -81,6 +88,9 @@
       disabled={!file || !file.group}
     />
   </menu>
+  <section class='selected'>
+    <NumberInput label='slices' value={file?.group?.sliceCount} on:change={changeSlices}/>
+  </section>
   <section class='groups'>
     {#if file}
       <TreeView
@@ -107,7 +117,7 @@
   main {
     height: 100%;
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto 1fr 4fr;
   }
   .toolbar {
     display: flex;

@@ -81,9 +81,9 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
         for (let frame of animation.frames) {
           let x = 0
           for (let slice of frame.slices) {
-            x += this.frameWidth
             slice.x = x
             slice.y = y
+            x += this.frameWidth
           }
           y += this.frameHeight
         }
@@ -134,18 +134,18 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
     }
     let x = 0
     let y = 0
-    let width = 0
+    let width = g.sliceCount * this.frameWidth
     let height = 0
     let hasFirst = false
     for (let animation of g.animations) {
       for (let frame of animation.frames) {
-        for (let slice of frame.slices) {
-          if (!hasFirst) {
+        if (!hasFirst) {
+          for (let slice of frame.slices) {
             x = slice.x
             y = slice.y
             hasFirst = true
+            break
           }
-          width = Math.max(width, slice.x + this.frameWidth)
         }
         height += this.frameHeight
       }
@@ -581,17 +581,107 @@ export class MoveGroupUndoable implements Undoable<LoadedFile> {
   }
 }
 
-export class ChangeGroupSliceUndoable implements Undoable<LoadedFile> {
+export class GrowGroupSliceUndoable implements Undoable<LoadedFile> {
   private group: string
-  private slice: number
-  private oldSlice: number
-  constructor(group: string, slice: number) {
+  private sliceCount: number
+  constructor(group: string, sliceCount: number) {
+    this.group = group
+    this.sliceCount = sliceCount
   }
   apply(file: LoadedFile) {
-    // TODO: If growing, expand the canvas by our animations' count (if they have frames), then shift every animation down by frameHeight*sliceCount. If shrinking, lazily store our entire animations' pixels, then iterate through all animations, clear the pixels for all the removed slices as the end, then shift the pixels in steps with height steps increasing by each frameHeight*sliceCount (e.g., 0 = no shift, 1 += fH*sC, 2 += fH*sC, etc.) before shrinking the canvas equal to animationCountIfHasFrames*frameHeight*sliceCount.
+    let g = file.groups.find(g => g.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    
+    let sliceCount = g.sliceCount + this.sliceCount
+    let newWidth = sliceCount * file.frameWidth
+    if (file.canvas.width < newWidth) {
+      file.canvas.resizeCanvas(newWidth, file.canvas.height)
+    }
+    g.sliceCount = sliceCount
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    // TODO: Reverse of above.
+    // Reverse of above.
+    let g = file.groups.find(g => g.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+      
+    let sliceCount = g.sliceCount - this.sliceCount
+    let targetWidth = sliceCount * file.frameWidth
+    g.sliceCount = sliceCount
+    for (let group of file.groups) {
+      targetWidth = Math.max(targetWidth, group.sliceCount * file.frameWidth)
+    }
+    // Shrink the canvas if no groups are wider than our changing group.
+    if (file.canvas.width > targetWidth) {
+      file.canvas.resizeCanvas(targetWidth, file.canvas.height)
+    }
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+}
+
+export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private sliceCount: number
+  private pixels: Uint8Array
+  private pixelsWidth: number
+  private pixelsHeight: number
+  private pixelsX: number
+  private pixelsY: number
+  constructor(group: string, sliceCount: number) {
+    this.group = group
+    this.sliceCount = sliceCount
+  }
+  apply(file: LoadedFile) {
+    let g = file.groups.find(g => g.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    
+    let sliceCount = g.sliceCount - this.sliceCount
+    let newWidth = sliceCount * file.frameWidth
+    
+    let {x, y, width, height} = file.getGroupArea(this.group)
+    this.pixelsX = x+newWidth
+    this.pixelsY = y
+    this.pixelsWidth = width - newWidth
+    this.pixelsHeight = height
+    this.pixels = file.canvas.getPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight)
+    
+    g.sliceCount = sliceCount
+    // Get our maximum width (each group's slices * file.frameWidth)
+    let targetWidth = newWidth
+    for (let group of file.groups) {
+      targetWidth = Math.max(targetWidth, group.sliceCount * file.frameWidth)
+    }
+    
+    if (file.canvas.width > targetWidth) { // Shrink the canvas if no groups are wider than our changing group.
+      // Resize the canvas.
+      file.canvas.resizeCanvas(targetWidth, file.canvas.height)
+    } else { // Otherwise just clear the area where our group's old slices were.
+      file.canvas.clearPixels(x+newWidth, y, width-newWidth, height)
+    }
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+  unapply(file: LoadedFile) {
+    // Reverse of above.
+    let g = file.groups.find(g => g.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+      
+    let sliceCount = g.sliceCount + this.sliceCount
+    let newWidth = sliceCount * file.frameWidth
+    if (file.canvas.width < newWidth) { // Grow it again.
+      file.canvas.resizeCanvas(newWidth, file.canvas.height)
+    }
+    // Paste back in our pixels.
+    file.canvas.setPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight, this.pixels)
+    g.sliceCount = sliceCount
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
 
