@@ -544,7 +544,9 @@ export class AddGroupUndoable implements Undoable<LoadedFile> {
 }
 
 export class RemoveGroupUndoable implements Undoable<LoadedFile> {
-  private group: string
+  private groupName: string
+  private group: StaxGroup
+  private groupIndex: number
   private x: number
   private y: number
   private width: number
@@ -552,13 +554,18 @@ export class RemoveGroupUndoable implements Undoable<LoadedFile> {
   private fromY: number
   private fromHeight: number
   private pixels: Uint8Array
-  constructor(group: string) {
-    this.group = group
+  constructor(groupName: string) {
+    this.groupName = groupName
   }
   apply(file: LoadedFile) {
+    this.groupIndex = file.groups.findIndex(g => g.name === this.groupName)
+    if (this.groupIndex === -1) {
+      throw new Error('group not found')
+    }
+    this.group = file.groups[this.groupIndex]
     // Get our group's total width/height, store the pixels, clear the area, then shift all pixels below this group to its position. Shrink the canvas by height.
     // Get and clear area.
-    let {x, y, width, height } = file.getGroupArea(this.group) // FIXME: This can be cached.
+    let {x, y, width, height } = file.getGroupArea(this.groupName) // FIXME: This can be cached.
     if (width === 0 || height === 0) return // Do nothing if empty.
     let pixels = file.canvas.getPixels(x, y, width, height)
     file.canvas.clearPixels(x, y, width, height)
@@ -579,9 +586,11 @@ export class RemoveGroupUndoable implements Undoable<LoadedFile> {
     this.fromHeight = fromHeight
     // Shrink.
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - height)
+    file.groups.splice(this.groupIndex, 1)
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
+    file.groups.splice(this.groupIndex, 0, this.group)
     // Grow our canvas by pixel width/height, shift all pixels below position + height down by height, then paste the pixels back in.
     // Grow canvas.
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + this.height)
