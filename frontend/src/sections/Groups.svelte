@@ -1,6 +1,6 @@
 <script lang='ts'>
   import { FaceAdd, FolderAdd, GroupObjectsNew } from "carbon-icons-svelte";
-  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable } from "../types/file"
+  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable } from "../types/file"
   import { Button, ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
 
@@ -71,6 +71,9 @@
       file.push(new GrowGroupSliceUndoable(file.group.name, Number(e.detail)-file.group.sliceCount))
     }
   }
+  function addAnimation() {
+    file.push(new AddAnimationUndoable(file.group.name))
+  }
 </script>
 
 <main>
@@ -93,6 +96,7 @@
       tooltipPosition="bottom"
       tooltipAlignment="end"
       disabled={!file || !file.group}
+      on:click={addAnimation}
     />
   </menu>
   <section class='selected'>

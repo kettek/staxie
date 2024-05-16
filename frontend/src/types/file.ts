@@ -723,14 +723,71 @@ export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
 
 export class AddAnimationUndoable implements Undoable<LoadedFile> {
   private group: string
-  private animation: string
-  constructor(group: string, animation: string) {
+  constructor(group: string) {
+    this.group = group
   }
   apply(file: LoadedFile) {
-    // TODO: Insert into group's animations.
+    let g = file.groups.find(g => g.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    
+    let name = "animation"
+    let count = 0
+    for (let a of g.animations) {
+      if (name === a.name) {
+        count++
+        name = `animation ${count}`
+      }
+    }
+
+    // Grow our canvas by 1 frameHeight
+    let {x, y, width, height} = file.getGroupArea(this.group)
+    let newHeight = file.canvas.height + file.frameHeight
+    
+    // Grow our canvas.
+    file.canvas.resizeCanvas(width, newHeight)
+    
+    // Shift all pixels after our animation area down.
+    let followingPixelsHeight = file.canvas.height - (y + height)
+    if (followingPixelsHeight > 0) {
+      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
+      file.canvas.setPixels(x, y+height+file.frameHeight, width, followingPixelsHeight, pixels)
+    }
+    
+    // Clear our new area.
+    file.canvas.clearPixels(x, y+height, width, file.frameHeight)
+
+    // Add our new stax.
+    let anim: StaxAnimation = {
+      name,
+      frameTime: 100,
+      frames: [{slices: Array.from({length: g.sliceCount}, (_=>({shading: 1, x: 0, y: 0})))}],
+    }
+    g.animations.push(anim)
+    
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    // TODO: Remove from group's animations.
+    let g = file.groups.find(g => g.name === this.group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+
+    // Acquire our pixels after our area and potentially shift them back.
+    let {x, y, width, height} = file.getGroupArea(this.group)
+    
+    let followingPixelsHeight = file.canvas.height - (y + height)
+    if (followingPixelsHeight > 0) {
+      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
+      // Move 'em back in place.
+      file.canvas.setPixels(x, y+height-file.frameHeight, width, followingPixelsHeight, pixels)
+    }
+    // Shrink our canvas by 1 frameHeight
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - file.frameHeight)
+
+    g.animations.pop()
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
 
