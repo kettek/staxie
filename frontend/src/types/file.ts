@@ -127,6 +127,95 @@ export class LoadedFile extends UndoableStack<LoadedFile> {
     }
   }
   
+  getGroupArea(group: string): { x: number, y: number, width: number, height: number } {
+    let g = this.groups.find(g => g.name === group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let x = 0
+    let y = 0
+    let width = 0
+    let height = 0
+    let hasFirst = false
+    for (let animation of g.animations) {
+      for (let frame of animation.frames) {
+        for (let slice of frame.slices) {
+          if (!hasFirst) {
+            x = slice.x
+            y = slice.y
+            hasFirst = true
+          }
+          width = Math.max(width, slice.x + this.frameWidth)
+        }
+        height += this.frameHeight
+      }
+    }
+    
+    return { x, y, width, height }
+  }
+  
+  getAnimationArea(group: string, anim: string): {x: number, y: number, width: number, height: number } {
+    let g = this.groups.find(g => g.name === group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let animation = g.animations.find(a => a.name === anim)
+    if (!animation) {
+      throw new Error('animation not found')
+    }
+    let x = 0
+    let y = 0
+    let width = 0
+    let height = 0
+    let hasFirst = false
+    for (let frame of animation.frames) {
+      for (let slice of frame.slices) {
+        if (!hasFirst) {
+          x = slice.x
+          y = slice.y
+          hasFirst = true
+        }
+        width = Math.max(width, slice.x + this.frameWidth)
+      }
+      height += this.frameHeight
+    }
+    
+    return { x, y, width, height }
+  }
+  
+  getFrameArea(group: string, anim: string, frameIndex: number): {x: number, y: number, width: number, height: number} {
+    let g = this.groups.find(g => g.name === group)
+    if (!g) {
+      throw new Error('group not found')
+    }
+    let animation = g.animations.find(a => a.name === anim)
+    if (!animation) {
+      throw new Error('animation not found')
+    }
+    if (frameIndex >= animation.frames.length) {
+      throw new Error('frame oob')
+    }
+    let x = 0
+    let y = 0
+    let width = 0
+    let height = 0
+    let hasFirst = false
+    for (let fI = 0; fI < frameIndex; fI++) {
+      let frame = animation.frames[fI]
+      for (let slice of frame.slices) {
+        if (!hasFirst) {
+          x = slice.x
+          y = slice.y
+          hasFirst = true
+        }
+        width = Math.max(width, slice.x + this.frameWidth)
+      }
+      height += this.frameHeight
+    }
+    
+    return { x, y, width, height }
+  }
+  
   undo() {
     super.undo()
     this.canvas.refreshCanvas()
@@ -411,25 +500,70 @@ export class MoveSwatchUndoable implements Undoable<LoadedFile> {
 export class AddGroupUndoable implements Undoable<LoadedFile> {
   private group: string
   constructor(group: string) {
+    this.group = group
   }
   apply(file: LoadedFile) {
-    // TODO: Add group to file's groups.
+    file.groups.push({name: this.group, animations: [], sliceCount: 0})
   }
   unapply(file: LoadedFile) {
-    // TODO: Remove group from file's groups.
+    // Iterate from end to beginning, as we add groups to the end.
+    for (let i = file.groups.length - 1; i >= 0; i--) {
+      if (file.groups[i].name === this.group) {
+        file.groups.splice(i, 1)
+        break
+      }
+    }
   }
 }
 
 export class RemoveGroupUndoable implements Undoable<LoadedFile> {
   private group: string
-  private pixels: { x: number, y: number, index: number }[]
+  private x: number
+  private y: number
+  private width: number
+  private height: number
+  private fromY: number
+  private fromHeight: number
+  private pixels: Uint8Array
   constructor(group: string) {
+    this.group = group
   }
   apply(file: LoadedFile) {
-    // TODO: Get our group's total width/height, store the pixels, clear the area, then shift all pixels below this group to its position. Shrink the canvas by height.
+    // Get our group's total width/height, store the pixels, clear the area, then shift all pixels below this group to its position. Shrink the canvas by height.
+    // Get and clear area.
+    let {x, y, width, height } = file.getGroupArea(this.group) // FIXME: This can be cached.
+    if (width === 0 || height === 0) return // Do nothing if empty.
+    let pixels = file.canvas.getPixels(x, y, width, height)
+    file.canvas.clearPixels(x, y, width, height)
+    // Shift up.
+    let fromX = 0
+    let fromY = y + height
+    let fromWidth = file.canvas.width
+    let fromHeight = file.canvas.height - fromY
+    let fromPixels = file.canvas.getPixels(fromX, fromY, fromWidth, fromHeight)
+    file.canvas.setPixels(x, y, fromWidth, fromHeight, fromPixels)
+    // Store.
+    this.pixels = pixels
+    this.x = x
+    this.y = y
+    this.width = width
+    this.height = height
+    this.fromY = fromY
+    this.fromHeight = fromHeight
+    // Shrink.
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - height)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    // TODO: Grow our canvas by pixel width/height, shift all pixels below position + height down by height, then paste the pixels back in.
+    // Grow our canvas by pixel width/height, shift all pixels below position + height down by height, then paste the pixels back in.
+    // Grow canvas.
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + this.height)
+    // Get and shift previously shifted pixels back down.
+    let pixels = file.canvas.getPixels(this.x, this.y, file.canvas.width, this.fromHeight)
+    file.canvas.setPixels(this.x, this.y+this.height, file.canvas.width, this.fromHeight, pixels)
+    // Restore old pixels.
+    file.canvas.setPixels(this.x, this.y, this.width, this.height, this.pixels)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
 

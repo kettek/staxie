@@ -1,7 +1,7 @@
 <script lang='ts'>
   import { FaceAdd, FolderAdd, GroupObjectsNew } from "carbon-icons-svelte";
-  import type { LoadedFile } from "../types/file"
-  import { Button, TreeView } from "carbon-components-svelte"
+  import { type LoadedFile, RemoveGroupUndoable } from "../types/file"
+  import { Button, ContextMenu, ContextMenuOption, TreeView } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
 
   export let file: LoadedFile
@@ -36,6 +36,27 @@
     fileStates.refresh()
   }
   
+  let contextX: number = 0
+  let contextY: number = 0
+  let contextGroupOpen: boolean = false
+  let contextAnimationOpen: boolean = false
+  let contextNode: any = null
+  function onGroupRightClick(e: MouseEvent, node: any) {
+    contextX = e.clientX
+    contextY = e.clientY
+    contextNode = node
+    if (node.leaf) { // animation
+      contextAnimationOpen = true
+      return
+    }
+    contextGroupOpen = true
+  }
+  function contextGroupDelete() {
+    file.push(new RemoveGroupUndoable(contextNode.id))
+  }
+  
+  function onGroupContextMenu(e: CustomEvent) {
+  }
 </script>
 
 <main>
@@ -68,9 +89,18 @@
         bind:activeId
         bind:selectedIds
         on:select={handleSelect}
-      />
+        let:node
+      >
+        <span on:contextmenu|preventDefault={(e)=>onGroupRightClick(e, node)}>{node.text}</span>
+      </TreeView>
     {/if}
   </section>
+  <ContextMenu bind:open={contextGroupOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onGroupContextMenu}>
+    <ContextMenuOption labelText="Delete Group" kind="danger" on:click={contextGroupDelete} />
+  </ContextMenu>
+  <ContextMenu bind:open={contextAnimationOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onGroupContextMenu}>
+    <ContextMenuOption labelText="Delete Animation" kind="danger" />
+  </ContextMenu>
 </main>
 
 <style>

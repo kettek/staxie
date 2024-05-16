@@ -60,6 +60,73 @@ export class Canvas {
     let ctx = this.canvas.getContext('2d')
     ctx.putImageData(this.imageData, 0, 0)
   }
+  
+  // resizeCanvas resizes the canvas to the given width and height, copying old data as necessary.
+  resizeCanvas(width: number, height: number) {
+    let newPixels = new Uint8Array(width * height)
+    for (let i = 0; i < Math.min(height, this.height); i++) {
+      for (let j = 0; j < Math.min(width, this.width); j++) {
+        newPixels[i * width + j] = this.pixels[i * this.width + j]
+      }
+    }
+    this.width = width
+    this.height = height
+    this.pixels = newPixels
+    this.imageData = new ImageData(width, height)
+    for (let i = 0; i < this.pixels.length; i++) {
+      let color = this.palette[this.pixels[i]]
+      this.imageData.data[i * 4 + 0] = color & 0xFF
+      this.imageData.data[i * 4 + 1] = (color >> 8) & 0xFF
+      this.imageData.data[i * 4 + 2] = (color >> 16) & 0xFF
+      this.imageData.data[i * 4 + 3] = (color >> 24) & 0xFF
+    }
+  }
+  
+  // growCanvas grows the canvas by the given x and y amounts.
+  growCanvas(x: number, y: number) {
+    let newWidth = this.width + x
+    let newHeight = this.height + y
+    let newPixels = new Uint8Array(newWidth * newHeight)
+    for (let i = 0; i < this.height; i++) {
+      for (let j = 0; j < this.width; j++) {
+        newPixels[i * newWidth + j] = this.pixels[i * this.width + j]
+      }
+    }
+    this.width = newWidth
+    this.height = newHeight
+    this.pixels = newPixels
+    this.imageData = new ImageData(newWidth, newHeight)
+    for (let i = 0; i < this.pixels.length; i++) {
+      let color = this.palette[this.pixels[i]]
+      this.imageData.data[i * 4 + 0] = color & 0xFF
+      this.imageData.data[i * 4 + 1] = (color >> 8) & 0xFF
+      this.imageData.data[i * 4 + 2] = (color >> 16) & 0xFF
+      this.imageData.data[i * 4 + 3] = (color >> 24) & 0xFF
+    }
+  }
+  
+  // shrinkCanvas shrinks the canvas by the given x and y amounts.
+  shrinkCanvas(x: number, y: number) {
+    let newWidth = this.width - x
+    let newHeight = this.height - y
+    let newPixels = new Uint8Array(newWidth * newHeight)
+    for (let i = 0; i < newHeight; i++) {
+      for (let j = 0; j < newWidth; j++) {
+        newPixels[i * newWidth + j] = this.pixels[i * this.width + j]
+      }
+    }
+    this.width = newWidth
+    this.height = newHeight
+    this.pixels = newPixels
+    this.imageData = new ImageData(newWidth, newHeight)
+    for (let i = 0; i < this.pixels.length; i++) {
+      let color = this.palette[this.pixels[i]]
+      this.imageData.data[i * 4 + 0] = color & 0xFF
+      this.imageData.data[i * 4 + 1] = (color >> 8) & 0xFF
+      this.imageData.data[i * 4 + 2] = (color >> 16) & 0xFF
+      this.imageData.data[i * 4 + 3] = (color >> 24) & 0xFF
+    }
+  }
 
   // setPalette sets the palette to the provided value.
   setPalette(palette: Uint32Array) {
@@ -130,6 +197,34 @@ export class Canvas {
     this.imageData.data[(y * this.width + x) * 4 + 1] = g
     this.imageData.data[(y * this.width + x) * 4 + 2] = b
     this.imageData.data[(y * this.width + x) * 4 + 3] = a
+  }
+  
+  getPixels(x: number, y: number, w: number, h: number): Uint8Array {
+    let pixels = new Uint8Array(w * h)
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < w; j++) {
+        pixels[i * w + j] = this.pixels[(y + i) * this.width + (x + j)]
+      }
+    }
+    return pixels
+  }
+  
+  setPixels(x: number, y: number, w: number, h: number, pixels: Uint8Array) {
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < w; j++) {
+        this.pixels[(y + i) * this.width + (x + j)] = pixels[i * w + j]
+      }
+    }
+    this.refreshImageData() // FIXME: It might be more efficient to set imageData above.
+  }
+  
+  clearPixels(x: number, y: number, w: number, h: number) {
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < w; j++) {
+        this.pixels[(y + i) * this.width + (x + j)] = 0
+      }
+    }
+    this.refreshImageData() // FIXME: It might be more efficient to set imageData above.
   }
   
   // addPaletteColor adds the provided RGBA values to the palette if it does not already exist, and returns the index of the color in the palette.
