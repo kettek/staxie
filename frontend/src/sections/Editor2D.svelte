@@ -34,8 +34,15 @@
 
   let mouseX: number = 0
   let mouseY: number = 0
+  // mousePixels is the absolute pixel location to the canvas.
   let mousePixelX: number = 0
   let mousePixelY: number = 0
+  // viewPixels is the absolute pixel location to the current view. This is mousePixels + view.xy.
+  let viewPixelX: number = 0
+  let viewPixelY: number = 0
+  // relativePixels is the relative pixel location to the current view, e.g., top-left == 0,0
+  let relativePixelX: number = 0
+  let relativePixelY: number = 0
   
   export let currentTool: Tool
   
@@ -47,7 +54,6 @@
       view.y = y
       view.width = width
       view.height = height
-      console.log(x, y, width, height)
     }
   }
 
@@ -138,7 +144,8 @@
     ctx.save()
     ctx.imageSmoothingEnabled = false
     ctx.scale(zoom, zoom)
-    ctx.drawImage(file.canvas.canvas, offsetX, offsetY)
+    //ctx.drawImage(file.canvas.canvas, offsetX, offsetY)
+    ctx.drawImage(file.canvas.canvas, view.x, view.y, view.width, view.height, offsetX, offsetY, view.width, view.height)
     ctx.restore()
 
     // FIXME: Reorganize overlay drawing to have two types: regular composition, such as this pixel brush preview, and difference composition for cursors and bounding boxes.
@@ -175,26 +182,26 @@
       ctx.strokeStyle = $editor2DSettings.gridMinorColor
       ctx.lineWidth = 0.5
       ctx.beginPath()
-      for (let x = $editor2DSettings.gridMinorSize; x < file.canvas.width; x += $editor2DSettings.gridMinorSize) {
+      for (let x = $editor2DSettings.gridMinorSize; x < view.width; x += $editor2DSettings.gridMinorSize) {
         ctx.moveTo(offsetX*zoom+x*zoom, offsetY*zoom)
-        ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+file.canvas.height*zoom)
+        ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+view.height*zoom)
       }
-      for (let y = $editor2DSettings.gridMinorSize; y < file.canvas.height; y += $editor2DSettings.gridMinorSize) {
+      for (let y = $editor2DSettings.gridMinorSize; y < view.height; y += $editor2DSettings.gridMinorSize) {
         ctx.moveTo(offsetX*zoom, offsetY*zoom+y*zoom)
-        ctx.lineTo(offsetX*zoom+file.canvas.width*zoom, offsetY*zoom+y*zoom)
+        ctx.lineTo(offsetX*zoom+view.width*zoom, offsetY*zoom+y*zoom)
       }
       ctx.stroke()
       // Major grid lines.
       ctx.strokeStyle = $editor2DSettings.gridMajorColor
       ctx.lineWidth = 0.5
       ctx.beginPath()
-      for (let x = $editor2DSettings.gridMajorSize; x < file.canvas.width; x += $editor2DSettings.gridMajorSize) {
+      for (let x = $editor2DSettings.gridMajorSize; x < view.width; x += $editor2DSettings.gridMajorSize) {
         ctx.moveTo(offsetX*zoom+x*zoom, offsetY*zoom)
-        ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+file.canvas.height*zoom)
+        ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+view.height*zoom)
       }
-      for (let y = $editor2DSettings.gridMajorSize; y < file.canvas.height; y += $editor2DSettings.gridMajorSize) {
+      for (let y = $editor2DSettings.gridMajorSize; y < view.height; y += $editor2DSettings.gridMajorSize) {
         ctx.moveTo(offsetX*zoom, offsetY*zoom+y*zoom)
-        ctx.lineTo(offsetX*zoom+file.canvas.width*zoom, offsetY*zoom+y*zoom)
+        ctx.lineTo(offsetX*zoom+view.width*zoom, offsetY*zoom+y*zoom)
       }
       ctx.stroke()
     }
@@ -226,11 +233,11 @@
     if ($editor2DSettings.showCheckerboard) {
       ctx.beginPath()
       ctx.fillStyle = $editor2DSettings.checkerboardColor1
-      ctx.rect(offsetX, offsetY, file.canvas.width, file.canvas.height)
+      ctx.rect(offsetX, offsetY, view.width, view.height)
       ctx.fill()
 
-      let rows = file.canvas.height / $editor2DSettings.checkerboardSize
-      let cols = file.canvas.width / $editor2DSettings.checkerboardSize
+      let rows = view.height / $editor2DSettings.checkerboardSize
+      let cols = view.width / $editor2DSettings.checkerboardSize
       ctx.beginPath()
       ctx.fillStyle = $editor2DSettings.checkerboardColor2
       for (let r = 0; r < rows; r++) {
@@ -282,13 +289,13 @@
   }
 
   function capOffset() {
-    if (offsetX < -file.canvas.width+30) {
-      offsetX = -file.canvas.width+30
+    if (offsetX < -view.width+30) {
+      offsetX = -view.width+30
     } else if (offsetX > canvas.width-30) {
       offsetX = canvas.width-30
     }
-    if (offsetY < -file.canvas.height+30) {
-      offsetY = -file.canvas.height+30
+    if (offsetY < -view.height+30) {
+      offsetY = -view.height+30
     } else if (offsetY > canvas.height-30) {
       offsetY = canvas.height-30
     }
@@ -318,17 +325,17 @@
       
       if (e.button === 0) {
         if (currentTool instanceof BrushTool) {
-          currentTool.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof EraserTool) {
-          currentTool.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof SprayTool) {
-          currentTool.pointerDown({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof FillTool) {
-          currentTool.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof PickerTool) {
-          currentTool.pointerDown({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else {
-          currentTool.pointerDown({file, view}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         }
       }
     })
@@ -373,6 +380,10 @@
         mouseY = e.offsetY - rect.top
         mousePixelX = Math.floor(mouseX / zoom - offsetX)
         mousePixelY = Math.floor(mouseY / zoom - offsetY)
+        relativePixelX = mousePixelX - view.x
+        relativePixelY = mousePixelY - view.y
+        viewPixelX = mousePixelX + view.x
+        viewPixelY = mousePixelY + view.y
         overlayDirty = true
       }
 
@@ -385,17 +396,17 @@
       if (buttons.has(0)) {
         if (currentTool.isActive()) {
           if (currentTool instanceof BrushTool) {
-            currentTool.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
           } else if (currentTool instanceof EraserTool) {
-            currentTool.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: 0 })
           } else if (currentTool instanceof SprayTool) {
-            currentTool.pointerMove({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+            currentTool.pointerMove({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
           } else if (currentTool instanceof FillTool) {
-            currentTool.pointerMove({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
           } else if (currentTool instanceof PickerTool) {
-            currentTool.pointerMove({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button })
+            currentTool.pointerMove({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: viewPixelX, y: viewPixelY, id: e.button })
           } else {
-            currentTool.pointerMove({file, view}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, view}, {x: viewPixelX, y: viewPixelY, id: 0 })
           }
         }
       }
@@ -416,7 +427,7 @@
 
       if (e.button === 0) {
         if (currentTool.isActive()) {
-          currentTool.pointerUp({file, view}, {x: mousePixelX, y: mousePixelY, id: 0, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerUp({file, view}, {x: viewPixelX, y: viewPixelY, id: 0, shift: e.shiftKey, control: e.ctrlKey })
         }
       }
 
@@ -520,7 +531,7 @@
   </section>
   <menu>
     <section class='cursorInfo'>
-      <span><aside>{Math.sign(mousePixelX)===1?' ':'-'}</aside>{Math.abs(mousePixelX)}</span><span><aside>{Math.sign(mousePixelY)===1?' ':'-'}</aside>{Math.abs(mousePixelY)}</span>
+      <span><aside>{Math.sign(relativePixelX)===-1?'-':' '}</aside>{Math.abs(relativePixelX)}</span><span><aside>{Math.sign(relativePixelY)===-1?'-':' '}</aside>{Math.abs(relativePixelY)}</span>
     </section>
     <section class='controls'>
       <NumberInput
