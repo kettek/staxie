@@ -133,7 +133,9 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     if (this.group) {
       this.animation = this.group.animations.find(a => a.name === name)
       this.animationName = name
-      this.setFrameIndex(this.animation.frames.length - 1)
+      if (this.animation) {
+        this.setFrameIndex(this.animation.frames.length - 1)
+      }
     }
   }
   
@@ -147,7 +149,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     if (this.group.animations.find(a => a.name === this.animationName)) {
       this.setAnimation(this.animationName)
     } else {
-      this.setAnimation(this.group.animations[0].name)
+      this.setAnimation(this.group.animations[0]?.name)
     }
   }
   
@@ -519,13 +521,52 @@ export class MoveSwatchUndoable implements Undoable<LoadedFile> {
 /** BEGIN STAX-RELATED CANVAS RESIZE TYPE Undoables */
 export class AddGroupUndoable implements Undoable<LoadedFile> {
   private group: string
-  constructor(group: string) {
-    this.group = group
+  constructor() {
   }
   apply(file: LoadedFile) {
-    file.groups.push({name: this.group, animations: [], sliceCount: 0})
+    let name = 'group 0'
+    for (let count = 0; file.groups.find(g => g.name === name); name = `group ${count++}`) {}
+    this.group = name
+    file.groups.push({name: this.group, animations: [{
+      name: 'animation',
+      frameTime: 100,
+      frames: [{slices: Array.from({length: 1}, (_=>({shading: 1, x: 0, y: 0})))}],
+    }], sliceCount: 1})
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+
+    // Grow our canvas by 1 frameHeight
+    let {x, y, width, height} = file.getGroupArea(this.group)
+    let newHeight = file.canvas.height + height
+    let fullWidth = Math.max(file.canvas.width, width)
+    
+    // Grow our canvas.
+    file.canvas.resizeCanvas(fullWidth, newHeight)
+    
+    // Shift all pixels all the pixels after group's Y down.
+    let followingPixelsHeight = file.canvas.height - (y + height)
+    if (followingPixelsHeight > 0) {
+      let pixels = file.canvas.getPixels(x, y, fullWidth, followingPixelsHeight)
+      file.canvas.setPixels(x, y+height, fullWidth, followingPixelsHeight, pixels)
+    }
+    
+    // Clear our new area.
+    file.canvas.clearPixels(x, y, fullWidth, height)
   }
   unapply(file: LoadedFile) {
+    let {x, y, width, height} = file.getGroupArea(this.group)
+    let newHeight = file.canvas.height - height
+    let fullWidth = Math.max(file.canvas.width, width)
+    
+    // Shift all our pixels back up.
+    let followingPixelsHeight = file.canvas.height - (y + height)
+    if (followingPixelsHeight > 0) {
+      let pixels = file.canvas.getPixels(x, y+height, fullWidth, followingPixelsHeight)
+      file.canvas.setPixels(x, y, fullWidth, followingPixelsHeight, pixels)
+    }
+    
+    // Shrink canvas.
+    file.canvas.resizeCanvas(fullWidth, newHeight)
+
     // Iterate from end to beginning, as we add groups to the end.
     for (let i = file.groups.length - 1; i >= 0; i--) {
       if (file.groups[i].name === this.group) {
@@ -533,6 +574,7 @@ export class AddGroupUndoable implements Undoable<LoadedFile> {
         break
       }
     }
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
 
@@ -737,19 +779,20 @@ export class AddAnimationUndoable implements Undoable<LoadedFile> {
     // Grow our canvas by 1 frameHeight
     let {x, y, width, height} = file.getGroupArea(this.group)
     let newHeight = file.canvas.height + file.frameHeight
+    let fullWidth = Math.max(file.canvas.width, width)
     
     // Grow our canvas.
-    file.canvas.resizeCanvas(width, newHeight)
+    file.canvas.resizeCanvas(fullWidth, newHeight)
     
     // Shift all pixels after our animation area down.
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
-      file.canvas.setPixels(x, y+height+file.frameHeight, width, followingPixelsHeight, pixels)
+      let pixels = file.canvas.getPixels(x, y+height, fullWidth, followingPixelsHeight)
+      file.canvas.setPixels(x, y+height+file.frameHeight, fullWidth, followingPixelsHeight, pixels)
     }
     
     // Clear our new area.
-    file.canvas.clearPixels(x, y+height, width, file.frameHeight)
+    file.canvas.clearPixels(x, y+height, fullWidth, file.frameHeight)
 
     // Add our new stax.
     let anim: StaxAnimation = {
@@ -769,12 +812,13 @@ export class AddAnimationUndoable implements Undoable<LoadedFile> {
 
     // Acquire our pixels after our area and potentially shift them back.
     let {x, y, width, height} = file.getGroupArea(this.group)
+    let fullWidth = Math.max(file.canvas.width, width)
     
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
+      let pixels = file.canvas.getPixels(x, y+height, fullWidth, followingPixelsHeight)
       // Move 'em back in place.
-      file.canvas.setPixels(x, y+height-file.frameHeight, width, followingPixelsHeight, pixels)
+      file.canvas.setPixels(x, y+height-file.frameHeight, fullWidth, followingPixelsHeight, pixels)
     }
     // Shrink our canvas by 1 frameHeight
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - file.frameHeight)

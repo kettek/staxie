@@ -437,6 +437,10 @@
     contextFrameIndex = frameIndex
   }
   function contextFrameDelete() {
+    if (file.animation.frames.length === 1) {
+      alert('thou shalt not delete the last frame')
+      return
+    }
     file.push(new RemoveAnimationFrameUndoable(file.group.name, file.animation.name, contextFrameIndex))
   }
   function contextFrameClear() {

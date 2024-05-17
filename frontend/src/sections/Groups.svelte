@@ -1,6 +1,6 @@
 <script lang='ts'>
   import { FaceAdd, FolderAdd, GroupObjectsNew } from "carbon-icons-svelte";
-  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable } from "../types/file"
+  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddGroupUndoable } from "../types/file"
   import { Button, ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
 
@@ -54,11 +54,19 @@
     contextGroupOpen = true
   }
   function contextGroupDelete() {
+    if (file.groups.length === 1) {
+      alert('thou shall not delete the last group')
+      return
+    }
     file.push(new RemoveGroupUndoable(contextNode.id))
   }
   function contextAnimationDelete() {
     const groupName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
     const animationName = contextNode.id.substring(contextNode.id.indexOf('__')+2)
+    if (file?.group.animations.length === 1) {
+      alert('thou shall not delete the last animation')
+      return
+    }
     file.push(new RemoveAnimationUndoable(groupName, animationName))
   }
   
@@ -70,6 +78,9 @@
     } else if (e.detail > file.group.sliceCount) { // grow
       file.push(new GrowGroupSliceUndoable(file.group.name, Number(e.detail)-file.group.sliceCount))
     }
+  }
+  function addGroup() {
+    file.push(new AddGroupUndoable())
   }
   function addAnimation() {
     file.push(new AddAnimationUndoable(file.group.name))
@@ -86,6 +97,7 @@
       tooltipPosition="bottom"
       tooltipAlignment="end"
       disabled={!file}
+      on:click={addGroup}
     />
     <hr />
     <Button
