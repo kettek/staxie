@@ -40,9 +40,6 @@
   // viewPixels is the absolute pixel location to the current view. This is mousePixels + view.xy.
   let viewPixelX: number = 0
   let viewPixelY: number = 0
-  // relativePixels is the relative pixel location to the current view, e.g., top-left == 0,0
-  let relativePixelX: number = 0
-  let relativePixelY: number = 0
   
   export let currentTool: Tool
   
@@ -380,8 +377,6 @@
         mouseY = e.offsetY - rect.top
         mousePixelX = Math.floor(mouseX / zoom - offsetX)
         mousePixelY = Math.floor(mouseY / zoom - offsetY)
-        relativePixelX = mousePixelX - view.x
-        relativePixelY = mousePixelY - view.y
         viewPixelX = mousePixelX + view.x
         viewPixelY = mousePixelY + view.y
         overlayDirty = true
@@ -531,7 +526,7 @@
   </section>
   <menu>
     <section class='cursorInfo'>
-      <span><aside>{Math.sign(relativePixelX)===-1?'-':' '}</aside>{Math.abs(relativePixelX)}</span><span><aside>{Math.sign(relativePixelY)===-1?'-':' '}</aside>{Math.abs(relativePixelY)}</span>
+      <span><aside>{Math.sign(mousePixelX)===-1?'-':' '}</aside>{Math.abs(mousePixelX)}</span><span><aside>{Math.sign(mousePixelY)===-1?'-':' '}</aside>{Math.abs(mousePixelY)}</span>
     </section>
     <section class='controls'>
       <NumberInput
