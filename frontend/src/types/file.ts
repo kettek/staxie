@@ -464,19 +464,23 @@ export class AddSwatchUndoable implements Undoable<LoadedFile> {
   }
 }
 
-// TODO
-/*export class RemoveSwatchUndoable implements Undoable<LoadedFile> {
+export class RemoveSwatchUndoable implements Undoable<LoadedFile> {
   private index: number
   private replaceIndex: number
+  private shiftPixels: boolean
   
   private oldRed: number
   private oldGreen: number
   private oldBlue: number
   private oldAlpha: number
 
-  constructor(index: number, replaceIndex: number) {
+  private oldPixels: { x: number, y: number, index: number }[]
+
+  constructor(index: number, replaceIndex?: number, shiftPixels?: boolean) {
     this.index = index
     this.replaceIndex = replaceIndex
+    this.shiftPixels = shiftPixels
+    this.oldPixels = []
   }
   apply(file: LoadedFile) {
     let r = file.canvas.palette[this.index] & 0xFF
@@ -487,13 +491,36 @@ export class AddSwatchUndoable implements Undoable<LoadedFile> {
     this.oldGreen = g
     this.oldBlue = b
     this.oldAlpha = a
+    
+    if (this.replaceIndex >= 0) {
+      // Collect our pixels as we replace them so we can undo them.
+      for (let y = 0; y < file.canvas.height; y++) {
+        for (let x = 0; x < file.canvas.width; x++) {
+          let p = file.canvas.getPixel(x, y)
+          if (p === this.index) {
+            this.oldPixels.push({x, y, index: p})
+            file.canvas.setPixel(x, y, this.replaceIndex)
+          }
+        }
+      }
+    }
 
-    file.canvas.removePaletteIndex(this.index, this.replaceIndex)
+    file.canvas.removePaletteIndex(this.index, this.shiftPixels)
+    file.canvas.refreshImageData()
+    file.canvas.refreshCanvas()
   }
   unapply(file: LoadedFile) {
-    file.canvas.insertPaletteColor(this.index, this.oldRed, this.oldGreen, this.oldBlue, this.oldAlpha)
+    file.canvas.insertPaletteColor(this.index, this.oldRed, this.oldGreen, this.oldBlue, this.oldAlpha, this.shiftPixels)
+
+    if (this.replaceIndex >= 0) {
+      for (let pixel of this.oldPixels) {
+        file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
+      }
+    }
+    file.canvas.refreshImageData()
+    file.canvas.refreshCanvas()
   }
-}*/
+}
 
 export class SwapSwatchUndoable implements Undoable<LoadedFile> {
   private index1: number

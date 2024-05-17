@@ -280,7 +280,7 @@ export class Canvas {
   }
   
   // insertPaletteColor inserts the provided RGBA values into the palette at the provided index.
-  insertPaletteColor(index: number, r: number, g: number, b: number, a: number) {
+  insertPaletteColor(index: number, r: number, g: number, b: number, a: number, shiftPixels?: boolean) {
     let newPalette = new Uint32Array(this.palette.length + 1)
     for (let i = 0; i < index; i++) {
       newPalette[i] = this.palette[i]
@@ -290,10 +290,17 @@ export class Canvas {
       newPalette[i + 1] = this.palette[i]
     }
     this.palette = newPalette
+    if (shiftPixels) {
+      for (let i = 0; i < this.pixels.length; i++) {
+        if (this.pixels[i] >= index) {
+          this.pixels[i]++
+        }
+      }
+    }
   }
   
   // removePaletteIndex removes the palette entry at the provided index. This also updates the pixel data to reflect the change.
-  removePaletteIndex(index: number) {
+  removePaletteIndex(index: number, shiftPixels?: boolean) {
     if (index < 0) {
       index = this.palette.length - index
     }
@@ -305,11 +312,11 @@ export class Canvas {
       newPalette[i - 1] = this.palette[i]
     }
     this.palette = newPalette
-    for (let i = 0; i < this.pixels.length; i++) {
-      if (this.pixels[i] === index) {
-        this.pixels[i] = 0
-      } else if (this.pixels[i] > index) {
-        this.pixels[i]--
+    if (shiftPixels) {
+      for (let i = 0; i < this.pixels.length; i++) {
+        if (this.pixels[i] > index) {
+          this.pixels[i]--
+        }
       }
     }
   }

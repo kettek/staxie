@@ -20,35 +20,13 @@
   
   const dispatch = createEventDispatcher()
 
-  const fileChanged = (item: Undoable<LoadedFile>) => {
-    if (item instanceof ReplaceSwatchUndoable || item instanceof AddSwatchUndoable || item instanceof MoveSwatchUndoable) {
-      file = file
-    }
-  }
-
-  $: {
-    if (file && lastFile !== file) {
-      if (lastFile) {
-        lastFile.off('redo', fileChanged)
-        lastFile.off('undo', fileChanged)
-        lastFile.off('push', fileChanged)
-      }
-
-      file.on('redo', fileChanged)
-      file.on('undo', fileChanged)
-      file.on('push', fileChanged)
-
-      lastFile = file
-    }
-  }
-
   export let fakePalette: Uint32Array | undefined
   let palette: Uint32Array | undefined[]
   $: {
     if (fakePalette) {
       palette = fakePalette
     } else {
-      palette = file ? file.canvas.palette : []
+      palette = $file ? $file.canvas.palette : []
     }
   }
   
@@ -101,7 +79,6 @@
     function stop(e: MouseEvent) {
       if (hoveringIndex !== -1 && hoveringIndex !== draggingIndex) {
         file.push(new MoveSwatchUndoable(draggingIndex, hoveringIndex<draggingIndex?hoveringIndex:hoveringIndex-1))
-        file = file
       }
 
       draggingIndex = -1
@@ -122,7 +99,7 @@
       }
       draggingIndex = index
 
-      for (let i = 0; i < file.canvas.palette.length; i++) {
+      for (let i = 0; i < $file.canvas.palette.length; i++) {
         const entry = document.querySelector(`.entry[x-index="${i}"]`) as HTMLSpanElement
         if (!entry) continue
         const rect = entry.getBoundingClientRect()
