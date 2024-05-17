@@ -519,32 +519,37 @@
     </section>
   </section>
   <menu>
-    <NumberInput
-      min={0}
-      max={10}
-      step={1}
-      bind:value={zoom}
-      size="sm"
-      hideSteppers
-    />
-    <Button
-      on:click={zoomIn}
-      kind="ghost"
-      size="small"
-      icon={ZoomIn}
-      iconDescription="Zoom In"
-      tooltipPosition="top"
-      tooltipAlignment="end"
-    />
-    <Button
-      on:click={zoomOut}
-      kind="ghost"
-      size="small"
-      icon={ZoomOut}
-      iconDescription="Zoom Out"
-      tooltipPosition="top"
-      tooltipAlignment="end"
-    />
+    <section class='cursorInfo'>
+      <span>{mousePixelX}</span><span>{mousePixelY}</span>
+    </section>
+    <section class='controls'>
+      <NumberInput
+        min={0}
+        max={10}
+        step={1}
+        bind:value={zoom}
+        size="sm"
+        hideSteppers
+      />
+      <Button
+        on:click={zoomIn}
+        kind="ghost"
+        size="small"
+        icon={ZoomIn}
+        iconDescription="Zoom In"
+        tooltipPosition="top"
+        tooltipAlignment="end"
+      />
+      <Button
+        on:click={zoomOut}
+        kind="ghost"
+        size="small"
+        icon={ZoomOut}
+        iconDescription="Zoom Out"
+        tooltipPosition="top"
+        tooltipAlignment="end"
+      />
+    </section>
   </menu>
   <ContextMenu bind:open={contextFrameOpen} bind:x={contextX} bind:y={contextY} target={[]}>
     <ContextMenuOption labelText="Clear Frame" on:click={contextFrameClear} />
@@ -657,9 +662,28 @@
   menu {
     display: flex;
     flex-direction: row;
-    justify-content: flex-end;
+    justify-content: space-between;
   }
   :global(menu > .bx--form-item) {
     flex: initial;
+  }
+  .cursorInfo {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto;
+    align-items: center;
+    justify-content: stretch;
+  }
+  .cursorInfo span {
+    min-width: 3rem;
+    text-align: left;
+    color: var(--cds-text-03);
+    font-size: 0.75rem;
+    font-family: monospace;
+  }
+  .controls {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
   }
 </style>
