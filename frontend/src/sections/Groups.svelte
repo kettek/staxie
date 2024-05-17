@@ -73,6 +73,10 @@
   function onGroupContextMenu(e: CustomEvent) {
   }
   function changeSlices(e: CustomEvent) {
+    if (e.detail <= 0) {
+      alert('thou shall not have less than 1 slice')
+      return
+    }
     if (e.detail < file.group.sliceCount) { // shrink
       file.push(new ShrinkGroupSliceUndoable(file.group.name, file.group.sliceCount-Number(e.detail)))
     } else if (e.detail > file.group.sliceCount) { // grow
