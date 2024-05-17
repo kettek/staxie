@@ -520,7 +520,7 @@
   </section>
   <menu>
     <section class='cursorInfo'>
-      <span>{mousePixelX}</span><span>{mousePixelY}</span>
+      <span><aside>{Math.sign(mousePixelX)===1?' ':'-'}</aside>{Math.abs(mousePixelX)}</span><span><aside>{Math.sign(mousePixelY)===1?' ':'-'}</aside>{Math.abs(mousePixelY)}</span>
     </section>
     <section class='controls'>
       <NumberInput
@@ -680,6 +680,10 @@
     color: var(--cds-text-03);
     font-size: 0.75rem;
     font-family: monospace;
+  }
+  .cursorInfo span aside {
+    display: inline-block;
+    width: 0.5em;
   }
   .controls {
     display: flex;
