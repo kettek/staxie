@@ -21,8 +21,10 @@ export class CanvasView {
       item.x = Math.min(this.x+this.width-1, Math.max(this.x, item.x))
       item.y = Math.min(this.y+this.height-1, Math.max(this.y, item.y))
     } else if (item instanceof PixelsPlaceUndoable) {
-      item.pixels = item.pixels.filter(pixel => {
-        return pixel.x >= this.x && pixel.x < this.x+this.width-1 && pixel.y >= this.y && pixel.y < this.y+this.height-1
+      item.pixels = item.pixels.map(pixel => {
+        pixel.x = Math.min(this.x+this.width-1, Math.max(this.x, pixel.x))
+        pixel.y = Math.min(this.y+this.height-1, Math.max(this.y, pixel.y))
+        return pixel
       })
     } else if (item instanceof SelectionSetUndoable) {
       item.pixels = item.pixels.filter(pixel => {
