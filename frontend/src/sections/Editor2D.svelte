@@ -7,6 +7,7 @@
   import { onMount } from 'svelte'
   import { brushSettings } from '../stores/brush'
   import { editor2DSettings } from '../stores/editor2d'
+  import { CanvasView } from '../types/canvasview'
 
   import { fileStates } from '../stores/file'
   import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, RemoveAnimationFrameUndoable, type LoadedFile } from '../types/file'
@@ -37,6 +38,18 @@
   let mousePixelY: number = 0
   
   export let currentTool: Tool
+  
+  let view: CanvasView = new CanvasView($file.canvas)
+  $: {
+    if ($file.frame) {
+      let { x, y, width, height } = $file.getSliceAreaFromFrame($file.frame, $file.sliceIndex)
+      view.x = x
+      view.y = y
+      view.width = width
+      view.height = height
+      console.log(x, y, width, height)
+    }
+  }
 
   let rootCanvas: HTMLCanvasElement
   let overlayCanvas: HTMLCanvasElement = document.createElement('canvas')
@@ -305,17 +318,17 @@
       
       if (e.button === 0) {
         if (currentTool instanceof BrushTool) {
-          currentTool.pointerDown({file, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof EraserTool) {
-          currentTool.pointerDown({file, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof SprayTool) {
-          currentTool.pointerDown({file, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof FillTool) {
-          currentTool.pointerDown({file, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if (currentTool instanceof PickerTool) {
-          currentTool.pointerDown({file, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else {
-          currentTool.pointerDown({file}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerDown({file, view}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         }
       }
     })
@@ -372,17 +385,17 @@
       if (buttons.has(0)) {
         if (currentTool.isActive()) {
           if (currentTool instanceof BrushTool) {
-            currentTool.pointerMove({file, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof EraserTool) {
-            currentTool.pointerMove({file, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof SprayTool) {
-            currentTool.pointerMove({file, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+            currentTool.pointerMove({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
           } else if (currentTool instanceof FillTool) {
-            currentTool.pointerMove({file, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: mousePixelX, y: mousePixelY, id: 0 })
           } else if (currentTool instanceof PickerTool) {
-            currentTool.pointerMove({file, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button })
+            currentTool.pointerMove({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: mousePixelX, y: mousePixelY, id: e.button })
           } else {
-            currentTool.pointerMove({file}, {x: mousePixelX, y: mousePixelY, id: 0 })
+            currentTool.pointerMove({file, view}, {x: mousePixelX, y: mousePixelY, id: 0 })
           }
         }
       }
@@ -403,7 +416,7 @@
 
       if (e.button === 0) {
         if (currentTool.isActive()) {
-          currentTool.pointerUp({file}, {x: mousePixelX, y: mousePixelY, id: 0, shift: e.shiftKey, control: e.ctrlKey })
+          currentTool.pointerUp({file, view}, {x: mousePixelX, y: mousePixelY, id: 0, shift: e.shiftKey, control: e.ctrlKey })
         }
       }
 

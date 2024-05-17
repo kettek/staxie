@@ -4,6 +4,7 @@ import type { IndexedPNG, StaxAnimation, StaxFrame, StaxGroup, StaxSlice } from 
 import { Preview } from './preview'
 import { SelectionArea } from './selection'
 import { UndoableStack, type Undoable } from './undo'
+import type { CanvasView } from './canvasview'
 
 export interface LoadedFileOptions {
   filepath: string
@@ -109,6 +110,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       this.frame = this.animation.frames[index]
       if (this.sliceIndex >= this.frame.slices.length) {
         this.sliceIndex = this.frame.slices.length - 1
+      } else if (!this.sliceIndex) {
+        this.sliceIndex = 0
       }
       this.slice = this.frame.slices[this.sliceIndex]
     }
@@ -235,6 +238,14 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     return { x, y, width, height }
   }
   
+  getSliceAreaFromFrame(frame: StaxFrame, sliceIndex: number) {
+    if (sliceIndex >= frame.slices.length) {
+      throw new Error('slice oob')
+    }
+    let slice = frame.slices[sliceIndex]
+    return { x: slice.x, y: slice.y, width: this.frameWidth, height: this.frameHeight }
+  }
+  
   undo() {
     super.undo()
     this.canvas.refreshCanvas()
@@ -247,7 +258,11 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     this.selection.refresh()
     this.set(this)
   }
-  push(item: Undoable<LoadedFile>) {
+  push(item: Undoable<LoadedFile>, view?: CanvasView) {
+    if (view) {
+      item = view.transformUndoable(item)
+    }
+
     super.push(item)
     this.canvas.refreshCanvas()
     this.selection.refresh()
@@ -277,7 +292,7 @@ export class PixelPlaceUndoable implements Undoable<LoadedFile> {
 export class PixelsPlaceUndoable implements Undoable<LoadedFile> {
   private oldPixels: { x: number, y: number, index: number }[]
   private hasOldPixels: boolean
-  private pixels: { x: number, y: number, index: number }[]
+  public pixels: { x: number, y: number, index: number }[]
   constructor(pixels: {x: number, y: number, index: number}[]) {
     this.hasOldPixels = false
     this.oldPixels = []
@@ -307,7 +322,7 @@ export class PixelsPlaceUndoable implements Undoable<LoadedFile> {
 
 export class SelectionSetUndoable implements Undoable<LoadedFile> {
   private oldPixels: { x: number, y: number, marked: boolean }[]
-  private pixels: { x: number, y: number, marked: boolean }[]
+  public pixels: { x: number, y: number, marked: boolean }[]
   private clear: boolean
 
   constructor(pixels: {x: number, y: number, marked: boolean}[], clear: boolean) {

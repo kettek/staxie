@@ -1,17 +1,12 @@
 import { PixelPlaceUndoable, type LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from "./file"
 import { Preview } from "./preview"
+import type { Pointer } from "./pointer"
 import { FilledCircle, FilledSquare, RandomSpray, type PixelPosition } from "./shapes"
+import type { CanvasView } from "./canvasview"
 
 export interface ToolContext {
   file: LoadedFile
-}
-
-interface Pointer {
-  x: number
-  y: number
-  id: number
-  shift?: boolean
-  control?: boolean
+  view: CanvasView
 }
 
 export type BrushType = "circle" | "square"
@@ -81,14 +76,14 @@ export class BrushTool implements Tool {
     if (ctx.brushSize == 1) {
       let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
       if (p !== -1 && ctx.file.selection.isPixelMarked(ptr.x, ptr.y)) {
-        ctx.file.push(new PixelPlaceUndoable(ptr.x, ptr.y, p, ctx.colorIndex))
+        ctx.file.push(new PixelPlaceUndoable(ptr.x, ptr.y, p, ctx.colorIndex), ctx.view)
       }
     } else if (ctx.brushSize == 2) {
       for (let x1 = 0; x1 < 2; x1++) {
         for (let y1 = 0; y1 < 2; y1++) {
           let p = ctx.file.canvas.getPixel(ptr.x+x1, ptr.y+y1)
           if (p !== -1 && ctx.file.selection.isPixelMarked(ptr.x+x1, ptr.y+y1)) {
-            ctx.file.push(new PixelPlaceUndoable(ptr.x+x1, ptr.y+y1, p, ctx.colorIndex))
+            ctx.file.push(new PixelPlaceUndoable(ptr.x+x1, ptr.y+y1, p, ctx.colorIndex), ctx.view)
           }
         }
       }
@@ -100,7 +95,7 @@ export class BrushTool implements Tool {
         shape = FilledSquare(ptr.x, ptr.y, ctx.brushSize, ctx.colorIndex)
       }
       shape = shape.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
-      ctx.file.push(new PixelsPlaceUndoable(shape))
+      ctx.file.push(new PixelsPlaceUndoable(shape), ctx.view)
     }
   }
   pointerMove(ctx: ToolContext & BrushToolContext, ptr: Pointer) {
@@ -121,14 +116,14 @@ export class BrushTool implements Tool {
       if (ctx.brushSize == 1) {
         let p = ctx.file.canvas.getPixel(x, y)
         if (p !== -1 && ctx.file.selection.isPixelMarked(x, y)) {
-          ctx.file.push(new PixelPlaceUndoable(x, y, p, ctx.colorIndex))
+          ctx.file.push(new PixelPlaceUndoable(x, y, p, ctx.colorIndex), ctx.view)
         }
       } else if (ctx.brushSize == 2) {
         for (let x1 = 0; x1 < 2; x1++) {
           for (let y1 = 0; y1 < 2; y1++) {
             let p = ctx.file.canvas.getPixel(x+x1, y+y1)
             if (p !== -1 && ctx.file.selection.isPixelMarked(x+x1, y+y1)) {
-              ctx.file.push(new PixelPlaceUndoable(x+x1, y+y1, p, ctx.colorIndex))
+              ctx.file.push(new PixelPlaceUndoable(x+x1, y+y1, p, ctx.colorIndex), ctx.view)
             }
           }
         }
@@ -140,7 +135,7 @@ export class BrushTool implements Tool {
           shape = FilledSquare(x, y, ctx.brushSize, ctx.colorIndex)
         }
         shape = shape.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
-        ctx.file.push(new PixelsPlaceUndoable(shape))
+        ctx.file.push(new PixelsPlaceUndoable(shape), ctx.view)
       }
     }
   }
@@ -177,7 +172,7 @@ export class SprayTool implements Tool {
     ctx.file.capture()
     let pixels = RandomSpray(ptr.x, ptr.y, ctx.radius, ctx.density, ctx.colorIndex)
     pixels = pixels.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
-    ctx.file.push(new PixelsPlaceUndoable(pixels))
+    ctx.file.push(new PixelsPlaceUndoable(pixels), ctx.view)
   }
   pointerMove(ctx: ToolContext & SprayToolContext, ptr: Pointer) {
     let dx = this.lastX - ptr.x
@@ -196,7 +191,7 @@ export class SprayTool implements Tool {
 
       let pixels = RandomSpray(x, y, ctx.radius, ctx.density, ctx.colorIndex)
       pixels = pixels.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
-      ctx.file.push(new PixelsPlaceUndoable(pixels))
+      ctx.file.push(new PixelsPlaceUndoable(pixels), ctx.view)
     }
   }
   pointerUp(ctx: ToolContext, ptr: Pointer): void {
@@ -248,7 +243,7 @@ export class FillTool implements Tool {
   pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
   }
   pointerUp(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
-    ctx.file.push(new PixelsPlaceUndoable(this.pixels))
+    ctx.file.push(new PixelsPlaceUndoable(this.pixels), ctx.view)
     this.active = false
   }
 }
@@ -319,7 +314,7 @@ export class SelectionTool implements Tool {
   }
   pointerUp(ctx: ToolContext & SelectionToolContext, ptr: Pointer) {
     if (this.startX === this.endX && this.startY === this.endY) {
-      ctx.file.push(new SelectionClearUndoable())
+      ctx.file.push(new SelectionClearUndoable(), ctx.view)
       this.active = false
       return
     }
@@ -342,7 +337,7 @@ export class SelectionTool implements Tool {
       }
     }
 
-    ctx.file.push(new SelectionSetUndoable(pixels, clear))
+    ctx.file.push(new SelectionSetUndoable(pixels, clear), ctx.view)
 
     this.active = false
   }
@@ -393,7 +388,7 @@ export class MagicWandTool implements Tool {
     }
 
     ctx.file.selection.active = true
-    ctx.file.push(new SelectionSetUndoable(pixels, clear))
+    ctx.file.push(new SelectionSetUndoable(pixels, clear), ctx.view)
   }
   pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
   }
@@ -466,9 +461,9 @@ export class MoveTool implements Tool {
     }
 
     ctx.file.capture()
-    ctx.file.push(new SelectionMoveUndoable(-dx, -dy))
-    ctx.file.push(new PixelsPlaceUndoable(clearPixels))
-    ctx.file.push(new PixelsPlaceUndoable(pixels))
+    ctx.file.push(new SelectionMoveUndoable(-dx, -dy), ctx.view)
+    ctx.file.push(new PixelsPlaceUndoable(clearPixels), ctx.view)
+    ctx.file.push(new PixelsPlaceUndoable(pixels), ctx.view)
     ctx.file.release()
     this.active = false
   }
