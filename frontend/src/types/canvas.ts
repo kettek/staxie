@@ -494,6 +494,9 @@ export class Canvas {
       bufferOffset = buffer.writeUInt8(0x1A, bufferOffset)
       bufferOffset = buffer.writeUInt8(0x0A, bufferOffset)
       out = Buffer.concat([out, buffer])
+      
+      // TODO: Replace this manual buffer writing with something like `new Chunk('IHDR')`, then writing bytes as desired, then issuing `out = Buffer.concat([out, chunk.finish()])` or something similar. It might be convenient have chunk.write(...), chunk.done(), then one would have chunk.length, chunk.type, chunk.data, and chunk.crc, all of which could be written to out.
+
       // Chunk o'clock (length, type, data, crc. crc = network-order CRC-32 of type + data)
       // Write IHDR
       buffer = Buffer.alloc(12 + 13), bufferOffset = 0
