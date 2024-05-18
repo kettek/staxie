@@ -210,6 +210,7 @@ export class IndexedPNG {
                   };
                   frame.slices.push(slice);
                 }
+                animation.frames.push(frame);
               }
               animations.push(animation);
             }
