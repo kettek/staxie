@@ -202,7 +202,6 @@ export class IndexedPNG {
                 let frame: StaxFrame = {
                   slices: [],
                 };
-                const sliceCount = this.readUInt16();
                 for (let l = 0; l < sliceCount; l++) {
                   let slice: StaxSlice = {
                     shading: this.data[this.pos++],
