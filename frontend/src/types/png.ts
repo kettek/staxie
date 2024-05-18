@@ -478,4 +478,8 @@ export class IndexedPNG {
     this.decodedPalette = this.decodePalette()
     this.decodedPixels  = await this.decodePixels()
   }
+  
+  hasStax(): boolean {
+    return this.groups && this.groups.length > 0
+  }
 };
