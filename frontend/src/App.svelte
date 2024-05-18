@@ -137,8 +137,6 @@
     currentTool = tool
   }
 
-  let refresh = {}
-
   let focusedFileIndex: number = -1
   let focusedFile: LoadedFile = null
   $: {
@@ -152,7 +150,6 @@
   function selectFile(file: LoadedFile, index: number) {
     if (index < 0 || index >= $fileStates.length) return
     focusedFileIndex = index
-    refresh = {}
   }
 
   function engageImport() {
@@ -417,7 +414,6 @@
             <TabContent>
               <Editor2D
                 bind:file={file}
-                refresh={refresh}
                 bind:currentTool={currentTool}
               />
             </TabContent>

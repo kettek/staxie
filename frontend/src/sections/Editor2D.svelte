@@ -20,7 +20,6 @@
   /*export let animation: data.Animation
   export let frame: data.Frame
   export let slice: data.Slice*/
-  export const refresh: {} = {}
 
   $: ((...args) => {
     canvasDirty = true
