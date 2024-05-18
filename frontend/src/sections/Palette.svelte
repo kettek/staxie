@@ -155,6 +155,7 @@
     text-align: left;
     user-select: none;
     overflow: auto;
+    padding: 1px;
   }
   .entry {
     position: relative;
@@ -166,7 +167,7 @@
     display: none;
   }
   .entry.primary {
-    border: 2px dashed white;
+    outline: 1px dashed white;
   }
   .entry.secondary {
     border: 2px dashed black;
