@@ -97,6 +97,7 @@
   let importValid: boolean = false
   let importPNG: IndexedPNG = null
   let importFilepath: string = ''
+  let importTitle: string = ''
   let importCanvas: Canvas = null
   
   let exportPath: string = ''
@@ -152,7 +153,7 @@
   async function loadPNG() {
     importFilepath = await GetFilePath()
     let b = (await OpenFileBytes(importFilepath)) as unknown as string
-    //let fp = /[^/\\]*$/.exec(importFilepath)[0]
+    importTitle = /[^/\\]*$/.exec(importFilepath)[0]
     importPNG = new IndexedPNG(Uint8Array.from(atob(b), (v) => v.charCodeAt(0)))
     await importPNG.decode()
     
@@ -180,12 +181,12 @@
       showImport = true
       return
     }
-    fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importPNG}))
+    fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG}))
   }
 
   function engageImport() {
     if (importValid) {
-      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importPNG}))
+      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG}))
       focusedFileIndex = $fileStates.length - 1
       importCanvas = null
       importPNG = null
