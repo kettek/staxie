@@ -563,6 +563,7 @@
   <menu>
     <section class='cursorInfo'>
       <span><aside>{Math.sign(mousePixelX)===-1?'-':' '}</aside>{Math.abs(mousePixelX)}</span><span><aside>{Math.sign(mousePixelY)===-1?'-':' '}</aside>{Math.abs(mousePixelY)}</span>
+      <span>{view.width}</span><span>{view.height}</span>
     </section>
     <section class='controls'>
       <NumberInput
@@ -711,7 +712,7 @@
   }
   .cursorInfo {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: auto auto auto auto;
     grid-template-rows: auto;
     align-items: center;
     justify-content: stretch;
