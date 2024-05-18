@@ -88,8 +88,6 @@
         error2 = "unsupported pixel format"
         return
       }
-      
-      plog.debug('stAx: ', png.hasStax())
 
       canvas.refreshCanvas()
 
@@ -106,6 +104,12 @@
     if (!img || !img.width || !img.height) {
       error = "no image"
       error2 = "please load an image"
+      return
+    }
+    
+    if (png.hasStax()) {
+      plog.debug('we got stax!')
+      staxGroups = png.groups
       return
     }
 
@@ -206,71 +210,83 @@
         </Row>
       </Grid>
     </FormGroup>
-    <FormGroup legendText="Options">
-      <Grid condensed narrow>
-        <Row condensed narrow>
-          <Column>
-            <NumberInput
-              size="sm"
-              min={1}
-              bind:value={width}
-              on:change={recalc}
-              invalidText="Minimum of 1, yo."
-              label="Slice Width"
-            />
-            <NumberInput
-              size="sm"
-              min={1}
-              bind:value={height}
-              on:change={recalc}
-              invalidText="Minimum of 1, yo."
-              label="Slice Height"
-            />
-            <Checkbox
-              bind:checked={rowBasedFrames}
-              on:change={recalc}
-              labelText="row based animation frames"
-            />
-            <RadioButtonGroup
-              legendText="Import animation frames as"
-              bind:selected={importFramesAs}
-              on:change={recalc}
-            >
-              <RadioButton labelText="groups" value="groups" />
-              <RadioButton labelText="animations" value="animations" />
-            </RadioButtonGroup>
-          </Column>
-          <Column>
-            <StructuredList condensed>
-              <StructuredListHead>
-                <StructuredListRow head>
-                  <StructuredListCell head>Columns</StructuredListCell>
-                  <StructuredListCell head>Rows</StructuredListCell>
-                </StructuredListRow>
-              </StructuredListHead>
-              <StructuredListBody>
-                <StructuredListRow>
-                  <StructuredListCell noWrap>{cols}</StructuredListCell>
-                  <StructuredListCell>{rows}</StructuredListCell>
-                </StructuredListRow>
-              </StructuredListBody>
-              <StructuredListHead>
-                <StructuredListRow head>
-                  <StructuredListCell head>Groups</StructuredListCell>
-                  <StructuredListCell head>Animations</StructuredListCell>
-                </StructuredListRow>
-              </StructuredListHead>
-              <StructuredListBody>
-                <StructuredListRow>
-                  <StructuredListCell noWrap>{groups}</StructuredListCell>
-                  <StructuredListCell>{animations}</StructuredListCell>
-                </StructuredListRow>
-              </StructuredListBody>
-            </StructuredList>
-          </Column>
-        </Row>
-      </Grid>
-    </FormGroup>
+    {#if png && png.hasStax()}
+      <FormGroup legendText="Stax File">
+        <Grid condensed>
+          <Row>
+            <Column>
+              <Tile> {staxGroups.length} groups </Tile>
+            </Column>
+          </Row>
+        </Grid>
+      </FormGroup>
+    {:else}
+      <FormGroup legendText="Options">
+        <Grid condensed narrow>
+          <Row condensed narrow>
+            <Column>
+              <NumberInput
+                size="sm"
+                min={1}
+                bind:value={width}
+                on:change={recalc}
+                invalidText="Minimum of 1, yo."
+                label="Slice Width"
+              />
+              <NumberInput
+                size="sm"
+                min={1}
+                bind:value={height}
+                on:change={recalc}
+                invalidText="Minimum of 1, yo."
+                label="Slice Height"
+              />
+              <Checkbox
+                bind:checked={rowBasedFrames}
+                on:change={recalc}
+                labelText="row based animation frames"
+              />
+              <RadioButtonGroup
+                legendText="Import animation frames as"
+                bind:selected={importFramesAs}
+                on:change={recalc}
+              >
+                <RadioButton labelText="groups" value="groups" />
+                <RadioButton labelText="animations" value="animations" />
+              </RadioButtonGroup>
+            </Column>
+            <Column>
+              <StructuredList condensed>
+                <StructuredListHead>
+                  <StructuredListRow head>
+                    <StructuredListCell head>Columns</StructuredListCell>
+                    <StructuredListCell head>Rows</StructuredListCell>
+                  </StructuredListRow>
+                </StructuredListHead>
+                <StructuredListBody>
+                  <StructuredListRow>
+                    <StructuredListCell noWrap>{cols}</StructuredListCell>
+                    <StructuredListCell>{rows}</StructuredListCell>
+                  </StructuredListRow>
+                </StructuredListBody>
+                <StructuredListHead>
+                  <StructuredListRow head>
+                    <StructuredListCell head>Groups</StructuredListCell>
+                    <StructuredListCell head>Animations</StructuredListCell>
+                  </StructuredListRow>
+                </StructuredListHead>
+                <StructuredListBody>
+                  <StructuredListRow>
+                    <StructuredListCell noWrap>{groups}</StructuredListCell>
+                    <StructuredListCell>{animations}</StructuredListCell>
+                  </StructuredListRow>
+                </StructuredListBody>
+              </StructuredList>
+            </Column>
+          </Row>
+        </Grid>
+      </FormGroup>
+    {/if}
   </Form>
   {#if error}
     <InlineNotification
