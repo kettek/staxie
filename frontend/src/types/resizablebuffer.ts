@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer/'
+
 // ResizableBuffer is a crummy and inefficient wrapper around Buffer to allow for dynamically resizing of a "Buffer".
 export class ResizableBuffer {
   buffer: Buffer
