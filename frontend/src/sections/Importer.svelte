@@ -28,6 +28,7 @@
     ModalBody,
     ModalFooter,
   } from "carbon-components-svelte"
+  import { plog } from '../globals/log'
 
   export let valid: boolean = false
   export let open: boolean = false
@@ -87,6 +88,9 @@
         error2 = "unsupported pixel format"
         return
       }
+      
+      plog.debug('stAx: ', png.hasStax())
+
       canvas.refreshCanvas()
 
       recalc()
