@@ -14,7 +14,7 @@
   import { LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable } from './types/file'
 
   import "carbon-components-svelte/css/all.css"
-  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput, Dropdown, Checkbox, TextInput } from "carbon-components-svelte"
+  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput, Dropdown, Checkbox, TextInput, RadioButton, RadioButtonGroup } from "carbon-components-svelte"
   import { ComposedModal } from "carbon-components-svelte"
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
@@ -291,6 +291,39 @@
       <OverflowMenuItem hasDivider text="Background..." on:click={()=>showBackgroundSettings = true} />
       <OverflowMenuItem hasDivider text="Theme..." on:click={()=>showThemeSettings = true} />
       <OverflowMenuItem hasDivider text="Fullscreen" on:click={()=>ToggleFullscreen()} />
+    </OverflowMenu>
+    <OverflowMenu size="sm">
+      <div slot="menu">Mode</div>
+      <OverflowMenuItem>
+        <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
+          <span>Slice</span>
+          <input type='radio' name='view-mode' value='slice' bind:group={$editor2DSettings.viewMode} />
+        </label>
+      </OverflowMenuItem>
+      <OverflowMenuItem>
+        <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
+          <span>Frame</span>
+          <input type='radio' name='view-mode' value='frame' bind:group={$editor2DSettings.viewMode} />
+        </label>
+      </OverflowMenuItem>
+      <OverflowMenuItem>
+        <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
+          <span>Animation</span>
+          <input type='radio' name='view-mode' value='animation' bind:group={$editor2DSettings.viewMode} />
+        </label>
+      </OverflowMenuItem>
+      <OverflowMenuItem>
+        <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
+          <span>Group</span>
+          <input type='radio' name='view-mode' value='group' bind:group={$editor2DSettings.viewMode} />
+        </label>
+      </OverflowMenuItem>
+      <OverflowMenuItem>
+        <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
+          <span>Sheet</span>
+          <input type='radio' name='view-mode' value='sheet' bind:group={$editor2DSettings.viewMode} />
+        </label>
+      </OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Windows</div>
