@@ -5,6 +5,7 @@ import { Preview } from './preview'
 import { SelectionArea } from './selection'
 import { UndoableStack, type Undoable } from './undo'
 import type { CanvasView } from './canvasview'
+import { flog } from '../globals/log'
 
 export interface LoadedFileOptions {
   filepath: string
@@ -159,6 +160,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   getGroupArea(group: string): { x: number, y: number, width: number, height: number } {
     let g = this.groups.find(g => g.name === group)
     if (!g) {
+      flog.error('group not found', group)
       throw new Error('group not found')
     }
     return this.getGroupAreaFromGroup(g)
@@ -190,10 +192,12 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   getAnimationArea(group: string, anim: string): {x: number, y: number, width: number, height: number } {
     let g = this.groups.find(g => g.name === group)
     if (!g) {
+      flog.error('group not found', group)
       throw new Error('group not found')
     }
     let animation = g.animations.find(a => a.name === anim)
     if (!animation) {
+      flog.error('animation not found', anim)
       throw new Error('animation not found')
     }
     return this.getAnimationAreaFromAnimation(animation)
@@ -224,13 +228,16 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   getFrameArea(group: string, anim: string, frameIndex: number): {x: number, y: number, width: number, height: number} {
     let g = this.groups.find(g => g.name === group)
     if (!g) {
+      flog.error('group not found', group)
       throw new Error('group not found')
     }
     let animation = g.animations.find(a => a.name === anim)
     if (!animation) {
+      flog.error('animation not found', anim)
       throw new Error('animation not found')
     }
     if (frameIndex >= animation.frames.length) {
+      flog.error('frame oob', frameIndex, "out of", animation.frames.length)
       throw new Error('frame oob')
     }
     return this.getFrameAreaFromFrame(animation.frames[frameIndex])
@@ -243,6 +250,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     let height = this.frameHeight
     
     if (frame.slices.length === 0) {
+      flog.error('no slices in frame')
       throw new Error('no slices in frame')
     }
     x = frame.slices[0].x
@@ -254,6 +262,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   
   getSliceAreaFromFrame(frame: StaxFrame, sliceIndex: number): {x: number, y: number, width: number, height: number} {
     if (sliceIndex >= frame.slices.length) {
+      flog.error('slice oob', sliceIndex, "out of", frame.slices.length)
       throw new Error('slice oob')
     }
     let slice = frame.slices[sliceIndex]
@@ -261,19 +270,23 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   }
   
   undo() {
+    flog.debug('undo')
     super.undo()
     this.canvas.refreshCanvas()
     this.selection.refresh()
     this.set(this)
   }
   redo() {
+    flog.debug('redo')
     super.redo()
     this.canvas.refreshCanvas()
     this.selection.refresh()
     this.set(this)
   }
   push(item: Undoable<LoadedFile>, view?: CanvasView) {
+    flog.debug('push', item.constructor.name)
     if (view) {
+      flog.debug('...transforming by view')
       item = view.transformUndoable(item)
     }
 
