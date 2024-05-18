@@ -63,17 +63,19 @@ export class IndexedPNG {
   public frameHeight: number
   public groups: StaxGroup[]
 
-  constructor(data: Uint8Array) {
-    this.data = data;
-    this.pos = 8; // Skip the default header
+  constructor(data?: Uint8Array) {
+    if (data) {
+      this.data = data;
+      this.pos = 8; // Skip the default header
+    }
 
     this.palette = [];
     this.transparency = {};
     this.text = {};
-    
-    console.log('IndexedPNG', data)
 
-    this.process()
+    if (data) {
+      this.process()
+    }
   }
 
   process() {

@@ -4,11 +4,10 @@
   This component provides importing an indexed or RGBA PNG file with options for how to interpret columns and rows as groups and animations.
 -->
 <script lang='ts'>
-  import { GetFilePath, OpenFileBytes } from '../../wailsjs/go/main/App.js'
   import { onMount } from 'svelte'
   
-  import { IndexedPNG, type StaxAnimation, type StaxFrame, type StaxGroup, type StaxSlice } from '../types/png'
-  import { Canvas } from '../types/canvas'
+  import type { IndexedPNG, StaxAnimation, StaxFrame, StaxGroup, StaxSlice } from '../types/png'
+  import type { Canvas } from '../types/canvas'
   
   import { Button, NumberInput, Checkbox, RadioButtonGroup, RadioButton } from 'carbon-components-svelte'
   import { Form, FormGroup, InlineNotification, Tile, Truncate } from 'carbon-components-svelte'
@@ -33,13 +32,11 @@
   export let valid: boolean = false
   export let open: boolean = false
   
-  export let width: number = 16
-  export let height: number = 16
+  let width: number = 16
+  let height: number = 16
   let rowBasedFrames: boolean = true
-  export let filepath: string = ''
   export let canvas: Canvas
   export let png: IndexedPNG
-  export let staxGroups: StaxGroup[] = []
   let img: HTMLImageElement
   let path: string = ''
   let error: string = ""
@@ -50,71 +47,19 @@
   let groups: number = 0
   let animations: number = 0
   
-  function loadImage(base64: string): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-      img = new Image()
-      img.onload = () => resolve(img)
-      img.onerror = reject
-      img.src = `data:image/png;base64,${base64}`
-    })
-  }
-  
-  async function openFile() {
-    try {
-      filepath = await GetFilePath()
-      let bytes = (await OpenFileBytes(filepath)) as unknown as string
-      path = /[^/\\]*$/.exec(filepath)[0]
-      img = await loadImage(bytes)
-      
-      let arr = Uint8Array.from(atob(bytes), (v) => v.charCodeAt(0))
-      png = new IndexedPNG(arr)
-      await png.decode()
-      
-      canvas = new Canvas(png.width, png.height)
-      
-      if (png.colorType === 6 || png.colorType === 2) { // RGBA / RGB
-        for (let i = 0; i < png.decodedPixels.length; i += 4) {
-          let y = Math.floor(i / (png.width * 4))
-          let x = (i / 4) % png.width
-          canvas.setPixelRGBA(x, y, png.decodedPixels[i], png.decodedPixels[i+1], png.decodedPixels[i+2], png.decodedPixels[i+3])
-        }
-        canvas.isIndexed = false
-      } else if (png.colorType === 3) { // indexed
-        canvas.setPaletteFromUint8Array(png.decodedPalette)
-        canvas.setPixelsFromUint8Array(png.decodedPixels)
-        canvas.isIndexed = true
-      } else {
-        error = "pixel format"
-        error2 = "unsupported pixel format"
-        return
-      }
-
-      canvas.refreshCanvas()
-
-      recalc()
-    } catch(err) {
-      error = "open"
-      error2 = err
+  $: {
+    if (img) {
+      img.src = canvas?.canvas.toDataURL()
     }
   }
   
   function recalc() {
+    if (!png) return
     error = ""
     error2 = ""
-    if (!img || !img.width || !img.height) {
-      error = "no image"
-      error2 = "please load an image"
-      return
-    }
     
-    if (png.hasStax()) {
-      plog.debug('we got stax!')
-      staxGroups = png.groups
-      return
-    }
-
-    rows = img.height / height
-    cols = img.width / width
+    rows = png.height / height
+    cols = png.width / width
 
     if (rows % 1 !== 0) {
       error = 'slice size'
@@ -126,6 +71,9 @@
       error2 = 'invalid cols count of: ' + cols
       return
     }
+
+    png.frameWidth = width
+    png.frameHeight = height
 
     groups = 0
     animations = 0
@@ -140,6 +88,7 @@
   }
 
   function remakeFile() {
+    png.groups = []
     let cx = 0
     let cy = 0
     for (let gi = 0; gi < groups; gi++) {
@@ -182,111 +131,98 @@
         }
         group.animations.push(animation)
       }
-      staxGroups.push(group)
+      png.groups.push(group)
     }
   }
 
   $: valid = error === ""
 
   onMount(() => {
+    img.onload = () => {
+      recalc()
+    }
     recalc()
   })
 </script>
 
-<ModalHeader label="Import from PNG"/>
+<ModalHeader label="Adjust stAx import"/>
 <ModalBody>
   <Form on:submit={e=>e.preventDefault()}>
-    <FormGroup legendText="Import" invalid={!img||!img.width||!img.height}>
+    <FormGroup legendText="Import">
       <Grid condensed>
         <Row>
           <Column>
-            <Button kind='secondary' on:click={openFile}>Open Image</Button>
-            <Truncate clamp="front">{path}</Truncate>
-          </Column>
-          <Column>
-            <img src={img?.src} alt=''>
-            <Tile> {img?.width} x {img?.height} </Tile>
+            <img bind:this={img} alt=''>
+            <Tile> {png?.width} x {png?.height} </Tile>
           </Column>
         </Row>
       </Grid>
     </FormGroup>
-    {#if png && png.hasStax()}
-      <FormGroup legendText="Stax File">
-        <Grid condensed>
-          <Row>
-            <Column>
-              <Tile> {staxGroups.length} groups </Tile>
-            </Column>
-          </Row>
-        </Grid>
-      </FormGroup>
-    {:else}
-      <FormGroup legendText="Options">
-        <Grid condensed narrow>
-          <Row condensed narrow>
-            <Column>
-              <NumberInput
-                size="sm"
-                min={1}
-                bind:value={width}
-                on:change={recalc}
-                invalidText="Minimum of 1, yo."
-                label="Slice Width"
-              />
-              <NumberInput
-                size="sm"
-                min={1}
-                bind:value={height}
-                on:change={recalc}
-                invalidText="Minimum of 1, yo."
-                label="Slice Height"
-              />
-              <Checkbox
-                bind:checked={rowBasedFrames}
-                on:change={recalc}
-                labelText="row based animation frames"
-              />
-              <RadioButtonGroup
-                legendText="Import animation frames as"
-                bind:selected={importFramesAs}
-                on:change={recalc}
-              >
-                <RadioButton labelText="groups" value="groups" />
-                <RadioButton labelText="animations" value="animations" />
-              </RadioButtonGroup>
-            </Column>
-            <Column>
-              <StructuredList condensed>
-                <StructuredListHead>
-                  <StructuredListRow head>
-                    <StructuredListCell head>Columns</StructuredListCell>
-                    <StructuredListCell head>Rows</StructuredListCell>
-                  </StructuredListRow>
-                </StructuredListHead>
-                <StructuredListBody>
-                  <StructuredListRow>
-                    <StructuredListCell noWrap>{cols}</StructuredListCell>
-                    <StructuredListCell>{rows}</StructuredListCell>
-                  </StructuredListRow>
-                </StructuredListBody>
-                <StructuredListHead>
-                  <StructuredListRow head>
-                    <StructuredListCell head>Groups</StructuredListCell>
-                    <StructuredListCell head>Animations</StructuredListCell>
-                  </StructuredListRow>
-                </StructuredListHead>
-                <StructuredListBody>
-                  <StructuredListRow>
-                    <StructuredListCell noWrap>{groups}</StructuredListCell>
-                    <StructuredListCell>{animations}</StructuredListCell>
-                  </StructuredListRow>
-                </StructuredListBody>
-              </StructuredList>
-            </Column>
-          </Row>
-        </Grid>
-      </FormGroup>
-    {/if}
+    <FormGroup legendText="Options">
+      <Grid condensed narrow>
+        <Row condensed narrow>
+          <Column>
+            <NumberInput
+              size="sm"
+              min={1}
+              bind:value={width}
+              on:change={recalc}
+              invalidText="Minimum of 1, yo."
+              label="Slice Width"
+            />
+            <NumberInput
+              size="sm"
+              min={1}
+              bind:value={height}
+              on:change={recalc}
+              invalidText="Minimum of 1, yo."
+              label="Slice Height"
+            />
+            <Checkbox
+              bind:checked={rowBasedFrames}
+              on:change={recalc}
+              labelText="row based animation frames"
+            />
+            <RadioButtonGroup
+              legendText="Import animation frames as"
+              bind:selected={importFramesAs}
+              on:change={recalc}
+            >
+              <RadioButton labelText="groups" value="groups" />
+              <RadioButton labelText="animations" value="animations" />
+            </RadioButtonGroup>
+          </Column>
+          <Column>
+            <StructuredList condensed>
+              <StructuredListHead>
+                <StructuredListRow head>
+                  <StructuredListCell head>Columns</StructuredListCell>
+                  <StructuredListCell head>Rows</StructuredListCell>
+                </StructuredListRow>
+              </StructuredListHead>
+              <StructuredListBody>
+                <StructuredListRow>
+                  <StructuredListCell noWrap>{cols}</StructuredListCell>
+                  <StructuredListCell>{rows}</StructuredListCell>
+                </StructuredListRow>
+              </StructuredListBody>
+              <StructuredListHead>
+                <StructuredListRow head>
+                  <StructuredListCell head>Groups</StructuredListCell>
+                  <StructuredListCell head>Animations</StructuredListCell>
+                </StructuredListRow>
+              </StructuredListHead>
+              <StructuredListBody>
+                <StructuredListRow>
+                  <StructuredListCell noWrap>{groups}</StructuredListCell>
+                  <StructuredListCell>{animations}</StructuredListCell>
+                </StructuredListRow>
+              </StructuredListBody>
+            </StructuredList>
+          </Column>
+        </Row>
+      </Grid>
+    </FormGroup>
   </Form>
   {#if error}
     <InlineNotification

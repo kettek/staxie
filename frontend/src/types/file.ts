@@ -13,8 +13,8 @@ export interface LoadedFileOptions {
   canvas: Canvas
   data: IndexedPNG
   groups?: StaxGroup[]
-  frameWidth: number
-  frameHeight: number
+  frameWidth?: number
+  frameHeight?: number
 }
 
 export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<LoadedFile> {
@@ -56,10 +56,11 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
     this.frameWidth = options.frameWidth
     this.frameHeight = options.frameHeight
-    if (this.data) {
+    if (options.data) {
+      this.data = options.data
       this.frameWidth = this.data.frameWidth
       this.frameHeight = this.data.frameHeight
-      this.data = options.data
+      this.groups = this.data.groups
       if (this.data.groups.length > 0) {
         this.group = this.data.groups[0]
         this.groupName = this.data.groups[0].name

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ToggleFullscreen } from '../wailsjs/go/main/App.js'
+  import { GetFilePath, OpenFileBytes, ToggleFullscreen } from '../wailsjs/go/main/App.js'
   import { EventsEmit } from '../wailsjs/runtime/runtime.js'
   import Editor2D from './sections/Editor2D.svelte'
   import Importer from './sections/Importer.svelte'
@@ -21,7 +21,7 @@
 
   import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper, Move, MagicWand, SprayPaint } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
-  import type { Canvas } from './types/canvas'
+  import { Canvas } from './types/canvas'
   import { BrushTool, EraserTool, FillTool, PickerTool, SelectionTool, MagicWandTool, type BrushType, type Tool, MoveTool, SprayTool } from './types/tools'
   import BrushSize from './components/BrushSize.svelte'
   import Shortcut from './components/Shortcut.svelte'
@@ -41,7 +41,7 @@
   import About from './sections/About.svelte'
   import Groups from './sections/Groups.svelte'
   import { fileStates } from './stores/file'
-  import type { IndexedPNG, StaxGroup } from './types/png.js'
+  import { IndexedPNG, type StaxGroup } from './types/png.js'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -96,11 +96,8 @@
   let showAbout: boolean = false
   let importValid: boolean = false
   let importPNG: IndexedPNG = null
-  let importGroups: StaxGroup[] = []
   let importFilepath: string = ''
   let importCanvas: Canvas = null
-  let importFrameWidth: number = 16
-  let importFrameHeight: number = 16
   
   let exportPath: string = ''
   let exportFormat: 'png' = 'png'
@@ -151,14 +148,47 @@
     if (index < 0 || index >= $fileStates.length) return
     focusedFileIndex = index
   }
+  
+  async function loadPNG() {
+    importFilepath = await GetFilePath()
+    let b = (await OpenFileBytes(importFilepath)) as unknown as string
+    //let fp = /[^/\\]*$/.exec(importFilepath)[0]
+    importPNG = new IndexedPNG(Uint8Array.from(atob(b), (v) => v.charCodeAt(0)))
+    await importPNG.decode()
+    
+    importCanvas = new Canvas(importPNG.width, importPNG.height)
+    
+    if (importPNG.colorType === 6 || importPNG.colorType === 2) { // RGBA / RGB
+      for (let i = 0; i < importPNG.decodedPixels.length; i += 4) {
+        let y = Math.floor(i / (importPNG.width * 4))
+        let x = (i / 4) % importPNG.width
+        importCanvas.setPixelRGBA(x, y, importPNG.decodedPixels[i], importPNG.decodedPixels[i+1], importPNG.decodedPixels[i+2], importPNG.decodedPixels[i+3])
+      }
+      importCanvas.isIndexed = false
+    } else if (importPNG.colorType === 3) { // indexed
+      importCanvas.setPaletteFromUint8Array(importPNG.decodedPalette)
+      importCanvas.setPixelsFromUint8Array(importPNG.decodedPixels)
+      importCanvas.isIndexed = true
+    } else {
+      alert('unsupported pixel format')
+      return
+    }
+
+    importCanvas.refreshCanvas()
+
+    if (!importPNG.hasStax()) {
+      showImport = true
+      return
+    }
+    fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importPNG}))
+  }
 
   function engageImport() {
     if (importValid) {
-      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importPNG, groups: importGroups, frameWidth: importFrameWidth, frameHeight: importFrameHeight}))
+      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importFilepath, canvas: importCanvas, data: importPNG}))
       focusedFileIndex = $fileStates.length - 1
       importCanvas = null
       importPNG = null
-      importGroups = []
     }
     showImport = false
   }
@@ -176,11 +206,11 @@
   }
 
   function engageNew() {
-    fileStates.addFile(new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importPNG, groups: importGroups, frameWidth: importFrameWidth, frameHeight: importFrameHeight}))
+  console.log('make new', importPNG.groups)
+    fileStates.addFile(new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importPNG}))
     focusedFileIndex = $fileStates.length - 1
     importCanvas = null
     importPNG = null
-    importGroups = []
 
     showNew = false
   }
@@ -259,8 +289,7 @@
     <OverflowMenu size="sm">
       <div slot="menu">File</div>
       <OverflowMenuItem text="New..." on:click={() => showNew = true}/>
-      <OverflowMenuItem text="Open..."/>
-      <OverflowMenuItem text="Import from PNG..." on:click={() => showImport = true}/>
+      <OverflowMenuItem text="Open PNG..." on:click={loadPNG}/>
       <OverflowMenuItem text="Export to PNG" disabled={focusedFile===null} on:click={() => showExport = true}/>
       <OverflowMenuItem text="Save"/>
       <OverflowMenuItem text="Save As..."/>
@@ -462,18 +491,16 @@
   </section>
 
 </main>
-<ComposedModal bind:open={showImport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageImport}>
-  <Importer
-    bind:open={showImport}
-    bind:valid={importValid}
-    bind:png={importPNG}
-    bind:staxGroups={importGroups}
-    bind:filepath={importFilepath}
-    bind:canvas={importCanvas}
-    bind:width={importFrameWidth}
-    bind:height={importFrameHeight}
-  />
-</ComposedModal>
+{#if showImport}
+  <ComposedModal bind:open={showImport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageImport}>
+    <Importer
+      bind:open={showImport}
+      bind:valid={importValid}
+      bind:canvas={importCanvas}
+      bind:png={importPNG}
+    />
+  </ComposedModal>
+{/if}
 <ComposedModal bind:open={showExport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageExport}>
   <Exporter
     bind:open={showExport}
@@ -482,14 +509,15 @@
   />
 </ComposedModal>
 
-<ComposedModal bind:open={showNew} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
-  <New
-    bind:open={showNew}
-    bind:canvas={importCanvas}
-    bind:width={importFrameWidth}
-    bind:height={importFrameHeight}
-  />
-</ComposedModal>
+{#if showNew}
+  <ComposedModal bind:open={showNew} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
+    <New
+      bind:open={showNew}
+      bind:canvas={importCanvas}
+      bind:png={importPNG}
+    />
+  </ComposedModal>
+{/if}
 
 <ComposedModal bind:open={showAbout} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
   <About bind:open={showAbout} />
