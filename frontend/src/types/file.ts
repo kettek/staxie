@@ -161,19 +161,23 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     if (!g) {
       throw new Error('group not found')
     }
+    return this.getGroupAreaFromGroup(g)
+  }
+  getGroupAreaFromGroup(group: StaxGroup): { x: number, y: number, width: number, height: number } {
     let x = 0
     let y = 0
-    let width = g.sliceCount * this.frameWidth
+    let width = 0
     let height = 0
     let hasFirst = false
-    for (let animation of g.animations) {
+    for (let animation of group.animations) {
       for (let frame of animation.frames) {
-        if (!hasFirst) {
-          for (let slice of frame.slices) {
+        for (let slice of frame.slices) {
+          if (!hasFirst) {
             x = slice.x
             y = slice.y
             hasFirst = true
-            break
+          } else {
+            width += this.frameWidth
           }
         }
         height += this.frameHeight
@@ -192,18 +196,23 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     if (!animation) {
       throw new Error('animation not found')
     }
+    return this.getAnimationAreaFromAnimation(animation)
+  }
+
+  getAnimationAreaFromAnimation(animation: StaxAnimation): {x: number, y: number, width: number, height: number } {
     let x = 0
     let y = 0
-    let width = g.sliceCount * this.frameWidth 
+    let width = 0
     let height = 0
     let hasFirst = false
     for (let frame of animation.frames) {
-      if (!hasFirst) {
-        for (let slice of frame.slices) {
+      for (let slice of frame.slices) {
+        if (!hasFirst) {
           x = slice.x
           y = slice.y
           hasFirst = true
-          break
+        } else {
+          width += this.frameWidth
         }
       }
       height += this.frameHeight
@@ -224,21 +233,26 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     if (frameIndex >= animation.frames.length) {
       throw new Error('frame oob')
     }
+    return this.getFrameAreaFromFrame(animation.frames[frameIndex])
+  }
+  
+  getFrameAreaFromFrame(frame: StaxFrame): {x: number, y: number, width: number, height: number} {
     let x = 0
     let y = 0
-    let width = g.sliceCount * this.frameWidth 
+    let width = 0
     let height = this.frameHeight
     
-    let frame = animation.frames[frameIndex]
     if (frame.slices.length === 0) {
       throw new Error('no slices in frame')
     }
+    x = frame.slices[0].x
+    width = frame.slices.length * this.frameWidth
     y = frame.slices[0].y
     
     return { x, y, width, height }
   }
   
-  getSliceAreaFromFrame(frame: StaxFrame, sliceIndex: number) {
+  getSliceAreaFromFrame(frame: StaxFrame, sliceIndex: number): {x: number, y: number, width: number, height: number} {
     if (sliceIndex >= frame.slices.length) {
       throw new Error('slice oob')
     }

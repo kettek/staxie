@@ -45,12 +45,49 @@
   
   let view: CanvasView = new CanvasView($file.canvas)
   $: {
-    if ($file.frame) {
-      let { x, y, width, height } = $file.getSliceAreaFromFrame($file.frame, $file.sliceIndex)
-      view.x = x
-      view.y = y
-      view.width = width
-      view.height = height
+    switch ($editor2DSettings.viewMode) {
+      case 'slice':
+        if ($file.frame) {
+          let { x, y, width, height } = $file.getSliceAreaFromFrame($file.frame, $file.sliceIndex)
+          view.x = x
+          view.y = y
+          view.width = width
+          view.height = height
+        }
+        break
+      case 'frame':
+        if ($file.frame) {
+          let { x, y, width, height } = $file.getFrameAreaFromFrame($file.frame)
+          view.x = x
+          view.y = y
+          view.width = width
+          view.height = height
+        }
+        break
+      case 'animation':
+        if ($file.animation) {
+          let { x, y, width, height } = $file.getAnimationAreaFromAnimation($file.animation)
+          view.x = x
+          view.y = y
+          view.width = width
+          view.height = height
+        }
+        break
+      case 'group':
+        if ($file.group) {
+          let { x, y, width, height } = $file.getGroupAreaFromGroup($file.group)
+          view.x = x
+          view.y = y
+          view.width = width
+          view.height = height
+        }
+        break
+      case 'sheet':
+        view.x = 0
+        view.y = 0
+        view.width = $file.canvas.width
+        view.height = $file.canvas.height
+        break
     }
   }
 
