@@ -399,7 +399,7 @@
         {#each $fileStates as file, index}
           <Tab on:click={()=>selectFile(file, index)}>
             <span class='tab'>
-              <span>{file.title}</span>
+              <span>{file.title.substring(0, file.title.lastIndexOf('.')) || file.title}</span>
               <Button size="small" kind="ghost" iconDescription="close" icon={Close} href="#" on:click={(e)=>{e.preventDefault();closeFile(index)}} />
             </span>
           </Tab>
