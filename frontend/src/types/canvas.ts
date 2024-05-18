@@ -49,7 +49,7 @@ export class Canvas {
   
   // clear sets all pixels to 0.
   clear() {
-    clog.info('clear')
+    clog.debug('clear')
     for (let i = 0; i < this.pixels.length; i++) {
       this.pixels[i] = 0
     }
@@ -65,7 +65,7 @@ export class Canvas {
   
   // resizeCanvas resizes the canvas to the given width and height, copying old data as necessary.
   resizeCanvas(width: number, height: number) {
-    clog.info('resize', width, height)
+    clog.debug('resize', width, height)
     let newPixels = new Uint8Array(width * height)
     for (let i = 0; i < Math.min(height, this.height); i++) {
       for (let j = 0; j < Math.min(width, this.width); j++) {
@@ -87,7 +87,7 @@ export class Canvas {
   
   // growCanvas grows the canvas by the given x and y amounts.
   growCanvas(x: number, y: number) {
-    clog.info('grow', x, y)
+    clog.debug('grow', x, y)
     let newWidth = this.width + x
     let newHeight = this.height + y
     let newPixels = new Uint8Array(newWidth * newHeight)
@@ -111,7 +111,7 @@ export class Canvas {
   
   // shrinkCanvas shrinks the canvas by the given x and y amounts.
   shrinkCanvas(x: number, y: number) {
-    clog.info('shrink', x, y)
+    clog.debug('shrink', x, y)
     let newWidth = this.width - x
     let newHeight = this.height - y
     let newPixels = new Uint8Array(newWidth * newHeight)
@@ -135,7 +135,7 @@ export class Canvas {
 
   // setPalette sets the palette to the provided value.
   setPalette(palette: Uint32Array) {
-    clog.info('setPalette', palette.length)
+    clog.debug('setPalette', palette.length)
     this.palette = palette
   }
   
@@ -155,7 +155,7 @@ export class Canvas {
   
   // setPaletteFromUint8Array sets the palette to the provided value.
   setPaletteFromUint8Array(palette: Uint8Array) {
-    clog.info('setPaletteFromUint8Array', palette.length)
+    clog.debug('setPaletteFromUint8Array', palette.length)
     this.palette = new Uint32Array(palette.length / 4)
     for (let i = 0; i < palette.length; i += 4) {
       this.palette[i / 4] = new Uint32Array(palette.buffer.slice(i, i + 4))[0]
@@ -164,7 +164,7 @@ export class Canvas {
   
   // setPixelsFromUint8Array sets the pixel data to the provided value.
   setPixelsFromUint8Array(pixels: Uint8Array) {
-    clog.info('setPixelsFromUint8Array', pixels.length)
+    clog.debug('setPixelsFromUint8Array', pixels.length)
     this.pixels = pixels
     this.imageData = new ImageData(this.width, this.height)
     for (let i = 0; i < pixels.length; i++) {
@@ -186,7 +186,7 @@ export class Canvas {
   
   // setPixel sets the index at the provided pixel position.
   setPixel(x: number, y: number, index: number) {
-    clog.info('setPixel', x, y, index)
+    clog.debug('setPixel', x, y, index)
     this.pixels[y * this.width + x] = index
     let color = this.palette[index]
     let r = color & 0xFF
@@ -201,7 +201,7 @@ export class Canvas {
   
   // setPixelRGBA sets the given pixel position to the provided RGBA values. If the RGBA values do not exist in the palette, they are automatically added.
   setPixelRGBA(x: number, y: number, r: number, g: number, b: number, a: number) {
-    clog.info('setPixelRGBA', x, y, r, g, b, a)
+    clog.debug('setPixelRGBA', x, y, r, g, b, a)
     this.pixels[y * this.width + x] = this.addPaletteColor(r, g, b, a)
     this.imageData.data[(y * this.width + x) * 4 + 0] = r
     this.imageData.data[(y * this.width + x) * 4 + 1] = g
@@ -220,7 +220,7 @@ export class Canvas {
   }
   
   setPixels(x: number, y: number, w: number, h: number, pixels: Uint8Array) {
-    clog.info('setPixels', x, y, w, h, pixels.length)
+    clog.debug('setPixels', x, y, w, h, pixels.length)
     for (let i = 0; i < h; i++) {
       for (let j = 0; j < w; j++) {
         this.pixels[(y + i) * this.width + (x + j)] = pixels[i * w + j]
@@ -230,7 +230,7 @@ export class Canvas {
   }
   
   clearPixels(x: number, y: number, w: number, h: number) {
-    clog.info('clearPixels', x, y, w, h)
+    clog.debug('clearPixels', x, y, w, h)
     for (let i = 0; i < h; i++) {
       for (let j = 0; j < w; j++) {
         this.pixels[(y + i) * this.width + (x + j)] = 0
@@ -241,7 +241,7 @@ export class Canvas {
   
   // addPaletteColor adds the provided RGBA values to the palette if it does not already exist, and returns the index of the color in the palette.
   addPaletteColor(r: number, g: number, b: number, a: number): number {
-    clog.info('addPaletteColor', r, g, b, a)
+    clog.debug('addPaletteColor', r, g, b, a)
     // Check if the color is already in the palette
     for (let i = 0; i < this.palette.length; i++) {
       let v = new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]
@@ -289,13 +289,13 @@ export class Canvas {
   
   // addNewPaletteColor adds the provided RGBA values to the palette.
   addNewPaletteColor(r: number, g: number, b: number, a: number) {
-    clog.info('addNewPaletteColor', r, g, b, a)
+    clog.debug('addNewPaletteColor', r, g, b, a)
     this.palette = new Uint32Array([...this.palette, new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]])
   }
   
   // insertPaletteColor inserts the provided RGBA values into the palette at the provided index.
   insertPaletteColor(index: number, r: number, g: number, b: number, a: number, shiftPixels?: boolean) {
-    clog.info('insertPaletteColor', index, r, g, b, a)
+    clog.debug('insertPaletteColor', index, r, g, b, a)
     let newPalette = new Uint32Array(this.palette.length + 1)
     for (let i = 0; i < index; i++) {
       newPalette[i] = this.palette[i]
@@ -316,7 +316,7 @@ export class Canvas {
   
   // removePaletteIndex removes the palette entry at the provided index. This also updates the pixel data to reflect the change.
   removePaletteIndex(index: number, shiftPixels?: boolean) {
-    clog.info('removePaletteIndex', index)
+    clog.debug('removePaletteIndex', index)
     if (index < 0) {
       index = this.palette.length - index
     }
@@ -339,7 +339,7 @@ export class Canvas {
   
   // replacePaletteColor replaces the palette entry at the provided index with the provided RGBA values.
   replacePaletteColor(index: number, r: number, g: number, b: number, a: number) {
-    clog.info('replacePaletteColor', index, r, g, b, a)
+    clog.debug('replacePaletteColor', index, r, g, b, a)
     this.palette[index] = new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]
   }
   
@@ -355,7 +355,7 @@ export class Canvas {
   
   // swapPaletteColors swaps the palette entries at the provided indices.
   swapPaletteColors(index1: number, index2: number) {
-    clog.info('swapPaletteColors', index1, index2)
+    clog.debug('swapPaletteColors', index1, index2)
     let temp = this.palette[index1]
     this.palette[index1] = this.palette[index2]
     this.palette[index2] = temp
@@ -363,7 +363,7 @@ export class Canvas {
   
   // movePaletteColor moves the palette entry at the provided index to the new index.
   movePaletteColor(from: number, to: number) {
-    clog.info('movePaletteColor', from, to)
+    clog.debug('movePaletteColor', from, to)
     let temp = this.palette[from]
     if (from < to) {
       for (let i = from; i < to; i++) {
@@ -379,7 +379,7 @@ export class Canvas {
   
   // setFakePalette updates the fake palette to the provided value.
   setFakePalette(palette: Uint32Array | undefined) {
-    clog.info('setFakePalette', palette?.length)
+    clog.debug('setFakePalette', palette?.length)
     this.fakePalette = palette
   }
   

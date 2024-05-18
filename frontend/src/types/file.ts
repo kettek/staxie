@@ -160,8 +160,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   getGroupArea(group: string): { x: number, y: number, width: number, height: number } {
     let g = this.groups.find(g => g.name === group)
     if (!g) {
-      flog.error('group not found', group)
-      throw new Error('group not found')
+      throw new Error('group not found: ' + group)
     }
     return this.getGroupAreaFromGroup(g)
   }
@@ -173,13 +172,13 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     let hasFirst = false
     for (let animation of group.animations) {
       for (let frame of animation.frames) {
-        for (let slice of frame.slices) {
-          if (!hasFirst) {
+        width = Math.max(width, frame.slices.length * this.frameWidth)
+        if (!hasFirst) {
+          for (let slice of frame.slices) {
             x = slice.x
             y = slice.y
             hasFirst = true
-          } else {
-            width += this.frameWidth
+            break
           }
         }
         height += this.frameHeight
@@ -192,13 +191,11 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   getAnimationArea(group: string, anim: string): {x: number, y: number, width: number, height: number } {
     let g = this.groups.find(g => g.name === group)
     if (!g) {
-      flog.error('group not found', group)
-      throw new Error('group not found')
+      throw new Error('group not found: ' + group)
     }
     let animation = g.animations.find(a => a.name === anim)
     if (!animation) {
-      flog.error('animation not found', anim)
-      throw new Error('animation not found')
+      throw new Error('animation not found: ' + anim)
     }
     return this.getAnimationAreaFromAnimation(animation)
   }
@@ -210,13 +207,13 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     let height = 0
     let hasFirst = false
     for (let frame of animation.frames) {
-      for (let slice of frame.slices) {
-        if (!hasFirst) {
+      width = Math.max(width, frame.slices.length * this.frameWidth)
+      if (!hasFirst) {
+        for (let slice of frame.slices) {
           x = slice.x
           y = slice.y
           hasFirst = true
-        } else {
-          width += this.frameWidth
+          break
         }
       }
       height += this.frameHeight
@@ -228,17 +225,14 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   getFrameArea(group: string, anim: string, frameIndex: number): {x: number, y: number, width: number, height: number} {
     let g = this.groups.find(g => g.name === group)
     if (!g) {
-      flog.error('group not found', group)
-      throw new Error('group not found')
+      throw new Error('group not found: ' + group)
     }
     let animation = g.animations.find(a => a.name === anim)
     if (!animation) {
-      flog.error('animation not found', anim)
-      throw new Error('animation not found')
+      throw new Error('animation not found: ' + anim)
     }
     if (frameIndex >= animation.frames.length) {
-      flog.error('frame oob', frameIndex, "out of", animation.frames.length)
-      throw new Error('frame oob')
+      throw new Error(`frame oob: ${frameIndex} out of ${animation.frames.length}`)
     }
     return this.getFrameAreaFromFrame(animation.frames[frameIndex])
   }
@@ -250,7 +244,6 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     let height = this.frameHeight
     
     if (frame.slices.length === 0) {
-      flog.error('no slices in frame')
       throw new Error('no slices in frame')
     }
     x = frame.slices[0].x
@@ -262,8 +255,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   
   getSliceAreaFromFrame(frame: StaxFrame, sliceIndex: number): {x: number, y: number, width: number, height: number} {
     if (sliceIndex >= frame.slices.length) {
-      flog.error('slice oob', sliceIndex, "out of", frame.slices.length)
-      throw new Error('slice oob')
+      throw new Error(`slice oob: ${sliceIndex} out of ${frame.slices.length}`)
     }
     let slice = frame.slices[sliceIndex]
     return { x: slice.x, y: slice.y, width: this.frameWidth, height: this.frameHeight }
@@ -664,7 +656,7 @@ export class RemoveGroupUndoable implements Undoable<LoadedFile> {
   apply(file: LoadedFile) {
     this.groupIndex = file.groups.findIndex(g => g.name === this.groupName)
     if (this.groupIndex === -1) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.groupName)
     }
     this.group = file.groups[this.groupIndex]
     // Get our group's total width/height, store the pixels, clear the area, then shift all pixels below this group to its position. Shrink the canvas by height.
@@ -731,7 +723,7 @@ export class GrowGroupSliceUndoable implements Undoable<LoadedFile> {
   apply(file: LoadedFile) {
     let g = file.groups.find(g => g.name === this.group)
     if (!g) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.group)
     }
     
     let sliceCount = g.sliceCount + this.sliceCount
@@ -753,7 +745,7 @@ export class GrowGroupSliceUndoable implements Undoable<LoadedFile> {
     // Reverse of above.
     let g = file.groups.find(g => g.name === this.group)
     if (!g) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.group)
     }
       
     for (let s = g.sliceCount - 1; s >= g.sliceCount - this.sliceCount; s--) {
@@ -780,6 +772,7 @@ export class GrowGroupSliceUndoable implements Undoable<LoadedFile> {
 export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
   private group: string
   private sliceCount: number
+  private slices: StaxSlice[][][]
   private pixels: Uint8Array
   private pixelsWidth: number
   private pixelsHeight: number
@@ -792,7 +785,7 @@ export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
   apply(file: LoadedFile) {
     let g = file.groups.find(g => g.name === this.group)
     if (!g) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.group)
     }
     
     let sliceCount = g.sliceCount - this.sliceCount
@@ -805,12 +798,13 @@ export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
     this.pixelsHeight = height
     this.pixels = file.canvas.getPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight)
     
-    for (let s = g.sliceCount - 1; s >= sliceCount; s--) {
-      for (let a of g.animations) {
-        for (let f of a.frames) {
-          f.slices.pop()
-        }
+    this.slices = []
+    for (let a of g.animations) {
+      let fslices = []
+      for (let f of a.frames) {
+        fslices.push(f.slices.splice(f.slices.length, this.sliceCount))
       }
+      this.slices.push(fslices)
     }
     
     g.sliceCount = sliceCount
@@ -832,7 +826,7 @@ export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
     // Reverse of above.
     let g = file.groups.find(g => g.name === this.group)
     if (!g) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.group)
     }
       
     let sliceCount = g.sliceCount + this.sliceCount
@@ -842,11 +836,11 @@ export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
     }
     // Paste back in our pixels.
     file.canvas.setPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight, this.pixels)
-    for (let s = g.sliceCount; s < sliceCount; s++) {
-      for (let a of g.animations) {
-        for (let f of a.frames) {
-          f.slices.push({shading: 1, x: 0, y: 0})
-        }
+    for (let a of g.animations) {
+      let aslice = this.slices.shift()
+      for (let f of a.frames) {
+        let fslice = aslice.shift()
+        f.slices.push(...fslice)
       }
     }
     g.sliceCount = sliceCount
@@ -862,7 +856,7 @@ export class AddAnimationUndoable implements Undoable<LoadedFile> {
   apply(file: LoadedFile) {
     let g = file.groups.find(g => g.name === this.group)
     if (!g) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.group)
     }
     
     let name = "animation"
@@ -905,7 +899,7 @@ export class AddAnimationUndoable implements Undoable<LoadedFile> {
   unapply(file: LoadedFile) {
     let g = file.groups.find(g => g.name === this.group)
     if (!g) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.group)
     }
 
     // Acquire our pixels after our area and potentially shift them back.
@@ -943,11 +937,11 @@ export class RemoveAnimationUndoable implements Undoable<LoadedFile> {
   apply(file: LoadedFile) {
     let g = file.groups.find(v=>v.name === this.group)
     if (!g) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.group)
     }
     let a = g.animations.find(v=>v.name === this.animation)
     if (!a) {
-      throw new Error('animation not found')
+      throw new Error('animation not found: ' + this.animation)
     }
 
     let {x, y, width, height} = file.getAnimationArea(this.group, this.animation)
@@ -979,7 +973,7 @@ export class RemoveAnimationUndoable implements Undoable<LoadedFile> {
   unapply(file: LoadedFile) {
     let g = file.groups.find(v=>v.name === this.group)
     if (!g) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.group)
     }
 
     if (this.pixels) {
@@ -1018,11 +1012,11 @@ export class AddAnimationFrameUndoable implements Undoable<LoadedFile> {
   apply(file: LoadedFile) {
     let g = file.groups.find(v=>v.name === this.group)
     if (!g) {
-      throw new Error('group not found')
+      throw new Error('group not found: ' + this.group)
     }
     let a = g.animations.find(v=>v.name === this.animation)
     if (!a) {
-      throw new Error('animation not found')
+      throw new Error('animation not found: ' + this.animation)
     }
     
     // Grow our canvas by 1 frameHeight
