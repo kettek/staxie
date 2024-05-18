@@ -182,6 +182,7 @@
       return
     }
     fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG}))
+    focusedFileIndex = $fileStates.length - 1
   }
 
   function engageImport() {
