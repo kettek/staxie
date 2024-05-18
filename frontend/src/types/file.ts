@@ -726,6 +726,13 @@ export class GrowGroupSliceUndoable implements Undoable<LoadedFile> {
     if (file.canvas.width < newWidth) {
       file.canvas.resizeCanvas(newWidth, file.canvas.height)
     }
+    for (let s = g.sliceCount; s < sliceCount; s++) {
+      for (let a of g.animations) {
+        for (let f of a.frames) {
+          f.slices.push({shading: 1, x: 0, y: 0})
+        }
+      }
+    }
     g.sliceCount = sliceCount
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
@@ -736,6 +743,13 @@ export class GrowGroupSliceUndoable implements Undoable<LoadedFile> {
       throw new Error('group not found')
     }
       
+    for (let s = g.sliceCount - 1; s >= g.sliceCount - this.sliceCount; s--) {
+      for (let a of g.animations) {
+        for (let f of a.frames) {
+          f.slices.pop()
+        }
+      }
+    }
     let sliceCount = g.sliceCount - this.sliceCount
     let targetWidth = sliceCount * file.frameWidth
     g.sliceCount = sliceCount
@@ -778,6 +792,14 @@ export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
     this.pixelsHeight = height
     this.pixels = file.canvas.getPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight)
     
+    for (let s = g.sliceCount - 1; s >= sliceCount; s--) {
+      for (let a of g.animations) {
+        for (let f of a.frames) {
+          f.slices.pop()
+        }
+      }
+    }
+    
     g.sliceCount = sliceCount
     // Get our maximum width (each group's slices * file.frameWidth)
     let targetWidth = newWidth
@@ -807,6 +829,13 @@ export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
     }
     // Paste back in our pixels.
     file.canvas.setPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight, this.pixels)
+    for (let s = g.sliceCount; s < sliceCount; s++) {
+      for (let a of g.animations) {
+        for (let f of a.frames) {
+          f.slices.push({shading: 1, x: 0, y: 0})
+        }
+      }
+    }
     g.sliceCount = sliceCount
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
