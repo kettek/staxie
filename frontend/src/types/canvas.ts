@@ -186,7 +186,7 @@ export class Canvas {
   
   // setPixel sets the index at the provided pixel position.
   setPixel(x: number, y: number, index: number) {
-    clog.debug('setPixel', x, y, index)
+    //clog.debug('setPixel', x, y, index)
     this.pixels[y * this.width + x] = index
     let color = this.palette[index]
     let r = color & 0xFF
@@ -201,7 +201,7 @@ export class Canvas {
   
   // setPixelRGBA sets the given pixel position to the provided RGBA values. If the RGBA values do not exist in the palette, they are automatically added.
   setPixelRGBA(x: number, y: number, r: number, g: number, b: number, a: number) {
-    clog.debug('setPixelRGBA', x, y, r, g, b, a)
+    //clog.debug('setPixelRGBA', x, y, r, g, b, a)
     this.pixels[y * this.width + x] = this.addPaletteColor(r, g, b, a)
     this.imageData.data[(y * this.width + x) * 4 + 0] = r
     this.imageData.data[(y * this.width + x) * 4 + 1] = g
@@ -241,7 +241,7 @@ export class Canvas {
   
   // addPaletteColor adds the provided RGBA values to the palette if it does not already exist, and returns the index of the color in the palette.
   addPaletteColor(r: number, g: number, b: number, a: number): number {
-    clog.debug('addPaletteColor', r, g, b, a)
+    //clog.debug('addPaletteColor', r, g, b, a)
     // Check if the color is already in the palette
     for (let i = 0; i < this.palette.length; i++) {
       let v = new Uint32Array([(a << 24) | (b << 16) | (g << 8) | r])[0]
