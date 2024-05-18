@@ -559,6 +559,7 @@
   .tab span {
     overflow: hidden;
     text-overflow: ellipsis;
+    direction: rtl;
   }
   :global(.middle .bx--tabs__nav-link) {
     position: relative;
