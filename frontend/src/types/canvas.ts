@@ -5,6 +5,7 @@ import { Buffer } from 'buffer/'
 import { SaveFileBytes } from "../../wailsjs/go/main/App.js"
 import type { LoadedFile } from './file'
 import { clog } from "../globals/log"
+import { ResizableBuffer } from "./resizablebuffer"
 
 /**
  * @type {Canvas}
@@ -510,44 +511,53 @@ export class Canvas {
       bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
       out = Buffer.concat([out, buffer])
       
-      // Write out our stAx chunk.
-      bufferOffset = buffer.writeUInt8(0, bufferOffset) // Write version 0 stAx
-      bufferOffset = buffer.writeUInt16BE(file.frameWidth, bufferOffset) // write frame width
-      bufferOffset = buffer.writeUInt16BE(file.frameHeight, bufferOffset) // write frame height
-      bufferOffset = buffer.writeUInt16BE(file.groups.length, bufferOffset) // write group count
+      // Write out our stAx chunk. TODO: Move this to its own function.
+      let dbuffer = new ResizableBuffer()
+      dbuffer.writeUInt8(0) // Write version 0 stAx
+      dbuffer.writeUInt16BE(file.frameWidth) // write frame width
+      dbuffer.writeUInt16BE(file.frameHeight) // write frame height
+      dbuffer.writeUInt16BE(file.groups.length) // write group count
       // Write our groups.
       for (let i = 0; i < file.groups.length; i++) {
         let group = file.groups[i]
         // Write our group name's length and name data.
-        bufferOffset = buffer.writeUInt8(group.name.length, bufferOffset)
+        dbuffer.writeUInt8(group.name.length)
         for (let j = 0; j < group.name.length; j++) {
-          bufferOffset = buffer.writeUInt8(group.name.charCodeAt(j), bufferOffset)
+          dbuffer.writeUInt8(group.name.charCodeAt(j))
         }
         // Write layer count in the group.
-        bufferOffset = buffer.writeUInt16BE(group.sliceCount, bufferOffset)
+        dbuffer.writeUInt16BE(group.sliceCount)
         // Write animation count and animations.
-        bufferOffset = buffer.writeUInt16BE(group.animations.length, bufferOffset)
+        dbuffer.writeUInt16BE(group.animations.length)
         for (let j = 0; j < group.animations.length; j++) {
           let animation = group.animations[j]
           // Write animation name's length and name data.
-          bufferOffset = buffer.writeUInt8(animation.name.length, bufferOffset)
+          dbuffer.writeUInt8(animation.name.length)
           for (let k = 0; k < animation.name.length; k++) {
-            bufferOffset = buffer.writeUInt8(animation.name.charCodeAt(k), bufferOffset)
+            dbuffer.writeUInt8(animation.name.charCodeAt(k))
           }
           // Write frame time.
-          bufferOffset = buffer.writeUInt32BE(animation.frameTime, bufferOffset)
+          dbuffer.writeUInt32BE(animation.frameTime)
           // Write frame count.
-          bufferOffset = buffer.writeUInt16BE(animation.frames.length, bufferOffset)
+          dbuffer.writeUInt16BE(animation.frames.length)
           // Write frames.
           for (let k = 0; k < animation.frames.length; k++) {
             let frame = animation.frames[k]
             // Write the frame's layer data (only shading data atm).
-            for (let l = 0; l < frame.slices.length; k++) {
-              bufferOffset = buffer.writeUInt8(frame.slices[l].shading, bufferOffset)
+            for (let l = 0; l < frame.slices.length; l++) {
+              dbuffer.writeUInt8(frame.slices[l].shading)
             }
           }
         }
       }
+      buffer = Buffer.alloc(8 + dbuffer.buffer.length + 4), bufferOffset = 0
+      bufferOffset = buffer.writeUInt32BE(dbuffer.buffer.length, 0)
+      bufferOffset += buffer.write('stAx', bufferOffset)
+      chunkStart = bufferOffset
+      bufferOffset += dbuffer.buffer.copy(buffer, bufferOffset)
+      chunkEnd = bufferOffset
+      bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
+      out = Buffer.concat([out, buffer])
       
       if (this.isIndexed) {
         // Write PLTE
