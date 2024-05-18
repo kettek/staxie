@@ -172,7 +172,7 @@ export class IndexedPNG {
             const nameLength = this.data[this.pos++];
             let name = '';
             for (let i = 0; i < nameLength; i++) {
-              name += this.data[this.pos++];
+              name += String.fromCharCode(this.data[this.pos++]);
             }
             group.name = name
             // Read slice count.
@@ -191,7 +191,7 @@ export class IndexedPNG {
               const nameLength = this.data[this.pos++];
               let name = '';
               for (let i = 0; i < nameLength; i++) {
-                name += this.data[this.pos++];
+                name += String.fromCharCode(this.data[this.pos++]);
               }
               animation.name = name;
               const frameTime = this.readUInt32();
