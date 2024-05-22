@@ -803,7 +803,7 @@ export class ShrinkGroupSliceUndoable implements Undoable<LoadedFile> {
     for (let a of g.animations) {
       let fslices = []
       for (let f of a.frames) {
-        fslices.push(f.slices.splice(f.slices.length, this.sliceCount))
+        fslices.push(f.slices.splice(f.slices.length-this.sliceCount, this.sliceCount))
       }
       this.slices.push(fslices)
     }
