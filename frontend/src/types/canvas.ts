@@ -4,6 +4,7 @@ import * as crc32 from 'crc-32'
 import { Buffer } from 'buffer/'
 import { SaveFileBytes } from "../../wailsjs/go/main/App.js"
 import type { LoadedFile } from './file'
+import { IndexedPNG } from './png'
 import { clog } from "../globals/log"
 import { ResizableBuffer } from "./resizablebuffer"
 
@@ -22,13 +23,38 @@ export class Canvas {
   canvas: HTMLCanvasElement
   imageData: ImageData
   
-  constructor(width: number, height: number) {
+  constructor(width: number, height: number);
+  constructor(png: IndexedPNG);
+  constructor(width: number|IndexedPNG, height?: number) {
+    let png: IndexedPNG
+    if (width instanceof IndexedPNG) {
+      png = width
+      width = png.width
+      height = png.height
+    }
     this.width = width
     this.height = height
     this.pixels = new Uint8Array(width * height)
     this.palette = new Uint32Array(0)
     this.canvas = document.createElement('canvas')
     this.imageData = new ImageData(width, height)
+    if (png) {
+      if (png.colorType === 6 || png.colorType === 2) { // RGBA / RGB
+        for (let i = 0; i < png.decodedPixels.length; i += 4) {
+          let y = Math.floor(i / (png.width * 4))
+          let x = (i / 4) % png.width
+          this.setPixelRGBA(x, y, png.decodedPixels[i], png.decodedPixels[i+1], png.decodedPixels[i+2], png.decodedPixels[i+3])
+        }
+        this.isIndexed = false
+      } else if (png.colorType === 3) { // indexed
+        this.setPaletteFromUint8Array(png.decodedPalette)
+        this.setPixelsFromUint8Array(png.decodedPixels)
+        this.isIndexed = true
+      } else {
+        throw new Error('unsupported pixel format')
+      }
+      this.refreshCanvas()
+    }
   }
   
   // fromData creates a new Canvas instance from the provided data.

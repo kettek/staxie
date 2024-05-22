@@ -157,25 +157,7 @@
     importPNG = new IndexedPNG(Uint8Array.from(atob(b), (v) => v.charCodeAt(0)))
     await importPNG.decode()
     
-    importCanvas = new Canvas(importPNG.width, importPNG.height)
-    
-    if (importPNG.colorType === 6 || importPNG.colorType === 2) { // RGBA / RGB
-      for (let i = 0; i < importPNG.decodedPixels.length; i += 4) {
-        let y = Math.floor(i / (importPNG.width * 4))
-        let x = (i / 4) % importPNG.width
-        importCanvas.setPixelRGBA(x, y, importPNG.decodedPixels[i], importPNG.decodedPixels[i+1], importPNG.decodedPixels[i+2], importPNG.decodedPixels[i+3])
-      }
-      importCanvas.isIndexed = false
-    } else if (importPNG.colorType === 3) { // indexed
-      importCanvas.setPaletteFromUint8Array(importPNG.decodedPalette)
-      importCanvas.setPixelsFromUint8Array(importPNG.decodedPixels)
-      importCanvas.isIndexed = true
-    } else {
-      alert('unsupported pixel format')
-      return
-    }
-
-    importCanvas.refreshCanvas()
+    importCanvas = new Canvas(importPNG)
 
     if (!importPNG.hasStax()) {
       showImport = true
