@@ -2,7 +2,8 @@
   import { GetFilePath, OpenFileBytes, ToggleFullscreen } from '../wailsjs/go/main/App.js'
   import { EventsEmit } from '../wailsjs/runtime/runtime.js'
   import Editor2D from './sections/Editor2D.svelte'
-  import Importer from './sections/Importer.svelte'
+  import Open from './sections/Open.svelte'
+  import Import from './sections/Import.svelte'
   import Exporter from './sections/Exporter.svelte'
   import PaletteSection from './sections/Palette.svelte'
   import FloatingPanel from './components/FloatingPanel.svelte'
@@ -90,6 +91,7 @@
     }
   }
   
+  let showOpen: boolean = false
   let showImport: boolean = false
   let showExport: boolean = false
   let showNew: boolean = false
@@ -151,7 +153,10 @@
   }
   
   async function loadPNG() {
-    importFilepath = await GetFilePath()
+    importFilepath = await GetFilePath(
+      [ "PNG" ],
+      [ "*.png" ],
+    )
     let b = (await OpenFileBytes(importFilepath)) as unknown as string
     importTitle = /[^/\\]*$/.exec(importFilepath)[0]
     importPNG = new IndexedPNG(Uint8Array.from(atob(b), (v) => v.charCodeAt(0)))
@@ -160,13 +165,23 @@
     importCanvas = new Canvas(importPNG)
 
     if (!importPNG.hasStax()) {
-      showImport = true
+      showOpen = true
       return
     }
     fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG}))
     focusedFileIndex = $fileStates.length - 1
   }
 
+  function engageOpen() {
+    if (importValid) {
+      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG}))
+      focusedFileIndex = $fileStates.length - 1
+      importCanvas = null
+      importPNG = null
+    }
+    showOpen = false
+  }
+  
   function engageImport() {
     if (importValid) {
       fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG}))
@@ -274,6 +289,7 @@
       <div slot="menu">File</div>
       <OverflowMenuItem text="New..." on:click={() => showNew = true}/>
       <OverflowMenuItem text="Open PNG..." on:click={loadPNG}/>
+      <OverflowMenuItem text="Import..." on:click={()=>showImport = true}/>
       <OverflowMenuItem text="Export to PNG" disabled={focusedFile===null} on:click={() => showExport = true}/>
       <OverflowMenuItem text="Save"/>
       <OverflowMenuItem text="Save As..."/>
@@ -475,9 +491,19 @@
   </section>
 
 </main>
+{#if showOpen}
+  <ComposedModal bind:open={showOpen} size="sm" preventCloseOnClickOutside on:click:button--primary={engageOpen}>
+    <Open
+      bind:open={showOpen}
+      bind:valid={importValid}
+      bind:canvas={importCanvas}
+      bind:png={importPNG}
+    />
+  </ComposedModal>
+{/if}
 {#if showImport}
   <ComposedModal bind:open={showImport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageImport}>
-    <Importer
+    <Import
       bind:open={showImport}
       bind:valid={importValid}
       bind:canvas={importCanvas}

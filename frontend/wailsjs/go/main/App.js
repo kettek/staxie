@@ -6,8 +6,8 @@ export function ClearSetting(arg1) {
   return window['go']['main']['App']['ClearSetting'](arg1);
 }
 
-export function GetFilePath() {
-  return window['go']['main']['App']['GetFilePath']();
+export function GetFilePath(arg1, arg2) {
+  return window['go']['main']['App']['GetFilePath'](arg1, arg2);
 }
 
 export function GetSetting(arg1) {

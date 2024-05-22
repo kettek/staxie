@@ -52,14 +52,19 @@ func (a *App) ReadBytes(name string) ([]byte, error) {
 	return os.ReadFile(name)
 }
 
-func (a *App) GetFilePath() (string, error) {
+func (a *App) GetFilePath(names []string, patterns []string) (string, error) {
+	var f []runtime.FileFilter
+	for i, n := range names {
+		ff := runtime.FileFilter{
+			DisplayName: n,
+		}
+		if len(patterns) < i {
+			ff.Pattern = patterns[i]
+		}
+		f = append(f, ff)
+	}
 	file, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
-		Filters: []runtime.FileFilter{
-			{
-				DisplayName: "pee enn gees",
-				Pattern:     "*.png",
-			},
-		},
+		Filters: f,
 	})
 	if err != nil {
 		return "", err
