@@ -69,8 +69,7 @@ export async function Read(filepath: string): Promise<VioImportResults> {
   }
   let maxWidth = 0
   let maxHeight = 0
-  let frameWidth = 0
-  let frameHeight = 0
+  let frameSizeCounts: Record<string, number> = {}
   let importGroups: ImportGroup[] = []
   for (let [animationName, animation] of Object.entries(yml.animations)) {
     if (animationName !== 'top' && animationName !== 'bot') continue
@@ -108,8 +107,7 @@ export async function Read(filepath: string): Promise<VioImportResults> {
         }
         ingroup.sliceCount = Math.max(ingroup.sliceCount, sliceIndex+1)
         inanimation.frames[frame][sliceIndex] = inslice
-        frameWidth = slice.width
-        frameHeight = slice.height
+        frameSizeCounts[`${slice.width}x${slice.height}`] = (frameSizeCounts[`${slice.width}x${slice.height}`] || 0) + 1
       }
     }
     importGroups.push(ingroup)
@@ -120,6 +118,12 @@ export async function Read(filepath: string): Promise<VioImportResults> {
   let y = 0
   maxWidth = 0
   maxHeight = 0
+  
+  let bestFrameSize = Object.keys(frameSizeCounts).sort((a, b) => frameSizeCounts[b] - frameSizeCounts[a])[0]
+
+  let frameWidth = Number(bestFrameSize.split('x')[0])
+  let frameHeight = Number(bestFrameSize.split('x')[1])
+
   png.frameWidth = frameWidth
   png.frameHeight = frameHeight
   png.groups = []
