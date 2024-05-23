@@ -125,7 +125,7 @@
     x *= zoom
     y *= zoom
     for (let file of $fileStates) {
-      if (!visibleFiles[file.id]) continue
+      if (!visibleFiles[file.id]?.visible) continue
       let px = canvas.width/2
       let py = canvas.height/2
       px += filePositions[file.id].x
@@ -143,20 +143,16 @@
   
   function mousedown(e: MouseEvent) {
     let fileId = hitsFile(e.offsetX, e.offsetY)
-    if (fileId >= 0) {
-      filePositions[fileId].z = Object.values(filePositions).reduce((acc, val) => Math.max(acc, val.z), 0) + 1
-    }
+    if (fileId === -1) return
+    filePositions[fileId].z = Object.values(filePositions).reduce((acc, val) => Math.max(acc, val.z), 0) + 1
 
     let mouseup = (e: MouseEvent) => {
       window.removeEventListener('mouseup', mouseup)
       window.removeEventListener('mousemove', mousemove)
     }
     let mousemove = (e: MouseEvent) => {
-      let fileId = hitsFile(e.offsetX, e.offsetY)
-      if (fileId) {
-        filePositions[fileId].x = e.offsetX - canvas.width/2
-        filePositions[fileId].y = e.offsetY - canvas.height/2
-      }
+      filePositions[fileId].x = e.offsetX - canvas.width/2
+      filePositions[fileId].y = e.offsetY - canvas.height/2
     }
     window.addEventListener('mouseup', mouseup)
     window.addEventListener('mousemove', mousemove)
