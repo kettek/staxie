@@ -17,13 +17,13 @@
     visible: boolean
     groups: Record<string, GroupState>
   }
-  let visibleFiles: Record<string, VisibleState> = {}
+  let visibleFiles: Record<number, VisibleState> = {}
   
-  let filePositions: Record<string, {x: number, y: number, z: number}> = {}
+  let filePositions: Record<number, {x: number, y: number, z: number}> = {}
   $: {
     for (let file of $fileStates) {
-      if (visibleFiles[file.title] && !filePositions[file.title]) {
-        filePositions[file.title] = {x: 0, y: 0, z: 0}
+      if (visibleFiles[file.id] && !filePositions[file.id]) {
+        filePositions[file.id] = {x: 0, y: 0, z: 0}
       }
     }
   }
@@ -60,13 +60,13 @@
     
     let x = canvas.width/2
     let y = canvas.height/2
-    let sortedFiles = $fileStates.filter(file => visibleFiles[file.title]).sort((a, b) => filePositions[a.title].z - filePositions[b.title].z)
+    let sortedFiles = $fileStates.filter(file => visibleFiles[file.id]).sort((a, b) => filePositions[a.id].z - filePositions[b.id].z)
     for (let file of sortedFiles) {
-      if (visibleFiles[file.title]?.visible) {
+      if (visibleFiles[file.id]?.visible) {
         // For now, just get the first frame of the first animation.
         for (let group of file.groups) {
           let done = false
-          if (!visibleFiles[file.title]?.groups[group.name]?.visible) continue
+          if (!visibleFiles[file.id]?.groups[group.name]?.visible) continue
           for (let animation of group.animations) {
             for (let frame of animation.frames) {
               for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
@@ -75,7 +75,7 @@
                   if (showBaseSizeOutline) {
                     ctx.save()
                     ctx.translate(x, y)
-                    ctx.translate(filePositions[file.title].x, filePositions[file.title].y)
+                    ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
                     ctx.scale(zoom, zoom)
                     ctx.strokeStyle = baseSizeOutlineColor
                     ctx.lineWidth = 1 / zoom
@@ -85,7 +85,7 @@
                   if (showSizeOutline) {
                     ctx.save()
                     ctx.translate(x, y)
-                    ctx.translate(filePositions[file.title].x, filePositions[file.title].y)
+                    ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
                     ctx.scale(zoom, zoom)
                     ctx.rotate(rotation * Math.PI / 180)
                     ctx.strokeStyle = sizeOutlineColor
@@ -96,7 +96,7 @@
                 }
                 ctx.save()
                 ctx.translate(x, y)
-                ctx.translate(filePositions[file.title].x, filePositions[file.title].y)
+                ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
                 ctx.scale(zoom, zoom)
                 ctx.rotate(rotation * Math.PI / 180)
                 
@@ -121,31 +121,30 @@
     }
   }
   
-  function hitsFile(x: number, y: number): string {
+  function hitsFile(x: number, y: number): number {
     x *= zoom
     y *= zoom
     for (let file of $fileStates) {
-      let name = file.title
-      if (!visibleFiles[name]) continue
+      if (!visibleFiles[file.id]) continue
       let px = canvas.width/2
       let py = canvas.height/2
-      px += filePositions[name].x
-      py += filePositions[name].y
+      px += filePositions[file.id].x
+      py += filePositions[file.id].y
       px -= file.data.width/2
       py -= file.data.height/2
       px *= zoom
       py *= zoom
       if (x >= px && x <= px + file.data.width*zoom && y >= py && y <= py + file.data.height*zoom) {
-        return name
+        return file.id
       }
     }
-    return ""
+    return -1
   }
   
   function mousedown(e: MouseEvent) {
-    let file = hitsFile(e.offsetX, e.offsetY)
-    if (file) {
-      filePositions[file].z = Object.values(filePositions).reduce((acc, val) => Math.max(acc, val.z), 0) + 1
+    let fileId = hitsFile(e.offsetX, e.offsetY)
+    if (fileId >= 0) {
+      filePositions[fileId].z = Object.values(filePositions).reduce((acc, val) => Math.max(acc, val.z), 0) + 1
     }
 
     let mouseup = (e: MouseEvent) => {
@@ -153,10 +152,10 @@
       window.removeEventListener('mousemove', mousemove)
     }
     let mousemove = (e: MouseEvent) => {
-      let file = hitsFile(e.offsetX, e.offsetY)
-      if (file) {
-        filePositions[file].x = e.offsetX - canvas.width/2
-        filePositions[file].y = e.offsetY - canvas.height/2
+      let fileId = hitsFile(e.offsetX, e.offsetY)
+      if (fileId) {
+        filePositions[fileId].x = e.offsetX - canvas.width/2
+        filePositions[fileId].y = e.offsetY - canvas.height/2
       }
     }
     window.addEventListener('mouseup', mouseup)
@@ -164,38 +163,38 @@
   }
   
   function toggleFile(file, i, e) {
-    visibleFiles[file.title] = visibleFiles[file.title] || {visible: e.target.checked, groups: {}}
-    visibleFiles[file.title].visible = e.target.checked
+    visibleFiles[file.id] = visibleFiles[file.id] || {visible: e.target.checked, groups: {}}
+    visibleFiles[file.id].visible = e.target.checked
     for (let group of file.groups) {
-      visibleFiles[file.title].groups[group.name] = visibleFiles[file.title].groups[group.name] || {visible: e.target.checked, animation: group.animations[0]?.name, frameIndex: 0}
-      visibleFiles[file.title].groups[group.name].visible = e.target.checked
+      visibleFiles[file.id].groups[group.name] = visibleFiles[file.id].groups[group.name] || {visible: e.target.checked, animation: group.animations[0]?.name, frameIndex: 0}
+      visibleFiles[file.id].groups[group.name].visible = e.target.checked
     }
     visibleFiles = {...visibleFiles}
   }
   
   function toggleGroup(file, group, e) {
-    if (!visibleFiles[file.title]) visibleFiles[file.title] = {visible: true, groups: {}}
-    visibleFiles[file.title].groups[group.name] = visibleFiles[file.title].groups[group.name] || {visible: e.target.checked, animation: group.animations[0]?.name, frameIndex: 0}
-    visibleFiles[file.title].groups[group.name].visible = e.target.checked
+    if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, groups: {}}
+    visibleFiles[file.id].groups[group.name] = visibleFiles[file.id].groups[group.name] || {visible: e.target.checked, animation: group.animations[0]?.name, frameIndex: 0}
+    visibleFiles[file.id].groups[group.name].visible = e.target.checked
     visibleFiles = {...visibleFiles}
   }
   
   function isFileIndeterminate(file) {
-    let visible = visibleFiles[file.title]?.visible
+    let visible = visibleFiles[file.id]?.visible
     let groupCount = 0
     let visibleGroupCount = 0
     for (let group of file.groups) {
       groupCount++
-      if (visibleFiles[file.title]?.groups[group.name]) {
+      if (visibleFiles[file.id]?.groups[group.name]) {
         visibleGroupCount++
       }
     }
     return (visible && visibleGroupCount !== groupCount) || (!visible && visibleGroupCount === 0)
   }
   function changeGroupAnimation(file, group, e) {
-    if (!visibleFiles[file.title]) visibleFiles[file.title] = {visible: true, groups: {}}
-    visibleFiles[file.title].groups[group.name] = visibleFiles[file.title].groups[group.name] || {visible: true, animation: group.animations[0]?.name, frameIndex: 0}
-    visibleFiles[file.title].groups[group.name].animation = e.detail.selectedId
+    if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, groups: {}}
+    visibleFiles[file.id].groups[group.name] = visibleFiles[file.id].groups[group.name] || {visible: true, animation: group.animations[0]?.name, frameIndex: 0}
+    visibleFiles[file.id].groups[group.name].animation = e.detail.selectedId
     visibleFiles = {...visibleFiles}
   }
   
@@ -214,11 +213,11 @@
   <Row narrow condensed>
     <Column sm>
       {#each $fileStates as file, i}
-        <Checkbox on:change={(e)=>toggleFile(file, i, e)} checked={visibleFiles[file.title]?.visible} indeterminate={isFileIndeterminate(file)} labelText={file.title.length>20?'…'+file.title.substring(file.title.length-20):file.title}></Checkbox>
+        <Checkbox on:change={(e)=>toggleFile(file, i, e)} checked={visibleFiles[file.id]?.visible} indeterminate={isFileIndeterminate(file)} labelText={file.title.length>20?'…'+file.title.substring(file.title.length-20):file.title}></Checkbox>
         {#each file.groups as group, groupIndex}
           <div class='subcheck'>
-            <Checkbox on:change={(e)=>toggleGroup(file, group, e)} checked={visibleFiles[file.title]?.groups[group.name]?.visible} labelText={group.name.length>20?'…'+group.name.substring(group.name.length-20):group.name}></Checkbox>
-            <Dropdown on:select={(e)=>changeGroupAnimation(file, group, e)} selectedId={visibleFiles[file.title]?.groups[group.name]?.animation} items={group.animations.map(animation => ({id: animation.name, text: animation.name}))}></Dropdown>
+            <Checkbox on:change={(e)=>toggleGroup(file, group, e)} checked={visibleFiles[file.id]?.groups[group.name]?.visible} labelText={group.name.length>20?'…'+group.name.substring(group.name.length-20):group.name}></Checkbox>
+            <Dropdown on:select={(e)=>changeGroupAnimation(file, group, e)} selectedId={visibleFiles[file.id]?.groups[group.name]?.animation} items={group.animations.map(animation => ({id: animation.name, text: animation.name}))}></Dropdown>
           </div>
         {/each}
       {/each}

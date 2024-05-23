@@ -17,7 +17,10 @@ export interface LoadedFileOptions {
   frameHeight?: number
 }
 
+let id: number = 0 // unique ID source for giving each loaded file its own unique number.
+
 export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<LoadedFile> {
+  id: number
   filepath: string
   title: string
   canvas: Canvas
@@ -43,6 +46,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
 
   constructor(options: LoadedFileOptions) {
     super()
+    this.id = ++id
     
     // ... Sure, let's make this a store. I hope this doesn't cause any issues later.
     const { subscribe, set, update } = writable<LoadedFile>(this)

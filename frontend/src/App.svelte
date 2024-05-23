@@ -438,7 +438,7 @@
         {/if}
       </menu>
       <Tabs bind:selected={focusedFileIndex}>
-        {#each $fileStates as file, index}
+        {#each $fileStates as file, index (file.id)}
           <Tab on:click={()=>selectFile(file, index)} title={file.filepath}>
             <span class='tab'>
               <span>{file.title.substring(0, file.title.lastIndexOf('.')) || file.title}</span>
@@ -447,7 +447,7 @@
           </Tab>
         {/each}
         <svelte:fragment slot="content">
-          {#each $fileStates as file, index}
+          {#each $fileStates as file, index (file.id)}
             <Shortcuts group='editor2D' active={focusedFile===file}>
               <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
               <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
