@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { GetFilePath, OpenFileBytes, ToggleFullscreen } from '../wailsjs/go/main/App.js'
+  import { GetFilePath, OpenFileBytes, SaveFilePath, ToggleFullscreen } from '../wailsjs/go/main/App.js'
   import { EventsEmit } from '../wailsjs/runtime/runtime.js'
   import Editor2D from './sections/Editor2D.svelte'
   import Open from './sections/Open.svelte'
@@ -203,6 +203,16 @@
 
     showExport = false
   }
+  
+  async function engageSaveAs() {
+     try {
+      let data = await focusedFile.canvas.toPNG(focusedFile)
+      let path = await SaveFilePath(focusedFile.filepath)
+      SaveFileBytes(path, [...data])
+    } catch(e) {
+      alert(e)
+    }
+  }
 
   function engageNew() {
   console.log('make new', importPNG.groups)
@@ -292,7 +302,7 @@
       <OverflowMenuItem text="Import..." on:click={()=>showImport = true}/>
       <OverflowMenuItem text="Export to PNG" disabled={focusedFile===null} on:click={() => showExport = true}/>
       <OverflowMenuItem text="Save"/>
-      <OverflowMenuItem text="Save As..."/>
+      <OverflowMenuItem text="Save As..." on:click={engageSaveAs}/>
       <OverflowMenuItem hasDivider danger text="Quit" on:click={engageQuit}/>
     </OverflowMenu>
     <OverflowMenu size="sm">
@@ -508,6 +518,8 @@
       bind:valid={importValid}
       bind:canvas={importCanvas}
       bind:png={importPNG}
+      bind:importFilepath={importFilepath}
+      bind:importTitle={importTitle}
     />
   </ComposedModal>
 {/if}

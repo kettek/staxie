@@ -23,6 +23,8 @@
   export let valid: boolean = false
   export let canvas: Canvas
   export let png: IndexedPNG
+  export let importFilepath: string = ''
+  export let importTitle: string = ''
 
   let selectedId: string = 'ves'
   let selectedFilePath: string = ''
@@ -54,6 +56,9 @@
     }
     const root = selectedFilePath.substring(0, i+('Sprites'.length))
     const spritePath = root + '/' + yml.source
+    
+    importFilepath = spritePath
+    importTitle = /[^/\\]*$/.exec(importFilepath)[0]
 
     // Read in our sprite PNG
     const b = (await OpenFileBytes(spritePath)) as unknown as string
