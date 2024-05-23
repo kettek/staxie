@@ -101,6 +101,10 @@
   let importFilepath: string = ''
   let importTitle: string = ''
   let importCanvas: Canvas = null
+  let importHandler: () => Promise<LoadedFile> = async () => {
+    alert('no import handler!')
+    return null
+  }
   
   let exportPath: string = ''
   let exportFormat: 'png' = 'png'
@@ -182,12 +186,11 @@
     showOpen = false
   }
   
-  function engageImport() {
-    if (importValid) {
-      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG}))
+  async function engageImport() {
+    let file = await importHandler()
+    if (file) {
+      fileStates.addFile(file)
       focusedFileIndex = $fileStates.length - 1
-      importCanvas = null
-      importPNG = null
     }
     showImport = false
   }
@@ -515,11 +518,7 @@
   <ComposedModal bind:open={showImport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageImport}>
     <Import
       bind:open={showImport}
-      bind:valid={importValid}
-      bind:canvas={importCanvas}
-      bind:png={importPNG}
-      bind:importFilepath={importFilepath}
-      bind:importTitle={importTitle}
+      bind:onImport={importHandler}
     />
   </ComposedModal>
 {/if}
