@@ -7,7 +7,9 @@
   import { Grid, Row, Column, Checkbox, Slider, Dropdown, Button } from "carbon-components-svelte"
   import { Minimize, Maximize } from "carbon-icons-svelte"
   import { fileStates } from "../stores/file"
-  import { onMount } from "svelte";
+  import { onMount } from "svelte"
+  import { previewSettings } from '../stores/preview'
+  import { claim_text } from "svelte/internal";
   
   type GroupState = {
     visible: boolean
@@ -21,6 +23,17 @@
   }
 
   export let shronked: boolean = false
+  
+  let backgroundImage: HTMLImageElement | null = null
+  
+  let img = new Image()
+  img.onload = () => {
+    backgroundImage = img
+  }
+  img.onerror = () => {
+    backgroundImage = null
+  }
+  $: img.src = $previewSettings.background
 
   let visibleFiles: Record<number, VisibleState> = {}
   
@@ -40,11 +53,6 @@
   let automaticShading: boolean = true
   let minShade: number = 0.5
   
-  export let baseSizeOutlineColor: string = '#00FFFF77'
-  export let showBaseSizeOutline: boolean = true
-  export let sizeOutlineColor: string = '#FFFF0077'
-  export let showSizeOutline: boolean = true
-  
   let canvas: HTMLCanvasElement
   function draw() {
     if (!canvas) return
@@ -58,8 +66,19 @@
     let ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.fillStyle = '#222222'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    if (backgroundImage) {
+      let pattern = ctx.createPattern(backgroundImage, 'repeat')
+      if (pattern) {
+        ctx.fillStyle = pattern
+        ctx.save()
+        ctx.scale(zoom, zoom)
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.restore()
+      }
+    } else {
+      ctx.fillStyle = $previewSettings.background
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+    }
 
     ctx.imageSmoothingEnabled = false
     
@@ -79,23 +98,23 @@
               for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
                 let slice = frame.slices[sliceIndex]
                 if (sliceIndex === 0) {
-                  if (showBaseSizeOutline) {
+                  if ($previewSettings.showBaseSizeOutline) {
                     ctx.save()
                     ctx.translate(x, y)
                     ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
                     ctx.scale(zoom, zoom)
-                    ctx.strokeStyle = baseSizeOutlineColor
+                    ctx.strokeStyle = $previewSettings.baseSizeOutlineColor
                     ctx.lineWidth = 1 / zoom
                     ctx.strokeRect(-file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
                     ctx.restore()
                   }
-                  if (showSizeOutline) {
+                  if ($previewSettings.showSizeOutline) {
                     ctx.save()
                     ctx.translate(x, y)
                     ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
                     ctx.scale(zoom, zoom)
                     ctx.rotate(rotation * Math.PI / 180)
-                    ctx.strokeStyle = sizeOutlineColor
+                    ctx.strokeStyle = $previewSettings.sizeOutlineColor
                     ctx.lineWidth = 1 / zoom
                     ctx.strokeRect(-file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
                     ctx.restore()
