@@ -131,6 +131,7 @@
 
 <dialog bind:this={dialog} use:drag style="left: 100px; top: 100px;">
   <header class='bx--modal-header'>
+    <div class='header-left'><slot name='header-left'/></div>
     <h2 class='bx--modal-header__label bx--type-delta'>{label}</h2>
     <button class='bx--modal-close' aria-label='Close' title='Close' on:click={()=>{open=false}}>
       <Close/>
@@ -165,6 +166,13 @@
   }
   header {
     padding: var(--cds-spacing-03, 1rem);
+    display: grid;
+  }
+  .header-left {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0rem;
   }
   header button {
     width: 2rem;

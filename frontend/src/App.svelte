@@ -20,7 +20,7 @@
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper, Move, MagicWand, SprayPaint } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import { Canvas } from './types/canvas'
   import { BrushTool, EraserTool, FillTool, PickerTool, SelectionTool, MagicWandTool, type BrushType, type Tool, MoveTool, SprayTool } from './types/tools'
@@ -120,6 +120,7 @@
   let previewBaseSizeOutlineColor: string = '#00FFFF77'
   let previewShowSizeOutline: boolean = true
   let previewSizeOutlineColor: string = '#FFFF0077'
+  let previewUseMini: boolean = false
 
   let toolSelection = new SelectionTool()
   let toolMagicWand = new MagicWandTool()
@@ -472,11 +473,15 @@
         noPadding
         bind:open={showPreview}
       >
+        <div slot='header-left'>
+          <Button size='small' kind='ghost' icon={previewUseMini?Maximize:Minimize} on:click={()=>previewUseMini = !previewUseMini}/>
+          </div>
         <StackPreview
           showBaseSizeOutline={previewShowBaseSizeOutline}
           baseSizeOutlineColor={previewBaseSizeOutlineColor}
           showSizeOutline={previewShowSizeOutline}
           sizeOutlineColor={previewSizeOutlineColor}
+          shronked={previewUseMini}
         />
       </FloatingPanel>
     {/if}
