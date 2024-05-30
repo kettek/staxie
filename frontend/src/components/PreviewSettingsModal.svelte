@@ -19,7 +19,6 @@
   let changed: boolean = false
   $: {
     changed = $previewSettings.background !== pendingBackground || $previewSettings.showBaseSizeOutline !== pendingShowBaseSizeOutline || $previewSettings.baseSizeOutlineColor !== pendingBaseSizeOutlineColor || $previewSettings.showSizeOutline !== pendingShowSizeOutline || $previewSettings.sizeOutlineColor !== pendingSizeOutlineColor
-    console.log('wt2f')
   }
 
   export let open: boolean = false
