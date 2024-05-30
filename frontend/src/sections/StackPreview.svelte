@@ -53,9 +53,14 @@
   let automaticShading: boolean = true
   let minShade: number = 0.5
   
+  let timeElapsed: number = 0
+  let lastTime: DOMHighResTimeStamp = performance.now()
+  
   let canvas: HTMLCanvasElement
-  function draw() {
+  function draw(ts: DOMHighResTimeStamp) {
     if (!canvas) return
+    timeElapsed += (ts - lastTime)
+    lastTime = ts
     
     let computedSize = getComputedStyle(canvas)
     if (canvas.width !== parseInt(computedSize.width) || canvas.height !== parseInt(computedSize.height)) {
@@ -87,7 +92,6 @@
     let sortedFiles = $fileStates.filter(file => visibleFiles[file.id]).sort((a, b) => filePositions[a.id].z - filePositions[b.id].z)
     for (let file of sortedFiles) {
       if (visibleFiles[file.id]?.visible) {
-        // For now, just get the first frame of the first animation.
         let sortedGroups = visibleFiles[file.id].groups ? file.groups.filter(group => visibleFiles[file.id].groups[group.name]?.visible).sort((a, b) => visibleFiles[file.id].groups[a.name].orderIndex - visibleFiles[file.id].groups[b.name].orderIndex) : []
         let sliceOffset = 0
         for (let group of sortedGroups) {
@@ -95,53 +99,51 @@
           if (!visibleFiles[file.id]?.groups[group.name]?.visible) continue
           let animation = group.animations.find(animation => animation.name === visibleFiles[file.id].groups[group.name].animation)
           if (animation) {
-            for (let frame of animation.frames) {
-              for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
-                let slice = frame.slices[sliceIndex]
-                if (sliceIndex === 0) {
-                  if ($previewSettings.showBaseSizeOutline) {
-                    ctx.save()
-                    ctx.translate(x, y)
-                    ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
-                    ctx.scale(zoom, zoom)
-                    ctx.strokeStyle = $previewSettings.baseSizeOutlineColor
-                    ctx.lineWidth = 1 / zoom
-                    ctx.strokeRect(-file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
-                    ctx.restore()
-                  }
-                  if ($previewSettings.showSizeOutline) {
-                    ctx.save()
-                    ctx.translate(x, y)
-                    ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
-                    ctx.scale(zoom, zoom)
-                    ctx.rotate(rotation * Math.PI / 180)
-                    ctx.strokeStyle = $previewSettings.sizeOutlineColor
-                    ctx.lineWidth = 1 / zoom
-                    ctx.strokeRect(-file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
-                    ctx.restore()
-                  }
+            let frameIndex = Math.floor(timeElapsed / animation.frameTime) % animation.frames.length
+            let frame = animation.frames[frameIndex]
+            for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
+              let slice = frame.slices[sliceIndex]
+              if (sliceIndex === 0) {
+                if ($previewSettings.showBaseSizeOutline) {
+                  ctx.save()
+                  ctx.translate(x, y)
+                  ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
+                  ctx.scale(zoom, zoom)
+                  ctx.strokeStyle = $previewSettings.baseSizeOutlineColor
+                  ctx.lineWidth = 1 / zoom
+                  ctx.strokeRect(-file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
+                  ctx.restore()
                 }
-                ctx.save()
-                ctx.translate(x, y-(sliceOffset * sliceDistance * zoom))
-                ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
-                ctx.scale(zoom, zoom)
-                ctx.rotate(rotation * Math.PI / 180)
-                
-                if (automaticShading) {
-                  // FIXME: Adjust this math to use configurable min/max values.
-                  // FIXME: This is not affected by multiple stacks!!!
-                  let shade = 128 + Math.min(255, 128 * (sliceIndex / frame.slices.length))
-                  ctx.filter = `brightness(${minShade + (1-minShade) * (shade/255)})`
+                if ($previewSettings.showSizeOutline) {
+                  ctx.save()
+                  ctx.translate(x, y)
+                  ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
+                  ctx.scale(zoom, zoom)
+                  ctx.rotate(rotation * Math.PI / 180)
+                  ctx.strokeStyle = $previewSettings.sizeOutlineColor
+                  ctx.lineWidth = 1 / zoom
+                  ctx.strokeRect(-file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
+                  ctx.restore()
                 }
-
-                ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.frameWidth, file.frameHeight, -file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
-                ctx.restore()
-                y -= 1 * sliceDistance * zoom
               }
-              sliceOffset += frame.slices.length
-              done = true
-              if (done) break
+              ctx.save()
+              ctx.translate(x, y-(sliceOffset * sliceDistance * zoom))
+              ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
+              ctx.scale(zoom, zoom)
+              ctx.rotate(rotation * Math.PI / 180)
+              
+              if (automaticShading) {
+                // FIXME: Adjust this math to use configurable min/max values.
+                // FIXME: This is not affected by multiple stacks!!!
+                let shade = 128 + Math.min(255, 128 * (sliceIndex / frame.slices.length))
+                ctx.filter = `brightness(${minShade + (1-minShade) * (shade/255)})`
+              }
+
+              ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.frameWidth, file.frameHeight, -file.frameWidth/2, -file.frameHeight/2, file.frameWidth, file.frameHeight)
+              ctx.restore()
+              y -= 1 * sliceDistance * zoom
             }
+            sliceOffset += frame.slices.length
           }
           y = canvas.height/2
         }
@@ -225,8 +227,8 @@
   
   onMount(()=>{
     let frameID: number = 0
-    let frameDraw = () => {
-      draw()
+    let frameDraw = (ts: DOMHighResTimeStamp) => {
+      draw(ts)
       frameID = requestAnimationFrame(frameDraw)
     }
     frameID = requestAnimationFrame(frameDraw)
