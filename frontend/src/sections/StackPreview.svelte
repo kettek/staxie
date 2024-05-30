@@ -93,7 +93,8 @@
         for (let group of sortedGroups) {
           let done = false
           if (!visibleFiles[file.id]?.groups[group.name]?.visible) continue
-          for (let animation of group.animations) {
+          let animation = group.animations.find(animation => animation.name === visibleFiles[file.id].groups[group.name].animation)
+          if (animation) {
             for (let frame of animation.frames) {
               for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
                 let slice = frame.slices[sliceIndex]
@@ -141,7 +142,6 @@
               done = true
               if (done) break
             }
-            if (done) break
           }
           y = canvas.height/2
         }
