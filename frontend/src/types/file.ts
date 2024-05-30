@@ -584,6 +584,31 @@ export class MoveSwatchUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class ChangeFrameTimeUndoable implements Undoable<LoadedFile> {
+  private group: string
+  private animation: string
+  private frameTime: number
+  private previousFrameTime: number
+  constructor(group: string, animation: string, frameTime: number) {
+    this.group = group
+    this.animation = animation
+    this.frameTime = frameTime
+  }
+  apply(file: LoadedFile) {
+    let a = file.getAnimation(this.group, this.animation)
+    if (a) {
+      this.previousFrameTime = a.frameTime
+      a.frameTime = this.frameTime
+    }
+  }
+  unapply(file: LoadedFile) {
+    let a = file.getAnimation(this.group, this.animation)
+    if (a) {
+      a.frameTime = this.previousFrameTime
+    }
+  }
+}
+
 /** BEGIN STAX-RELATED CANVAS RESIZE TYPE Undoables */
 export class AddGroupUndoable implements Undoable<LoadedFile> {
   private group: string

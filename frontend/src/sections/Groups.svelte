@@ -1,6 +1,6 @@
 <script lang='ts'>
   import { FaceAdd, FolderAdd, GroupObjectsNew } from "carbon-icons-svelte";
-  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddGroupUndoable } from "../types/file"
+  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddGroupUndoable, ChangeFrameTimeUndoable } from "../types/file"
   import { Button, ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
 
@@ -83,6 +83,9 @@
       file.push(new GrowGroupSliceUndoable(file.group.name, Number(e.detail)-file.group.sliceCount))
     }
   }
+  function changeFrameTime(e: CustomEvent) {
+    file.push(new ChangeFrameTimeUndoable(file.groupName, file.animationName, Number(e.detail)))
+  }
   function addGroup() {
     file.push(new AddGroupUndoable())
   }
@@ -117,6 +120,7 @@
   </menu>
   <section class='selected'>
     <NumberInput label='slices' value={$file?.group?.sliceCount} on:change={changeSlices}/>
+    <NumberInput label='frametime (ms)' value={$file?.animation?.frameTime} on:change={changeFrameTime}/>
   </section>
   <section class='groups'>
     {#if file}
