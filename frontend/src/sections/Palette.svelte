@@ -4,7 +4,7 @@
   This component shows swatches of a given palette and provides controls for selecting, moving, and deleting swatches.
 -->
 <script lang='ts'>
-  import type { Color } from '../types/palette'
+  import type { Palette } from '../types/palette'
   import { ReplaceSwatchUndoable, type LoadedFile, AddSwatchUndoable, MoveSwatchUndoable } from '../types/file'
   import { createEventDispatcher } from 'svelte'
   import type { Undoable } from '../types/undo'
@@ -20,11 +20,11 @@
   
   const dispatch = createEventDispatcher()
 
-  export let fakePalette: Uint32Array | undefined
+  export let fakePalette: Palette | undefined
   let palette: Uint32Array | undefined[]
   $: {
     if (fakePalette) {
-      palette = fakePalette
+      palette = fakePalette.swatches
     } else {
       palette = $file ? $file.canvas.palette : []
     }

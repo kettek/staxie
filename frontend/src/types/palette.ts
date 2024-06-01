@@ -1,24 +1,14 @@
 export class Palette {
-  entries: PaletteEntry[];
+  name: string
+  swatches: Uint32Array
 }
 
-export class PaletteEntry {
-  color: string;
-}
-
-export const defaultPalette = (): Palette => {
-  return {
-    entries: [
-      {color: "#00000000"},
-      {color: "#000000ff"},
-      {color: "#ffffffff"},
-    ]
-  }
-}
-
-export interface Color {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
+export const defaultPalette: Palette = {
+  name: 'Default',
+  swatches: new Uint32Array([
+    0x00000000, 0xFF88C070, 0xFF346856, 0xFF081820,
+    0xFFF8F8F8, 0xFFC0C0C0, 0xFF606060, 0xFF202020,
+    0xFFF8D8F8, 0xFFA800A8, 0xFF503050, 0xFF200020,
+    0xFFF8B8F8, 0xFFA800A8, 0xFF503050, 0xFF200020,
+  ])
 }

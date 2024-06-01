@@ -7,7 +7,7 @@
   import Exporter from './sections/Exporter.svelte'
   import PaletteSection from './sections/Palette.svelte'
   import FloatingPanel from './components/FloatingPanel.svelte'
-  import { Palette, PaletteEntry, defaultPalette, type Color } from './types/palette'
+  import { Palette, defaultPalette } from './types/palette'
   
   import { brushSettings } from './stores/brush'
   import { editor2DSettings } from './stores/editor2d.js'
@@ -43,10 +43,13 @@
   import Groups from './sections/Groups.svelte'
   import { fileStates } from './stores/file'
   import { IndexedPNG, type StaxGroup } from './types/png.js'
+  import { palettesStore } from './stores/palettes.js';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
-  let palette: Palette = defaultPalette()
+  let palette: Palette = defaultPalette
+  
+  type Color = {r: number, g: number, b: number, a: number}
   
   let primaryColor: Color = {r: 0, g: 0, b: 0, a: 0}
   let secondaryColor: Color = {r: 0, g: 0, b: 0, a: 0}
@@ -60,20 +63,17 @@
   let alpha: number = 0
 
   let refreshPalette = {}
-  let fakePalette: Uint32Array | undefined = undefined
+  let fakePalette: Palette | undefined = undefined
   let selectedPaletteID: number = 0
   $: {
     if (selectedPaletteID === 0) {
       fakePalette = undefined
-    } else if (selectedPaletteID === 1) {
-      fakePalette = new Uint32Array([
-        0xFFE0F8D0, 0xFF88C070, 0xFF346856, 0xFF081820,
-        0xFFF8F8F8, 0xFFC0C0C0, 0xFF606060, 0xFF202020,
-        0xFFF8D8F8, 0xFFA800A8, 0xFF503050, 0xFF200020,
-        0xFFF8B8F8, 0xFFA800A8, 0xFF503050, 0xFF200020,
-      ])
+    } else if (selectedPaletteID >= 1) {
+      if ($palettesStore[selectedPaletteID-1]) {
+        fakePalette = $palettesStore[selectedPaletteID-1]
+      }
     }
-    focusedFile?.canvas.setFakePalette(fakePalette)
+    focusedFile?.canvas.setFakePalette(fakePalette?.swatches)
     focusedFile?.canvas.refreshImageData()
     focusedFile?.canvas.refreshCanvas()
   }
@@ -382,9 +382,9 @@
         bind:selectedId={selectedPaletteID}
         items={[
           { id: 0, text: "<image>"},
-          { id: 1, text: "test palette"},
-        ]}
+        ].concat($palettesStore.map((p, i) => ({id: i+1, text: p.name})))}
       />
+      <TextInput hideLabel value={fakePalette!==undefined?fakePalette.name:""} disabled={fakePalette===undefined}/>
       <PaletteSection refresh={refreshPalette} file={focusedFile} fakePalette={fakePalette} on:select={handlePaletteSelect} />
       <article>
         <ColorSelector bind:red bind:green bind:blue bind:alpha />
@@ -572,7 +572,7 @@
   }
   .left {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
   }
   .right {
     display: grid;
