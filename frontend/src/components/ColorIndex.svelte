@@ -128,5 +128,6 @@
     background: transparent;
     display: block;
     border: 0;
+    font-family: 'Courier New', Courier, monospace;
   }
 </style>
