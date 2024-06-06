@@ -53,7 +53,6 @@ export class PaletteReplaceSwatchUndoable implements Undoable<Palette> {
     this.color = (a << 24) | (b << 16) | (g << 8) | r
   }
   apply(palette: Palette) {
-    console.log('apply', palette)
     this.oldColor = palette.swatches[this.index]
     palette.swatches[this.index] = this.color
   }
