@@ -581,8 +581,8 @@ export class Canvas {
       }
       buffer = Buffer.alloc(8 + dbuffer.buffer.length + 4), bufferOffset = 0
       bufferOffset = buffer.writeUInt32BE(dbuffer.buffer.length, 0)
-      bufferOffset += buffer.write('stAx', bufferOffset)
       chunkStart = bufferOffset
+      bufferOffset += buffer.write('stAx', bufferOffset)
       bufferOffset += dbuffer.buffer.copy(buffer, bufferOffset)
       chunkEnd = bufferOffset
       bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
