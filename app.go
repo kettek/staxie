@@ -58,7 +58,7 @@ func (a *App) GetFilePath(names []string, patterns []string) (string, error) {
 		ff := runtime.FileFilter{
 			DisplayName: n,
 		}
-		if len(patterns) < i {
+		if i < len(patterns) {
 			ff.Pattern = patterns[i]
 		}
 		f = append(f, ff)
