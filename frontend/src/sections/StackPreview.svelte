@@ -194,6 +194,7 @@
       visibleFiles[file.id].groups[group.name].visible = e.target.checked
     }
     visibleFiles = {...visibleFiles}
+    timeElapsed = 0 // Reset time on change
   }
   
   function toggleGroup(file, group, e) {
@@ -204,6 +205,7 @@
     visibleFiles[file.id].groups[group.name].orderIndex = Object.values(visibleFiles[file.id].groups).reduce((acc, val) => Math.max(acc, val.orderIndex), 0) + 1
 
     visibleFiles = {...visibleFiles}
+    timeElapsed = 0 // Reset time on change
   }
   
   function isFileIndeterminate(file) {
@@ -223,6 +225,7 @@
     visibleFiles[file.id].groups[group.name] = visibleFiles[file.id].groups[group.name] || {visible: true, animation: group.animations[0]?.name, frameIndex: 0, orderIndex: 0}
     visibleFiles[file.id].groups[group.name].animation = e.detail.selectedId
     visibleFiles = {...visibleFiles}
+    timeElapsed = 0 // Reset time on change
   }
   
   onMount(()=>{
