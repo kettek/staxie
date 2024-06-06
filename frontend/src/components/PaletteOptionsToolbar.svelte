@@ -4,18 +4,30 @@
   import { Undo, Redo, Close } from "carbon-icons-svelte"
   
   import { palettesStore } from '../stores/palettes'
+  import type { LoadedFile } from '../types/file'
 
+  export let file: LoadedFile
   export let palette: Palette | undefined
   
   function setName(event: CustomEvent) {
     palette.push(new PaletteRenameUndoable(event.detail))
   }
+  function redo() {
+    palette.redo()
+    file.canvas.refreshImageData()
+    file.canvas.refreshCanvas()
+  }
+  function undo() {
+    palette.undo()
+    file.canvas.refreshImageData()
+    file.canvas.refreshCanvas()
+  }
 </script>
 
 {#if palette}
   <menu>
-    <Button kind="ghost" size="small" icon={Undo} on:click={()=>palette.undo()} disabled={!$palette.canUndo()}/>
-    <Button kind="ghost" size="small" icon={Redo} on:click={()=>palette.redo()} disabled={!$palette.canRedo()}/>
+    <Button kind="ghost" size="small" icon={Undo} on:click={undo} disabled={!$palette.canUndo()}/>
+    <Button kind="ghost" size="small" icon={Redo} on:click={redo} disabled={!$palette.canRedo()}/>
     <Button kind="ghost" size="small" iconDescription="delete palette" icon={Close} on:click={()=>{palettesStore.removePalette(palette)}}/>
   </menu>
   <span>

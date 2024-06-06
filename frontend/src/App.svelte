@@ -392,7 +392,7 @@
         ].concat($palettesStore.map((p, i) => ({id: i+1, text: p.name})))}
       />
       <section class='palette'>
-        <PaletteOptionsToolbar palette={fakePalette}/>
+        <PaletteOptionsToolbar palette={fakePalette} file={focusedFile}/>
       </section>
       <PaletteSection refresh={refreshPalette} file={focusedFile} fakePalette={fakePalette} on:select={handlePaletteSelect} />
       <article>
