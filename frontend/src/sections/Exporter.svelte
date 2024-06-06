@@ -23,7 +23,6 @@
   export let open: boolean = false
 
   export let path: string = ''
-  export let format: 'png' = 'png'
   
   let error: string = ''
   let error2: string = ''

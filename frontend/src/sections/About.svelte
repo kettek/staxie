@@ -16,7 +16,7 @@
   } from "carbon-components-svelte"
   
   
-  export let open: boolean = false
+  export const open: boolean = false
   let version: string = ''
   
   function followLink(e: MouseEvent) {

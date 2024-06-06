@@ -8,7 +8,7 @@
   
   let activeId: string | number = 0
   let selectedIds: (string|number)[] = []
-  let children = []
+  let children: ({id: string, text: string, children: ({id: string, text: string})[]})[] = []
   $: {
     if ($file) {
       children = $file.groups.map(group => {
@@ -63,7 +63,7 @@
   function contextAnimationDelete() {
     const groupName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
     const animationName = contextNode.id.substring(contextNode.id.indexOf('__')+2)
-    if (file?.group.animations.length === 1) {
+    if (file?.group?.animations.length === 1) {
       alert('thou shall not delete the last animation')
       return
     }

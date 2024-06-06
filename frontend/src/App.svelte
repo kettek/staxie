@@ -147,7 +147,7 @@
   }
 
   let focusedFileIndex: number = -1
-  let focusedFile: LoadedFile = null
+  let focusedFile: LoadedFile|null = null
   $: {
     if ($fileStates[focusedFileIndex] && focusedFile !== $fileStates[focusedFileIndex]) {
       exportPath = $fileStates[focusedFileIndex].filepath

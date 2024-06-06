@@ -9,7 +9,8 @@
   import { fileStates } from "../stores/file"
   import { onMount } from "svelte"
   import { previewSettings } from '../stores/preview'
-  import { claim_text } from "svelte/internal";
+  import type { LoadedFile } from "../types/file"
+  import type { StaxGroup } from "../types/png"
   
   type GroupState = {
     visible: boolean
@@ -186,7 +187,7 @@
     window.addEventListener('mousemove', mousemove)
   }
   
-  function toggleFile(file, i, e) {
+  function toggleFile(file: LoadedFile, i: number, e: any) {
     visibleFiles[file.id] = visibleFiles[file.id] || {visible: e.target.checked, groups: {}}
     visibleFiles[file.id].visible = e.target.checked
     for (let group of file.groups) {
@@ -197,7 +198,7 @@
     timeElapsed = 0 // Reset time on change
   }
   
-  function toggleGroup(file, group, e) {
+  function toggleGroup(file: LoadedFile, group: StaxGroup, e: any) {
     if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, groups: {}}
     visibleFiles[file.id].groups[group.name] = visibleFiles[file.id].groups[group.name] || {visible: e.target.checked, animation: group.animations[0]?.name, frameIndex: 0, orderIndex: 0}
     visibleFiles[file.id].groups[group.name].visible = e.target.checked
@@ -208,7 +209,7 @@
     timeElapsed = 0 // Reset time on change
   }
   
-  function isFileIndeterminate(file) {
+  function isFileIndeterminate(file: LoadedFile) {
     let visible = visibleFiles[file.id]?.visible
     let groupCount = 0
     let visibleGroupCount = 0
@@ -220,7 +221,7 @@
     }
     return (visible && visibleGroupCount !== groupCount) || (!visible && visibleGroupCount === 0)
   }
-  function changeGroupAnimation(file, group, e) {
+  function changeGroupAnimation(file: LoadedFile, group: StaxGroup, e: any) {
     if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, groups: {}}
     visibleFiles[file.id].groups[group.name] = visibleFiles[file.id].groups[group.name] || {visible: true, animation: group.animations[0]?.name, frameIndex: 0, orderIndex: 0}
     visibleFiles[file.id].groups[group.name].animation = e.detail.selectedId
