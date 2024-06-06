@@ -10,8 +10,10 @@
   import { createEventDispatcher } from "svelte";
 
   import { brushSettings } from '../stores/brush'
+  import { PaletteAddSwatchUndoable, PaletteReplaceSwatchUndoable, type Palette } from '../types/palette'
 
   export let file: LoadedFile
+  export let palette: Palette | undefined
 
   export let red: number = 255
   export let green: number = 0
@@ -46,19 +48,37 @@
 
   let swatchExists: boolean = false
   $: {
-    swatchExists = file?.canvas.hasPaletteColor(red, green, blue, alpha)
+    if (palette) {
+      swatchExists = palette.hasPaletteColor(red, green, blue, alpha)
+    } else {
+      swatchExists = file?.canvas.hasPaletteColor(red, green, blue, alpha)
+    }
   }
 
   const dispatch = createEventDispatcher()
 
   function addSwatch() {
-    file.push(new AddSwatchUndoable(red, green, blue, alpha))
+    if (palette) {
+      palette.push(new PaletteAddSwatchUndoable(red, green, blue, alpha))
+      // Refresh file so as to update any live previews.
+      file.canvas.refreshImageData()
+      file.canvas.refreshCanvas()
+    } else {
+      file.push(new AddSwatchUndoable(red, green, blue, alpha))
+    }
     dispatch('refresh', {})
     ;(document.activeElement as HTMLElement).blur()
   }
 
   function replaceSwatch() {
-    file.push(new ReplaceSwatchUndoable($brushSettings.primaryIndex, red, green, blue, alpha))
+    if (palette) {
+      palette.push(new PaletteReplaceSwatchUndoable($brushSettings.primaryIndex, red, green, blue, alpha))
+      // Refresh file so as to update any live previews.
+      file.canvas.refreshImageData()
+      file.canvas.refreshCanvas()
+    } else {
+      file.push(new ReplaceSwatchUndoable($brushSettings.primaryIndex, red, green, blue, alpha))
+    }
     dispatch('refresh', {})
     ;(document.activeElement as HTMLElement).blur()
   }

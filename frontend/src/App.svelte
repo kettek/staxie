@@ -44,6 +44,7 @@
   import { fileStates } from './stores/file'
   import { IndexedPNG, type StaxGroup } from './types/png.js'
   import { palettesStore } from './stores/palettes.js';
+  import PaletteOptionsToolbar from './components/PaletteOptionsToolbar.svelte';
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -278,10 +279,16 @@
 
   function handlePaletteSelect(event: CustomEvent) {
     let index = event.detail.index
+    
+    let entry: number = 0
 
-    if (index < 0 || index >= focusedFile.canvas.palette.length) return
-
-    let entry = focusedFile.canvas.palette[index]
+    if (fakePalette) {
+      if (index < 0 || index >= fakePalette.swatches.length) return
+      entry = fakePalette.swatches[index]
+    } else {
+      if (index < 0 || index >= focusedFile.canvas.palette.length) return
+      entry = focusedFile.canvas.palette[index]
+    }
     red = entry & 0xFF
     green = (entry >> 8) & 0xFF
     blue = (entry >> 16) & 0xFF
@@ -384,11 +391,13 @@
           { id: 0, text: "<image>"},
         ].concat($palettesStore.map((p, i) => ({id: i+1, text: p.name})))}
       />
-      <TextInput hideLabel value={fakePalette!==undefined?fakePalette.name:""} disabled={fakePalette===undefined}/>
+      <section class='palette'>
+        <PaletteOptionsToolbar palette={fakePalette}/>
+      </section>
       <PaletteSection refresh={refreshPalette} file={focusedFile} fakePalette={fakePalette} on:select={handlePaletteSelect} />
       <article>
         <ColorSelector bind:red bind:green bind:blue bind:alpha />
-        <ColorIndex bind:red bind:green bind:blue bind:alpha file={focusedFile} on:refresh={()=>refreshPalette={}} />
+        <ColorIndex bind:red bind:green bind:blue bind:alpha file={focusedFile} palette={fakePalette} on:refresh={()=>refreshPalette={}} />
       </article>
     </section>
     <menu class='toolbar'>

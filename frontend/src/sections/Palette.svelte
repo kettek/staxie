@@ -24,7 +24,7 @@
   let palette: Uint32Array | undefined[]
   $: {
     if (fakePalette) {
-      palette = fakePalette.swatches
+      palette = $fakePalette.swatches
     } else {
       palette = $file ? $file.canvas.palette : []
     }
