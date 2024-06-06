@@ -31,24 +31,14 @@
     let p = await GetFilePath(["JASC-PAL"], ["*.pal"])
     let b = (await OpenFileBytes(p)) as unknown as string
     let s = atob(b)
-    let lines = s.split('\n')
-    if (lines.length < 4 || lines[0] !== 'JASC-PAL' || lines[1] !== '0100') {
-      alert('Invalid JASC-PAL file')
-      return
-    }
-    let swatches = new Uint32Array(parseInt(lines[2]))
-    for (let i = 3; i < lines.length; i++) {
-      let [r, g, b, a] = lines[i].split(' ').map(x => parseInt(x))
-      if (a === undefined) a = 255
-      swatches[i - 3] = (a << 24) | (b << 16) | (g << 8) | r
-    }
     let name = p.split('/').pop() || 'Untitled'
     name = name.split('.').slice(0, -1).join('.')
+    let palette = Palette.fromJASCPAL(name, s)
     if (file && !palette) {
       // Replace file's palette.
-      file.push(new ReplacePaletteUndoable(swatches))
+      file.push(new ReplacePaletteUndoable(palette.swatches))
     } else {
-      palettesStore.addPalette(new Palette(name, swatches))
+      palettesStore.addPalette(palette)
     }
   }
   function exportPalette() {
