@@ -1,7 +1,7 @@
 <script lang='ts'>
   import { Palette, PaletteRenameUndoable } from '../types/palette'
   import { Button, TextInput } from "carbon-components-svelte"
-  import { Undo, Redo, Close, DocumentImport, DocumentExport, DocumentAdd } from "carbon-icons-svelte"
+  import { Undo, Redo, DocumentImport, DocumentExport, DocumentAdd, TrashCan } from "carbon-icons-svelte"
   
   import { palettesStore } from '../stores/palettes'
   import { ReplacePaletteUndoable, type LoadedFile } from '../types/file'
@@ -78,8 +78,9 @@
   <Button kind="ghost" size="small" iconDescription="new palette" icon={DocumentAdd} on:click={newPalette}/>
   <Button kind="ghost" size="small" iconDescription="import PAL" icon={DocumentImport} on:click={importPalette}/>
   <Button kind="ghost" size="small" iconDescription="export PAL" icon={DocumentExport} on:click={exportPalette}/>
+  <aside></aside>
   {#if palette}
-    <Button kind="ghost" size="small" iconDescription="delete palette" icon={Close} on:click={()=>{palettesStore.removePalette(palette)}}/>
+    <Button kind="ghost" size="small" iconDescription="delete palette" icon={TrashCan} on:click={()=>{palettesStore.removePalette(palette)}}/>
   {/if}
 </menu>
 <span>
@@ -92,7 +93,7 @@
   menu {
     display: grid;
     grid-template-rows: minmax(0, 1fr);
-    grid-template-columns: auto auto auto auto auto;
+    grid-template-columns: auto auto auto auto auto minmax(0, 1fr) auto;
     justify-content: start;
   }
   span {
