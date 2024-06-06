@@ -73,7 +73,7 @@ export class Palette extends UndoableStack<Palette> implements Writable<Palette>
     }, 3000)
   }
 
-    undo() {
+  undo() {
     super.undo()
     this.set(this)
     this.startPendingSave()
