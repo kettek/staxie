@@ -48,8 +48,28 @@ func (a *App) startup(ctx context.Context) {
 	log.Println("startup called")
 }
 
+func (a *App) AppDirectory(p string) string {
+	return filepath.Join(data.AppDirectory, p)
+}
+
+func (a *App) CacheDirectory(p string) string {
+	return filepath.Join(data.CacheDirectory, p)
+}
+
 func (a *App) ReadBytes(name string) ([]byte, error) {
 	return os.ReadFile(name)
+}
+
+func (a *App) GetFilesInDir(dir string) ([]string, error) {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	var names []string
+	for _, f := range files {
+		names = append(names, f.Name())
+	}
+	return names, nil
 }
 
 func (a *App) GetFilePath(names []string, patterns []string) (string, error) {

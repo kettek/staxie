@@ -3,6 +3,7 @@ package data
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -36,6 +37,13 @@ func init() {
 	AppDirectory = filepath.Join(AppDirectory, "staxie")
 	CacheDirectory, _ = os.UserCacheDir()
 	CacheDirectory = filepath.Join(CacheDirectory, "staxie")
+
+	// Create app dir
+	if _, err := os.Stat(AppDirectory); os.IsNotExist(err) {
+		if err = os.MkdirAll(AppDirectory, 0755); err != nil {
+			fmt.Println(err)
+		}
+	}
 }
 
 // LoadSettings loads the settings from the settings file.
