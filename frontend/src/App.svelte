@@ -45,6 +45,7 @@
   import { IndexedPNG, type StaxGroup } from './types/png.js'
   import { palettesStore } from './stores/palettes.js';
   import PaletteOptionsToolbar from './components/PaletteOptionsToolbar.svelte';
+  import Editor3D from './sections/Editor3D.svelte'
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -98,11 +99,11 @@
   let showNew: boolean = false
   let showAbout: boolean = false
   let importValid: boolean = false
-  let importPNG: IndexedPNG = null
+  let importPNG: IndexedPNG|null = null
   let importFilepath: string = ''
   let importTitle: string = ''
-  let importCanvas: Canvas = null
-  let importHandler: () => Promise<LoadedFile> = async () => {
+  let importCanvas: Canvas|null = null
+  let importHandler: () => Promise<LoadedFile|null> = async () => {
     alert('no import handler!')
     return null
   }
@@ -132,7 +133,7 @@
   let toolPicker = new PickerTool()
   let toolMove = new MoveTool()
   let currentTool: Tool = toolBrush
-  let previousTool: Tool = null
+  let previousTool: Tool|null = null
   let brushSize: number = 1
   let brushType: BrushType = 'circle'
   let sprayRadius: number = 16
@@ -468,6 +469,7 @@
                 bind:file={file}
                 bind:currentTool={currentTool}
               />
+              <!--Editor3D/-->
             </TabContent>
           {/each}
         </svelte:fragment>
