@@ -46,6 +46,8 @@
   import { palettesStore } from './stores/palettes.js';
   import PaletteOptionsToolbar from './components/PaletteOptionsToolbar.svelte';
   import Editor3D from './sections/Editor3D.svelte'
+
+  let is3D: boolean = false
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
@@ -329,6 +331,9 @@
     <OverflowMenu size="sm">
       <div slot="menu">View</div>
       <OverflowMenuItem>
+        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={is3D} labelText="3D" />
+      </OverflowMenuItem>
+      <OverflowMenuItem>
         <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor2DSettings.showGrid} labelText="Grid" />
       </OverflowMenuItem>
       <OverflowMenuItem text="Change Grid..." on:click={()=>showGridSettings = true} />
@@ -465,11 +470,14 @@
               <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
             </Shortcuts>
             <TabContent>
-              <Editor2D
-                bind:file={file}
-                bind:currentTool={currentTool}
-              />
-              <!--Editor3D/-->
+              {#if is3D}
+                <Editor3D/>
+              {:else}
+                <Editor2D
+                  bind:file={file}
+                  bind:currentTool={currentTool}
+                />
+              {/if}
             </TabContent>
           {/each}
         </svelte:fragment>
