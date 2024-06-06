@@ -429,6 +429,25 @@ export class SelectionClearUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class ReplacePaletteUndoable implements Undoable<LoadedFile> {
+  private oldPalette: Uint32Array
+  private newPalette: Uint32Array
+  constructor(newPalette: Uint32Array) {
+    this.newPalette = newPalette
+  }
+  apply(file: LoadedFile) {
+    this.oldPalette = new Uint32Array([...file.canvas.palette])
+    file.canvas.palette = this.newPalette
+    file.canvas.refreshImageData()
+    file.canvas.refreshCanvas()
+  }
+  unapply(file: LoadedFile) {
+    file.canvas.palette = this.oldPalette
+    file.canvas.refreshImageData()
+    file.canvas.refreshCanvas()
+  }
+}
+
 export class ReplaceSwatchUndoable implements Undoable<LoadedFile> {
   private index: number
 
