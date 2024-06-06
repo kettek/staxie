@@ -486,10 +486,6 @@
           <Button size='small' kind='ghost' icon={previewUseMini?Maximize:Minimize} on:click={()=>previewUseMini = !previewUseMini}/>
           </div>
         <StackPreview
-          showBaseSizeOutline={previewShowBaseSizeOutline}
-          baseSizeOutlineColor={previewBaseSizeOutlineColor}
-          showSizeOutline={previewShowSizeOutline}
-          sizeOutlineColor={previewSizeOutlineColor}
           shronked={previewUseMini}
         />
       </FloatingPanel>
@@ -497,10 +493,6 @@
     {#if showPreviewSettings}
       <PreviewSettingsModal
         bind:open={showPreviewSettings}
-        bind:showBaseSizeOutline={previewShowBaseSizeOutline}
-        bind:baseSizeOutlineColor={previewBaseSizeOutlineColor}
-        bind:showSizeOutline={previewShowSizeOutline}
-        bind:sizeOutlineColor={previewSizeOutlineColor}
       />
     {/if}
     {#if showGridSettings}
