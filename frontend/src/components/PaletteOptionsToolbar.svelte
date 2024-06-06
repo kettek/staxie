@@ -11,14 +11,17 @@
   export let palette: Palette | undefined
   
   function setName(event: CustomEvent) {
+    if (!palette) return
     palette.push(new PaletteRenameUndoable(event.detail))
   }
   function redo() {
+    if (!palette) return
     palette.redo()
     file.canvas.refreshImageData()
     file.canvas.refreshCanvas()
   }
   function undo() {
+    if (!palette) return
     palette.undo()
     file.canvas.refreshImageData()
     file.canvas.refreshCanvas()
@@ -33,20 +36,22 @@
     let s = atob(b)
     let name = p.split('/').pop() || 'Untitled'
     name = name.split('.').slice(0, -1).join('.')
-    let palette = Palette.fromJASCPAL(name, s)
+    let pal = Palette.fromJASCPAL(name, s)
     if (file && !palette) {
       // Replace file's palette.
-      file.push(new ReplacePaletteUndoable(palette.swatches))
+      file.push(new ReplacePaletteUndoable(pal.swatches))
     } else {
-      palettesStore.addPalette(palette)
+      palettesStore.addPalette(pal)
     }
   }
   function exportPalette() {
     let swatches: Uint32Array
     if (file && !palette) {
       swatches = file.canvas.palette
-    } else {
+    } else if (palette) {
       swatches = palette.swatches
+    } else {
+      return
     }
     // Export as JASC-PAL, but with 4 elements.
     let out = `JASC-PAL\n0100\n${swatches.length}\n`
@@ -75,7 +80,7 @@
 </menu>
 <span>
   {#if palette}
-    <TextInput size="sm" hideLabel value={$palette.name} on:change={setName}/>
+    <TextInput size="sm" hideLabel value={$palette?.name} on:change={setName}/>
   {/if}
 </span>
 
