@@ -61,8 +61,10 @@
     if (palette) {
       palette.push(new PaletteAddSwatchUndoable(red, green, blue, alpha))
       // Refresh file so as to update any live previews.
-      file.canvas.refreshImageData()
-      file.canvas.refreshCanvas()
+      if (file?.canvas) {
+        file.canvas.refreshImageData()
+        file.canvas.refreshCanvas()
+      }
     } else {
       file.push(new AddSwatchUndoable(red, green, blue, alpha))
     }
@@ -74,8 +76,10 @@
     if (palette) {
       palette.push(new PaletteReplaceSwatchUndoable($brushSettings.primaryIndex, red, green, blue, alpha))
       // Refresh file so as to update any live previews.
-      file.canvas.refreshImageData()
-      file.canvas.refreshCanvas()
+      if (file?.canvas) {
+        file.canvas.refreshImageData()
+        file.canvas.refreshCanvas()
+      }
     } else {
       file.push(new ReplaceSwatchUndoable($brushSettings.primaryIndex, red, green, blue, alpha))
     }
