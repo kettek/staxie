@@ -1,12 +1,19 @@
 <script lang='ts'>
   import { Canvas } from "@threlte/core"
-  import Editor3DScene from "../components/Editor3DScene.svelte"
-
+  import Scene from "../components/3d/Scene.svelte"
+  import { LoadedFile } from "../types/file"
+  import { Palette } from "../types/palette"
+  
+  export let file: LoadedFile
+  export let palette: Palette|undefined
 </script>
 
 <div>
   <Canvas>
-    <Editor3DScene/>
+    <Scene
+      file={file}
+      palette={palette}
+    />
   </Canvas>
 </div>
 

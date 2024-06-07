@@ -492,7 +492,7 @@
     contextFrameIndex = frameIndex
   }
   function contextFrameDelete() {
-    if (file.animation.frames.length === 1) {
+    if (file.animation?.frames.length === 1) {
       alert('thou shalt not delete the last frame')
       return
     }

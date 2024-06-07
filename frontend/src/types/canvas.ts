@@ -180,6 +180,13 @@ export class Canvas {
     }
   }
   
+  getPaletteColor(index: number): number {
+    if (this.fakePalette) {
+      return this.fakePalette[index]
+    }
+    return this.palette[index]
+  }
+  
   // setPaletteFromUint8Array sets the palette to the provided value.
   setPaletteFromUint8Array(palette: Uint8Array) {
     clog.debug('setPaletteFromUint8Array', palette.length)
@@ -234,6 +241,20 @@ export class Canvas {
     this.imageData.data[(y * this.width + x) * 4 + 1] = g
     this.imageData.data[(y * this.width + x) * 4 + 2] = b
     this.imageData.data[(y * this.width + x) * 4 + 3] = a
+  }
+  
+  getPixelsColors(x: number, y: number, w: number, h: number): Uint32Array {
+    let palette = this.palette
+    if (this.fakePalette) {
+      palette = this.fakePalette
+    }
+    let colors = new Uint32Array(w * h)
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < w; j++) {
+        colors[i * w + j] = palette[this.pixels[(y + i) * this.width + (x + j)]]
+      }
+    }
+    return colors
   }
   
   getPixels(x: number, y: number, w: number, h: number): Uint8Array {

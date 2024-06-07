@@ -471,7 +471,10 @@
             </Shortcuts>
             <TabContent>
               {#if is3D}
-                <Editor3D/>
+                <Editor3D
+                  bind:file={file}
+                  bind:palette={fakePalette}
+                />
               {:else}
                 <Editor2D
                   bind:file={file}

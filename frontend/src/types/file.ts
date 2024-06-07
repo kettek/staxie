@@ -30,13 +30,13 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   //
   groups: StaxGroup[] = []
   group?: StaxGroup
-  groupName: string
+  groupName: string = ''
   animation?: StaxAnimation
-  animationName: string
+  animationName: string = ''
   slice?: StaxSlice
-  sliceIndex: number
+  sliceIndex: number = 0
   frame?: StaxFrame
-  frameIndex: number
+  frameIndex: number = 0
   frameWidth: number
   frameHeight: number
 
