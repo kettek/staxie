@@ -6,6 +6,7 @@
   const dispatch = createEventDispatcher()
   
   export let position: [number, number, number] = [0, 0, 0]
+  export let offset: [number, number, number] = [0, 0, 0]
   export let color: number = 0xff00ffff // RGBA
   export let ignoreEvents: boolean = false
   export let visible: boolean = true
@@ -120,7 +121,7 @@
 
 <T.Mesh
   scale={$scale}
-  position={[position[0]+0.5, position[1]+0.5, position[2]+0.5]}
+  position={[position[0]+offset[0]+0.5, position[1]+offset[1]+0.5, position[2]+offset[2]+0.5]}
   visible={visible}
   on:pointerenter={hover}
   on:pointerleave={leave}
