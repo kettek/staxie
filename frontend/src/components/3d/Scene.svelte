@@ -5,10 +5,48 @@
   import Voxel from './Voxel.svelte'
   import { Grid, Gizmo, OrbitControls, Align } from '@threlte/extras'
   import { Palette } from "../../types/palette"
+  import type { VoxelClickEvent, VoxelEvent } from "../types/editor3d"
   
   export let file: LoadedFile
   export let palette: Palette|undefined
   export let orthographic: boolean = false
+  
+  let showTarget = false
+  let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
+  let hover: { x: number, y: number, z: number }|null = null
+  
+  function onVoxelHover(e: VoxelEvent) {
+    target = {
+      x: e.detail.position.x + e.detail.face.x,
+      y: e.detail.position.y + e.detail.face.y,
+      z: e.detail.position.z + e.detail.face.z,
+    }
+    hover = {
+      x: e.detail.position.x,
+      y: e.detail.position.y,
+      z: e.detail.position.z,
+    }
+    showTarget = true
+  }
+  function onVoxelMove(e: VoxelEvent) {
+    target = {
+      x: e.detail.position.x + e.detail.face.x,
+      y: e.detail.position.y + e.detail.face.y,
+      z: e.detail.position.z + e.detail.face.z,
+    }
+    showTarget = true
+  }
+  function onVoxelLeave(e: VoxelEvent) {
+    hover = null
+    showTarget = false
+  }
+  function onVoxelClick(e: VoxelClickEvent) {
+    if (e.detail.button === 0) {
+      console.log('place pixel at', target)
+    } else if (e.detail.button === 2) {
+      console.log('remove pixel at', hover)
+    }
+  }
   
   interactivity()
 </script>
@@ -49,12 +87,23 @@
           <Voxel
             position={[index%$file.frameWidth-$file.frameWidth/2, y, Math.floor(index/$file.frameWidth)-$file.frameHeight/2]}
             color={$palette?$palette.swatches[pixel]:$file.canvas.getPaletteColor(pixel)}
+            on:hover={onVoxelHover}
+            on:move={onVoxelMove}
+            on:leave={onVoxelLeave}
+            on:click={onVoxelClick}
           />
         {/if}
       {/each}
     {/each}
   </T.Group>
 {/if}
+
+<Voxel
+  position={[target.x, target.y, target.z]}
+  color={0x880000ff}
+  ignoreEvents
+  visible={showTarget}
+/>
 
 <Grid
   position={[0, -0.01, 0]}

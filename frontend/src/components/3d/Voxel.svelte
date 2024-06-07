@@ -1,9 +1,14 @@
 <script lang='ts'>
   import { T } from '@threlte/core'
+  import { createEventDispatcher } from 'svelte';
   import { spring } from 'svelte/motion'
+  
+  const dispatch = createEventDispatcher()
   
   export let position: [number, number, number] = [0, 0, 0]
   export let color: number = 0xff00ffff // RGBA
+  export let ignoreEvents: boolean = false
+  export let visible: boolean = true
   
   let realColor: number = 0xff00ff // RGB
   let opacity = 1
@@ -20,26 +25,108 @@
   const scale = spring(1)
   let hovered = false
   
-  function hover(e: PointerEvent) {
+  function hover(e: any) {
+    if (ignoreEvents) return
     e.stopPropagation()
     $scale = 1.2
     hovered = true
+    dispatch('hover', {
+      position: {
+        x: position[0],
+        y: position[1],
+        z: position[2],
+      },
+      face: {
+        x: e.normal.x,
+        y: e.normal.y,
+        z: e.normal.z,
+      },
+      original: e,
+    })
   }
-  function leave(e: PointerEvent) {
+  function move(e: any) {
+    if (ignoreEvents) return
+    e.stopPropagation()
+    dispatch('move', {
+      position: {
+        x: position[0],
+        y: position[1],
+        z: position[2],
+      },
+      face: {
+        x: e.normal.x,
+        y: e.normal.y,
+        z: e.normal.z,
+      },
+      original: e,
+    })
+  }
+  function leave(e: any) {
+    if (ignoreEvents) return
+    e.stopPropagation()
     $scale = 1.0
     hovered = false
+    dispatch('leave', {
+      position: {
+        x: position[0],
+        y: position[1],
+        z: position[2],
+      },
+      face: {
+        x: e.normal.x,
+        y: e.normal.y,
+        z: e.normal.z,
+      },
+      original: e,
+    })
   }
-  function click(e: PointerEvent) {
-    console.log('click', position, e)
+  function click(e: any) {
+    if (ignoreEvents) return
+    e.stopPropagation()
+    dispatch('click', {
+      position: {
+        x: position[0],
+        y: position[1],
+        z: position[2],
+      },
+      button: 0,
+      face: {
+        x: e.normal.x,
+        y: e.normal.y,
+        z: e.normal.z,
+      },
+      original: e,
+    })
+  }
+  function contextmenu(e: any) {
+    if (ignoreEvents) return
+    e.stopPropagation()
+    dispatch('click', {
+      position: {
+        x: position[0],
+        y: position[1],
+        z: position[2],
+      },
+      button: 2,
+      face: {
+        x: e.normal.x,
+        y: e.normal.y,
+        z: e.normal.z,
+      },
+      original: e,
+    })
   }
 </script>
 
 <T.Mesh
   scale={$scale}
   position={[position[0]+0.5, position[1]+0.5, position[2]+0.5]}
+  visible={visible}
   on:pointerenter={hover}
   on:pointerleave={leave}
+  on:pointermove={move}
   on:click={click}
+  on:contextmenu={contextmenu}
 >
   <T.BoxGeometry />
   <T.MeshStandardMaterial
