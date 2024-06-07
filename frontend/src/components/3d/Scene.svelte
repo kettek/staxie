@@ -32,7 +32,7 @@
       {#each $file.canvas.getPixels(slice.x, slice.y, $file.frameWidth, $file.frameHeight) as pixel, index}
         {#if pixel !== 0}
           <Voxel
-            position={[Math.floor(index/$file.frameWidth), y, index%$file.frameWidth]}
+            position={[index%$file.frameWidth-$file.frameWidth/2, y, Math.floor(index/$file.frameWidth)-$file.frameHeight/2]}
             color={$palette?$palette.swatches[pixel]:$file.canvas.getPaletteColor(pixel)}
           />
         {/if}
