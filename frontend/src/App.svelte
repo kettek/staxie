@@ -125,6 +125,8 @@
   let previewShowSizeOutline: boolean = true
   let previewSizeOutlineColor: string = '#FFFF0077'
   let previewUseMini: boolean = false
+  
+  let orthographicCamera: boolean = false
 
   let toolSelection = new SelectionTool()
   let toolMagicWand = new MagicWandTool()
@@ -334,6 +336,9 @@
         <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={is3D} labelText="3D" />
       </OverflowMenuItem>
       <OverflowMenuItem>
+        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={orthographicCamera} labelText="Orthographic" disabled={!is3D} />
+      </OverflowMenuItem>
+      <OverflowMenuItem>
         <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor2DSettings.showGrid} labelText="Grid" />
       </OverflowMenuItem>
       <OverflowMenuItem text="Change Grid..." on:click={()=>showGridSettings = true} />
@@ -474,6 +479,7 @@
                 <Editor3D
                   bind:file={file}
                   bind:palette={fakePalette}
+                  orthographic={orthographicCamera}
                 />
               {:else}
                 <Editor2D

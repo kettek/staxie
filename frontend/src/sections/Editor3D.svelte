@@ -6,6 +6,7 @@
   
   export let file: LoadedFile
   export let palette: Palette|undefined
+  export let orthographic: boolean = false
 </script>
 
 <div>
@@ -13,6 +14,7 @@
     <Scene
       file={file}
       palette={palette}
+      orthographic={orthographic}
     />
   </Canvas>
 </div>

@@ -8,20 +8,35 @@
   
   export let file: LoadedFile
   export let palette: Palette|undefined
+  export let orthographic: boolean = false
   
   interactivity()
 </script>
 
-<T.PerspectiveCamera
-  makeDefault
-  position={[40, 10, 10]}
-  on:create={({ ref }) => {
-    ref.lookAt(0, 0, 0)
-  }}
->
-  <OrbitControls
-  />
-</T.PerspectiveCamera>
+{#if orthographic}
+  <T.OrthographicCamera
+    makeDefault
+    position={[40, 10, 10]}
+    zoom={15}
+    on:create={({ ref }) => {
+      ref.lookAt(0, 0, 0)
+    }}
+  >
+    <OrbitControls
+    />
+  </T.OrthographicCamera>
+{:else}
+  <T.PerspectiveCamera
+    makeDefault
+    position={[40, 10, 10]}
+    on:create={({ ref }) => {
+      ref.lookAt(0, 0, 0)
+    }}
+  >
+    <OrbitControls
+    />
+  </T.PerspectiveCamera>
+{/if}
 
 <T.DirectionalLight position={[0, 10, 10]} />
 <T.AmbientLight color={0xffffff} intensity={0.9} />
@@ -42,12 +57,7 @@
 {/if}
 
 <Grid
-  cellColor={0xff00ff}
-  sectionColor={0x00ff00}
-  gridSize={[$file.frameWidth, $file.frameHeight]}
-/>
-<Grid
-  plane="zy"
+  position={[0, -0.01, 0]}
   cellColor={0xff00ff}
   sectionColor={0x00ff00}
   gridSize={[$file.frameWidth, $file.frameHeight]}
