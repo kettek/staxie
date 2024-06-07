@@ -2,6 +2,7 @@
   import { LoadedFile } from "../../types/file"
   import { interactivity } from "@threlte/extras"
   import { T } from '@threlte/core'
+  import * as THREE from 'three'
   import Voxel from './Voxel.svelte'
   import { Grid, Gizmo, OrbitControls, Align } from '@threlte/extras'
   import { Palette } from "../../types/palette"
@@ -61,6 +62,11 @@
     }}
   >
     <OrbitControls
+      mouseButtons={{
+        LEFT: -1,
+        MIDDLE: THREE.MOUSE.PAN,
+        RIGHT: THREE.MOUSE.ROTATE,
+      }}
     />
   </T.OrthographicCamera>
 {:else}
@@ -72,6 +78,11 @@
     }}
   >
     <OrbitControls
+      mouseButtons={{
+        LEFT: -1,
+        MIDDLE: THREE.MOUSE.PAN,
+        RIGHT: THREE.MOUSE.ROTATE,
+      }}
     />
   </T.PerspectiveCamera>
 {/if}
