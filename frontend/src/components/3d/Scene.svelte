@@ -17,6 +17,20 @@
   let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
   let hover: { x: number, y: number, z: number }|null = null
   
+  function placePixelAt({ x, y, z }: { x: number, y: number, z: number }, color: number) {
+    // TODO: whinge about being OOB in a lil footer err/warn thing.
+    if (x === -1 || x === file.frameWidth) return
+    if (z === -1 || z === file.frameHeight) return
+    if (y === -1 || y === file.frame?.slices.length) return
+    
+    let slice = file.frame?.slices[y]
+    if (!slice) return
+    let p = file.canvas.getPixel(slice.x + x, slice.y + z)
+    if (p !== -1 && file.selection.isPixelMarked(slice.x + x, slice.y + z)) {
+      file.push(new PixelPlaceUndoable(slice.x + x, slice.y + z, p, color))
+    }
+  }
+  
   function onVoxelHover(e: CustomEvent & {detail: VoxelEvent}) {
     target = {
       x: e.detail.position.x + e.detail.face.x,
@@ -46,18 +60,32 @@
     let slice = file.frame?.slices[target.y]
     if (!slice) return
     
-    // TODO: whinge about being OOB in a lil footer err/warn thing.
-    if (target.x === -1 || target.x === file.frameWidth) return
-    if (target.z === -1 || target.z === file.frameHeight) return
-    if (target.y === -1 || target.y === file.frame?.slices.length) return
-    let x = slice.x + target.x
-    let y = slice.y + target.z
     if (e.detail.button === 0) {
-      let p = file.canvas.getPixel(x, y)
-      if (p !== -1 && file.selection.isPixelMarked(x, y)) {
-        file.push(new PixelPlaceUndoable(slice.x + target.x, slice.y + target.z, p, $brushSettings.primaryIndex))
-      }
+      placePixelAt(target, $brushSettings.primaryIndex)
     }
+  }
+  
+  function getGridXY(e: any): [number, number] {
+    let x = Math.floor(e.point.x + file.frameWidth/2)
+    let y = Math.floor(e.point.z + file.frameHeight/2)
+    return [x, y]
+  }
+  function onGridHover(e: any) {
+    let [x, z] = getGridXY(e)
+    target = { x, y: 0, z}
+    showTarget = true
+  }
+  function onGridMove(e: any) {
+    let [x, z] = getGridXY(e)
+    target = { x, y: 0, z}
+    showTarget = true
+  }
+  function onGridLeave(e: any) {
+    showTarget = false
+  }
+  function onGridClick(e: any) {
+    let [x, z] = getGridXY(e)
+    placePixelAt({ x, y: 0, z }, $brushSettings.primaryIndex)
   }
   
   interactivity()
@@ -135,6 +163,22 @@
   sectionColor={0x00ff00}
   gridSize={[$file.frameWidth, $file.frameHeight]}
 />
+
+<T.Mesh
+  position={[0, 0, 0]}
+  rotation={[-Math.PI/2, 0, 0]}
+  on:pointerenter={onGridHover}
+  on:pointermove={onGridMove}
+  on:pointerleave={onGridLeave}
+  on:click={onGridClick}
+>
+  <T.PlaneGeometry args={[$file.frameWidth, $file.frameHeight]} />
+  <T.MeshBasicMaterial
+    transparent={true}
+    opacity={0}
+    color={0x0000ff}
+  />
+</T.Mesh>
 
 <T.Mesh
   visible={target.y === $file?.frame?.slices.length}
