@@ -9,6 +9,8 @@
   import type { VoxelClickEvent, VoxelEvent } from "../../types/editor3d"
   import { brushSettings } from "../../stores/brush"
   
+  import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker } from "../../stores/tool"
+  
   export let file: LoadedFile
   export let palette: Palette|undefined
   export let orthographic: boolean = false
@@ -60,8 +62,20 @@
     let slice = file.frame?.slices[target.y]
     if (!slice) return
     
-    if (e.detail.button === 0) {
+    if ($toolSettings.current === toolVoxelPlace) {
       placePixelAt(target, $brushSettings.primaryIndex)
+    } else if ($toolSettings.current === toolErase) {
+      if (!hover) return
+      placePixelAt(hover, 0)
+    } else if ($toolSettings.current === toolVoxelReplace) {
+      if (!hover) return
+      placePixelAt(hover, $brushSettings.primaryIndex)
+    } else if ($toolSettings.current === toolPicker) {
+      if (!hover) return
+      let slice = file.frame?.slices[hover.y]
+      if (!slice) return
+      let p = file.canvas.getPixel(slice.x + hover.x, slice.y + hover.z)
+      if (p !== -1) $brushSettings.primaryIndex = p
     }
   }
   
@@ -154,7 +168,7 @@
   offset={[-$file.frameWidth/2, 0, -$file.frameHeight/2]}
   color={0x880000ff}
   ignoreEvents
-  visible={showTarget}
+  visible={showTarget&&$toolSettings.current===toolVoxelPlace}
 />
 
 <Grid

@@ -14,6 +14,7 @@
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type Tool, SelectionTool, SprayTool } from '../types/tools'
   import { Button, NumberInput } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
+  import { toolSettings } from '../stores/tool'
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -38,8 +39,6 @@
   // viewPixels is the absolute pixel location to the current view. This is mousePixels + view.xy.
   let viewPixelX: number = 0
   let viewPixelY: number = 0
-  
-  export let currentTool: Tool
   
   let view: CanvasView = new CanvasView($file.canvas)
   $: {
@@ -175,7 +174,7 @@
 
     // FIXME: Reorganize overlay drawing to have two types: regular composition, such as this pixel brush preview, and difference composition for cursors and bounding boxes.
     // Draw brush preview.
-    if (currentTool instanceof BrushTool) {
+    if ($toolSettings.current instanceof BrushTool) {
       let shape: PixelPosition[]
       if ($brushSettings.type === 'square' || $brushSettings.size <= 2) {
         // FIXME: This is daft to adjust +1,+1 for size 2 -- without this, the rect preview draws one pixel offset to the top-left, which is not the same as when the filled rect is placed.
@@ -192,12 +191,12 @@
       for (let i = 0; i < shape.length; i++) {
         ctx.fillRect(offsetX*zoom+(mousePixelX+shape[i].x)*zoom, offsetY*zoom+(mousePixelY+shape[i].y)*zoom, zoom, zoom)
       }
-    } else if (currentTool instanceof MoveTool && currentTool.isActive()) {
+    } else if ($toolSettings.current instanceof MoveTool && $toolSettings.current.isActive()) {
       ctx.save()
       ctx.imageSmoothingEnabled = false
       ctx.scale(zoom, zoom)
-      let {x, y} = currentTool.previewPosition()
-      ctx.drawImage(currentTool.preview.canvas, offsetX+x, offsetY+y)
+      let {x, y} = $toolSettings.current.previewPosition()
+      ctx.drawImage($toolSettings.current.preview.canvas, offsetX+x, offsetY+y)
       ctx.restore()
     }
 
@@ -296,8 +295,8 @@
       ctx.lineWidth = 1
       
       // Draw bounding box selection preview.
-      if (currentTool instanceof SelectionTool && currentTool.isActive()) {
-        let {x, y, width, height} = currentTool.getArea()
+      if ($toolSettings.current instanceof SelectionTool && $toolSettings.current.isActive()) {
+        let {x, y, width, height} = $toolSettings.current.getArea()
         ctx.strokeRect(offsetX*zoom+x*zoom, offsetY*zoom+y*zoom, width*zoom, height*zoom)
       }
       // Draw zoomed pixel-sized square where mouse is.
@@ -349,18 +348,18 @@
       y = e.clientY
       
       if (e.button === 0) {
-        if (currentTool instanceof BrushTool) {
-          currentTool.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
-        } else if (currentTool instanceof EraserTool) {
-          currentTool.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
-        } else if (currentTool instanceof SprayTool) {
-          currentTool.pointerDown({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
-        } else if (currentTool instanceof FillTool) {
-          currentTool.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
-        } else if (currentTool instanceof PickerTool) {
-          currentTool.pointerDown({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+        if ($toolSettings.current instanceof BrushTool) {
+          $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+        } else if ($toolSettings.current instanceof EraserTool) {
+          $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+        } else if ($toolSettings.current instanceof SprayTool) {
+          $toolSettings.current.pointerDown({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+        } else if ($toolSettings.current instanceof FillTool) {
+          $toolSettings.current.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+        } else if ($toolSettings.current instanceof PickerTool) {
+          $toolSettings.current.pointerDown({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else {
-          currentTool.pointerDown({file, view}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          $toolSettings.current.pointerDown({file, view}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         }
       }
     })
@@ -417,19 +416,19 @@
       y = e.clientY
 
       if (buttons.has(0)) {
-        if (currentTool.isActive()) {
-          if (currentTool instanceof BrushTool) {
-            currentTool.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
-          } else if (currentTool instanceof EraserTool) {
-            currentTool.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: 0 })
-          } else if (currentTool instanceof SprayTool) {
-            currentTool.pointerMove({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
-          } else if (currentTool instanceof FillTool) {
-            currentTool.pointerMove({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
-          } else if (currentTool instanceof PickerTool) {
-            currentTool.pointerMove({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: viewPixelX, y: viewPixelY, id: e.button })
+        if ($toolSettings.current.isActive()) {
+          if ($toolSettings.current instanceof BrushTool) {
+            $toolSettings.current.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
+          } else if ($toolSettings.current instanceof EraserTool) {
+            $toolSettings.current.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: 0 })
+          } else if ($toolSettings.current instanceof SprayTool) {
+            $toolSettings.current.pointerMove({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          } else if ($toolSettings.current instanceof FillTool) {
+            $toolSettings.current.pointerMove({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
+          } else if ($toolSettings.current instanceof PickerTool) {
+            $toolSettings.current.pointerMove({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: viewPixelX, y: viewPixelY, id: e.button })
           } else {
-            currentTool.pointerMove({file, view}, {x: viewPixelX, y: viewPixelY, id: 0 })
+            $toolSettings.current.pointerMove({file, view}, {x: viewPixelX, y: viewPixelY, id: 0 })
           }
         }
       }
@@ -449,8 +448,8 @@
       if (buttons.size === 0) return
 
       if (e.button === 0) {
-        if (currentTool.isActive()) {
-          currentTool.pointerUp({file, view}, {x: viewPixelX, y: viewPixelY, id: 0, shift: e.shiftKey, control: e.ctrlKey })
+        if ($toolSettings.current.isActive()) {
+          $toolSettings.current.pointerUp({file, view}, {x: viewPixelX, y: viewPixelY, id: 0, shift: e.shiftKey, control: e.ctrlKey })
         }
       }
 

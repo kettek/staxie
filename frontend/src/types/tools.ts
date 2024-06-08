@@ -468,3 +468,29 @@ export class MoveTool implements Tool {
     this.active = false
   }
 }
+
+/* BEGIN VOXEL TOOLS */
+
+export class PlaceVoxelTool implements Tool {
+  isActive(): boolean {
+    return false
+  }
+  pointerDown(ctx: ToolContext, ptr: Pointer): void {
+  }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {
+  }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {
+  }
+}
+
+export class ReplaceVoxelTool implements Tool {
+  isActive(): boolean {
+    return false
+  }
+  pointerDown(ctx: ToolContext, ptr: Pointer): void {
+  }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {
+  }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {
+  }
+}

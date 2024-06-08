@@ -20,7 +20,7 @@
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import { Canvas } from './types/canvas'
   import { BrushTool, EraserTool, FillTool, PickerTool, SelectionTool, MagicWandTool, type BrushType, type Tool, MoveTool, SprayTool } from './types/tools'
@@ -47,6 +47,8 @@
   import PaletteOptionsToolbar from './components/PaletteOptionsToolbar.svelte';
   import Editor3D from './sections/Editor3D.svelte'
   import Frames from './sections/Frames.svelte'
+  
+  import { toolSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace } from './stores/tool'
 
   let is3D: boolean = false
   
@@ -129,26 +131,11 @@
   
   let orthographicCamera: boolean = false
 
-  let toolSelection = new SelectionTool()
-  let toolMagicWand = new MagicWandTool()
-  let toolFill = new FillTool()
-  let toolErase = new EraserTool()
-  let toolBrush = new BrushTool()
-  let toolSpray = new SprayTool()
-  let toolPicker = new PickerTool()
-  let toolMove = new MoveTool()
-  let currentTool: Tool = toolBrush
-  let previousTool: Tool|null = null
   let brushSize: number = 1
   let brushType: BrushType = 'circle'
   let sprayRadius: number = 16
   let sprayDensity: number = 2
   
-  function swapTool(tool: Tool) {
-    previousTool = currentTool
-    currentTool = tool
-  }
-
   let focusedFileIndex: number = -1
   let focusedFile: LoadedFile|null = null
   $: {
@@ -413,48 +400,62 @@
       </article>
     </section>
     <menu class='toolbar'>
-      <Button isSelected={currentTool === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>swapTool(toolMove)}></Button>
-      <Button isSelected={currentTool === toolSelection} kind="ghost" size="small" icon={Select_01} iconDescription="selection" tooltipPosition="right" on:click={()=>swapTool(toolSelection)}></Button>
-      <Button isSelected={currentTool === toolMagicWand} kind="ghost" size="small" icon={MagicWand} iconDescription="magic selection" tooltipPosition="right" on:click={()=>swapTool(toolMagicWand)}></Button>
-      <hr/>
-      <Button isSelected={currentTool === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>swapTool(toolBrush)}></Button>
-      <Button isSelected={currentTool === toolSpray} kind="ghost" size="small" icon={SprayPaint} iconDescription="spray" tooltipPosition="right" on:click={()=>swapTool(toolSpray)}></Button>
-      <Button isSelected={currentTool === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>swapTool(toolPicker)}></Button>
-      <Button isSelected={currentTool === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>swapTool(toolErase)}></Button>
-      <Button isSelected={currentTool === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>swapTool(toolFill)}></Button>
-      <Shortcuts group='editor2D'>
-        <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>focusedFile?.push(new SelectionClearUndoable())} />
-        <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>swapTool(toolSelection)} />
-        <Shortcut global cmd='magic selection' keys={['shift+s']} on:trigger={()=>swapTool(toolMagicWand)} />
-        <Shortcut global cmd='move' keys={['m']} on:trigger={()=>swapTool(toolMove)} />
-        <Shortcut global cmd='move left' keys={['arrowleft']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: -1, y: 0, id: 0})} />
-        <Shortcut global cmd='move right' keys={['arrowright']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 1, y: 0, id: 0})} />
-        <Shortcut global cmd='move up' keys={['arrowup']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 0, y: -1, id: 0})} />
-        <Shortcut global cmd='move down' keys={['arrowdown']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 0, y: 1, id: 0})} />
-        <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>swapTool(toolBrush)} />
-        <Shortcut global cmd='brushToPicker' keys={['alt']} on:trigger={()=>(currentTool===toolBrush||currentTool===toolSpray)?swapTool(toolPicker):null} on:release={()=>(previousTool===toolBrush||previousTool===toolSpray)&&currentTool===toolPicker?swapTool(previousTool):null} />
-        <Shortcut global cmd='previousPrimaryPaletteEntry' keys={['alt+wheelup']} on:trigger={()=>stepPalette(-1, true)}/>
-        <Shortcut global cmd='nextPrimaryPaletteEntry' keys={['alt+wheeldown']} on:trigger={()=>stepPalette(1, true)}/>
-        <Shortcut global cmd='previousSecondaryPaletteEntry' keys={['alt+shift+wheelup']} on:trigger={()=>stepPalette(-1, false)}/>
-        <Shortcut global cmd='nextSecondaryPaletteEntry' keys={['alt+shift+wheeldown']} on:trigger={()=>stepPalette(1, false)}/>
-        <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>swapTool(toolFill)} />
-        <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>swapTool(toolPicker)} />
-        <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>swapTool(toolErase)} />
-        <Shortcut global cmd='erase' keys={['p']} on:trigger={()=>swapTool(toolSpray)} />
-        <Shortcut global cmd='copy' keys={['ctrl+c']} on:trigger={()=>engageCopy()} />
-        <Shortcut global cmd='cut' keys={['ctrl+x']} on:trigger={()=>engageDelete(true)} />
-        <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>engageDelete(false)} />
-        <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>engagePaste()} />
-        <Shortcut global cmd='quit' keys={['ctrl+q']} on:trigger={()=>engageQuit()} />
-        <Shortcut global cmd='fullscreen' keys={['f11']} on:trigger={()=>ToggleFullscreen()} />
-      </Shortcuts>
+      {#if is3D}
+        <Button isSelected={$toolSettings.current === toolVoxelPlace} kind="ghost" size="small" icon={WatsonHealth3DSoftware} iconDescription="place" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelPlace)}></Button>
+        <Button isSelected={$toolSettings.current === toolVoxelReplace} kind="ghost" size="small" icon={WatsonHealth3DCursor} iconDescription="replace" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelReplace)}></Button>
+        <Button isSelected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}></Button>
+        <Button isSelected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
+        <Shortcuts group='editor3D'>
+          <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>toolSettings.swapTool(toolVoxelPlace)} />
+          <Shortcut global cmd='replace' keys={['r']} on:trigger={()=>toolSettings.swapTool(toolVoxelReplace)} />
+          <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>toolSettings.swapTool(toolPicker)} />
+          <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>toolSettings.swapTool(toolErase)} />
+          <Shortcut global cmd='placeToPicker' keys={['alt']} on:trigger={()=>($toolSettings.current===toolVoxelPlace||$toolSettings.current===toolVoxelReplace)?toolSettings.swapTool(toolPicker):null} on:release={()=>($toolSettings.previous===toolVoxelPlace||$toolSettings.previous===toolVoxelReplace)&&$toolSettings.current===toolPicker?toolSettings.swapTool($toolSettings.previous):null} />
+        </Shortcuts>
+      {:else}
+        <Button isSelected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}></Button>
+        <Button isSelected={$toolSettings.current === toolSelection} kind="ghost" size="small" icon={Select_01} iconDescription="selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolSelection)}></Button>
+        <Button isSelected={$toolSettings.current === toolMagicWand} kind="ghost" size="small" icon={MagicWand} iconDescription="magic selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMagicWand)}></Button>
+        <hr/>
+        <Button isSelected={$toolSettings.current === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolBrush)}></Button>
+        <Button isSelected={$toolSettings.current === toolSpray} kind="ghost" size="small" icon={SprayPaint} iconDescription="spray" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolSpray)}></Button>
+        <Button isSelected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}></Button>
+        <Button isSelected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
+        <Button isSelected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
+        <Shortcuts group='editor2D'>
+          <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>focusedFile?.push(new SelectionClearUndoable())} />
+          <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolSelection)} />
+          <Shortcut global cmd='magic selection' keys={['shift+s']} on:trigger={()=>toolSettings.swapTool(toolMagicWand)} />
+          <Shortcut global cmd='move' keys={['m']} on:trigger={()=>toolSettings.swapTool(toolMove)} />
+          <Shortcut global cmd='move left' keys={['arrowleft']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: -1, y: 0, id: 0})} />
+          <Shortcut global cmd='move right' keys={['arrowright']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 1, y: 0, id: 0})} />
+          <Shortcut global cmd='move up' keys={['arrowup']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 0, y: -1, id: 0})} />
+          <Shortcut global cmd='move down' keys={['arrowdown']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 0, y: 1, id: 0})} />
+          <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>toolSettings.swapTool(toolBrush)} />
+          <Shortcut global cmd='brushToPicker' keys={['alt']} on:trigger={()=>($toolSettings.current===toolBrush||$toolSettings.current===toolSpray)?toolSettings.swapTool(toolPicker):null} on:release={()=>($toolSettings.previous===toolBrush||$toolSettings.previous===toolSpray)&&$toolSettings.current===toolPicker?toolSettings.swapTool($toolSettings.previous):null} />
+          <Shortcut global cmd='previousPrimaryPaletteEntry' keys={['alt+wheelup']} on:trigger={()=>stepPalette(-1, true)}/>
+          <Shortcut global cmd='nextPrimaryPaletteEntry' keys={['alt+wheeldown']} on:trigger={()=>stepPalette(1, true)}/>
+          <Shortcut global cmd='previousSecondaryPaletteEntry' keys={['alt+shift+wheelup']} on:trigger={()=>stepPalette(-1, false)}/>
+          <Shortcut global cmd='nextSecondaryPaletteEntry' keys={['alt+shift+wheeldown']} on:trigger={()=>stepPalette(1, false)}/>
+          <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>toolSettings.swapTool(toolFill)} />
+          <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>toolSettings.swapTool(toolPicker)} />
+          <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>toolSettings.swapTool(toolErase)} />
+          <Shortcut global cmd='spray' keys={['p']} on:trigger={()=>toolSettings.swapTool(toolSpray)} />
+          <Shortcut global cmd='copy' keys={['ctrl+c']} on:trigger={()=>engageCopy()} />
+          <Shortcut global cmd='cut' keys={['ctrl+x']} on:trigger={()=>engageDelete(true)} />
+          <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>engageDelete(false)} />
+          <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>engagePaste()} />
+          <Shortcut global cmd='quit' keys={['ctrl+q']} on:trigger={()=>engageQuit()} />
+          <Shortcut global cmd='fullscreen' keys={['f11']} on:trigger={()=>ToggleFullscreen()} />
+        </Shortcuts>
+      {/if}
     </menu>
     <section class='middle'>
       <menu class='toolsettings'>
-        {#if currentTool === toolBrush || currentTool === toolErase}
+        {#if $toolSettings.current === toolBrush || $toolSettings.current === toolErase}
           <BrushSize bind:brushSize={$brushSettings.size} bind:brushType={$brushSettings.type}/>
           <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.size}/>
-        {:else if currentTool === toolSpray}
+        {:else if $toolSettings.current === toolSpray}
           radius:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.sprayRadius}/>
           density:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.sprayDensity}/>
         {/if}
@@ -470,22 +471,26 @@
         {/each}
         <svelte:fragment slot="content">
           {#each $fileStates as file, index (file.id)}
-            <Shortcuts group='editor2D' active={focusedFile===file}>
-              <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
-              <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
-              <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
-            </Shortcuts>
             <TabContent>
               {#if is3D}
+                <Shortcuts group='editor3D' active={focusedFile===file}>
+                  <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
+                  <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
+                  <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
+                </Shortcuts>
                 <Editor3D
                   bind:file={file}
                   bind:palette={fakePalette}
                   orthographic={orthographicCamera}
                 />
               {:else}
+                <Shortcuts group='editor2D' active={focusedFile===file}>
+                  <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
+                  <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
+                  <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
+                </Shortcuts>
                 <Editor2D
                   bind:file={file}
-                  bind:currentTool={currentTool}
                 />
               {/if}
             </TabContent>
