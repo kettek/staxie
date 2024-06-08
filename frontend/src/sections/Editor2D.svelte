@@ -9,12 +9,11 @@
   import { editor2DSettings } from '../stores/editor2d'
   import { CanvasView } from '../types/canvasview'
 
-  import { fileStates } from '../stores/file'
-  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, RemoveAnimationFrameUndoable, type LoadedFile } from '../types/file'
+  import { type LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type BrushType, type Tool, SelectionTool, SprayTool } from '../types/tools'
-  import { Button, ContextMenu, ContextMenuOption, NumberInput, OverflowMenu, OverflowMenuItem, Slider } from 'carbon-components-svelte';
-  import { Add, AddAlt, AddLarge, FaceAdd, NewTab, ZoomIn, ZoomOut } from 'carbon-icons-svelte';
+  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, type Tool, SelectionTool, SprayTool } from '../types/tools'
+  import { Button, NumberInput } from 'carbon-components-svelte';
+  import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -96,13 +95,6 @@
 
   let overlayDirty: boolean = true
   let canvasDirty: boolean = true
-  
-  let traversedPixels: Set<number> = new Set()
-  function addTraversedPixels(pixels: PixelPosition[]) {
-    for (let p of pixels) {
-      traversedPixels.add(p.x+p.y*file.canvas.width)
-    }
-  }
   
   function zoomIn() {
     if (zoom < 1) {
@@ -467,41 +459,6 @@
     })
   }
   
-  function setSlice(sliceIndex: number) {
-    file.setSliceIndex(sliceIndex)
-    fileStates.refresh()
-  }
-
-  function setFrame(frameIndex: number) {
-    file.setFrameIndex(frameIndex)
-    fileStates.refresh()
-  }
-  
-  function addFrame() {
-    file.push(new AddAnimationFrameUndoable(file.group.name, file.animation.name))
-  }
-  
-  let contextFrameOpen: boolean = false
-  let contextFrameIndex: number = -1
-  let contextX: number = 0
-  let contextY: number = 0
-  function onFrameRightClick(e: MouseEvent, frameIndex: number) {
-    contextFrameOpen = true
-    contextX = e.clientX
-    contextY = e.clientY
-    contextFrameIndex = frameIndex
-  }
-  function contextFrameDelete() {
-    if (file.animation?.frames.length === 1) {
-      alert('thou shalt not delete the last frame')
-      return
-    }
-    file.push(new RemoveAnimationFrameUndoable(file.group.name, file.animation.name, contextFrameIndex))
-  }
-  function contextFrameClear() {
-    file.push(new ClearAnimationFrameUndoable(file.group.name, file.animation.name, contextFrameIndex))
-  }
-  
   onMount(() => {
     let frameID: number = 0
     let frameDraw = () => {
@@ -518,47 +475,6 @@
 <main>
   <section class='view'>
     <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>
-    <section class='slicesContainer'>
-      <!--<Button
-        kind="ghost"
-        size="small"
-        icon={NewTab}
-        iconDescription="Add Slice"
-        tooltipPosition="top"
-        tooltipAlignment="end"
-        disabled={!file || !file.frame}
-      />-->
-      <section class='slices'>
-        {#if $file.frame}
-          {#each $file.frame.slices as slice, sliceIndex}
-            <article class='slice{sliceIndex===file.sliceIndex?' --selected':''}' on:click={()=>setSlice(sliceIndex)}>
-              <span class='sliceIndex'>{sliceIndex+1}</span>
-            </article>
-          {/each}
-        {/if}
-      </section>
-    </section>
-    <section class='framesContainer'>
-      <Button
-        kind="ghost"
-        size="small"
-        icon={AddAlt}
-        iconDescription="Add Frame"
-        tooltipPosition="top"
-        tooltipAlignment="end"
-        disabled={!file || !file.animation}
-        on:click={addFrame}
-      />
-      <section class='frames'>
-        {#if $file.animation}
-          {#each $file.animation.frames as frame, frameIndex}
-            <article class='frame{frameIndex===file.frameIndex?' --selected':''}' on:click={()=>setFrame(frameIndex)} on:contextmenu|preventDefault={(e)=>onFrameRightClick(e, frameIndex)}>
-              <span class='frameIndex'>{frameIndex+1}</span>
-            </article>
-          {/each}
-        {/if}
-      </section>
-    </section>
   </section>
   <menu>
     <section class='cursorInfo'>
@@ -594,10 +510,6 @@
       />
     </section>
   </menu>
-  <ContextMenu bind:open={contextFrameOpen} bind:x={contextX} bind:y={contextY} target={[]}>
-    <ContextMenuOption labelText="Clear Frame" on:click={contextFrameClear} />
-    <ContextMenuOption labelText="Delete Frame" kind="danger" on:click={contextFrameDelete} />
-  </ContextMenu>
 </main>
 
 <style>
@@ -610,92 +522,9 @@
   }
   .view {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
     user-select: none;
-  }
-  .slicesContainer {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: /*auto*/ minmax(0, 1fr);
-  }
-  .slices {
-    font-family: monospace;
-    font-size: 0.75rem;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  .slices::-webkit-scrollbar {
-    width: 0.2rem !important;
-  }
-  .slices::-webkit-scrollbar-track {
-    background: var(--cds-ui-01) !important;
-  }
-  .slices::-webkit-scrollbar-thumb {
-    background: var(--cds-text-03) !important;
-  }
-  .slices::-webkit-scrollbar-thumb:hover {
-    background: var(--cds-hover-primary) !important;
-  }
-  .slices::-webkit-scrollbar-thumb:active {
-    background: var(--cds-active-primary) !important;
-  }
-  .slice {
-    text-align: center;
-    padding: 0.2rem;
-    border-bottom: 1px solid var(--cds-ui-01);
-    background: var(--cds-ui-02);
-  }
-  .slice.--selected {
-    background: var(--cds-active-primary);
-  }
-  .slice:hover {
-    background: var(--cds-hover-primary);
-    cursor: pointer;
-  }
-  .framesContainer {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-  .frames {
-    font-family: monospace;
-    font-size: 0.75rem;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    display: flex;
-    flex-direction: column;
-    min-width: 1.5em;
-  }
-  .frames::-webkit-scrollbar {
-    width: 0.2rem !important;
-  }
-  .frames::-webkit-scrollbar-track {
-    background: var(--cds-ui-01) !important;
-  }
-  .frames::-webkit-scrollbar-thumb {
-    background: var(--cds-text-03) !important;
-  }
-  .frames::-webkit-scrollbar-thumb:hover {
-    background: var(--cds-hover-primary) !important;
-  }
-  .frames::-webkit-scrollbar-thumb:active {
-    background: var(--cds-active-primary) !important;
-  }
-  .frame {
-    text-align: center;
-    padding: 0.2rem;
-    border-bottom: 1px solid var(--cds-ui-01);
-    background: var(--cds-ui-02);
-  }
-  .frame.--selected {
-    background: var(--cds-active-primary);
-  }
-  .frame:hover {
-    background: var(--cds-hover-primary);
-    cursor: pointer;
   }
   canvas {
     width: 100%;

@@ -46,6 +46,7 @@
   import { palettesStore } from './stores/palettes.js';
   import PaletteOptionsToolbar from './components/PaletteOptionsToolbar.svelte';
   import Editor3D from './sections/Editor3D.svelte'
+  import Frames from './sections/Frames.svelte'
 
   let is3D: boolean = false
   
@@ -493,7 +494,10 @@
       </Tabs>
     </section>
     <section class='right'>
-      <Groups file={focusedFile} />
+      {#if focusedFile}
+        <Frames file={focusedFile} />
+        <Groups file={focusedFile} />
+      {/if}
     </section>
     {#if showPreview}
       <FloatingPanel
@@ -596,7 +600,8 @@
   }
   .right {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: auto auto;
   }
   .toolbar {
     display: flex;
