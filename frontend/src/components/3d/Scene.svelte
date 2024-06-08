@@ -45,6 +45,11 @@
   function onVoxelClick(e: CustomEvent & {detail: VoxelClickEvent}) {
     let slice = file.frame?.slices[target.y]
     if (!slice) return
+    
+    // TODO: whinge about being OOB in a lil footer err/warn thing.
+    if (target.x === -1 || target.x === file.frameWidth) return
+    if (target.z === -1 || target.z === file.frameHeight) return
+    if (target.y === -1 || target.y === file.frame?.slices.length) return
     let x = slice.x + target.x
     let y = slice.y + target.z
     if (e.detail.button === 0) {
@@ -130,3 +135,43 @@
   sectionColor={0x00ff00}
   gridSize={[$file.frameWidth, $file.frameHeight]}
 />
+
+<T.Mesh
+  visible={target.y === $file?.frame?.slices.length}
+  position={[0, ($file?.frame?.slices.length??0)+0.01, 0]}
+  rotation={[-Math.PI/2, 0, 0]}
+>
+  <T.PlaneGeometry args={[$file.frameWidth, $file.frameHeight]} />
+  <T.MeshBasicMaterial
+    transparent={true}
+    opacity={0.2}
+    color={0xff0000}
+  />
+</T.Mesh>
+
+<T.Mesh
+  visible={target.x === -1 || target.x === $file.frameWidth}
+  position={[target.x-$file.frameWidth/2+(target.x===$file.frameWidth?0:1), ($file.frame?.slices.length??0)/2, 0]}
+  rotation={[0, Math.PI/2, 0]}
+>
+  <T.PlaneGeometry args={[$file.frameHeight, $file.frame?.slices.length]} />
+  <T.MeshBasicMaterial
+    transparent={true}
+    opacity={0.2}
+    color={0xff0000}
+    side={THREE.DoubleSide}
+  />
+</T.Mesh>
+
+<T.Mesh
+  visible={target.z === -1 || target.z === $file.frameHeight}
+  position={[0, ($file.frame?.slices.length??0)/2, target.z-$file.frameHeight/2+(target.z===$file.frameHeight?0:1)]}
+>
+  <T.PlaneGeometry args={[$file.frameWidth, $file.frame?.slices.length]} />
+  <T.MeshBasicMaterial
+    transparent={true}
+    opacity={0.2}
+    color={0xff0000}
+    side={THREE.DoubleSide}
+  />
+</T.Mesh>
