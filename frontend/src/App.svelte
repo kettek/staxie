@@ -24,7 +24,6 @@
   import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import { Canvas } from './types/canvas'
-  import { type BrushType } from './types/tools'
   import BrushSize from './components/BrushSize.svelte'
   import Shortcut from './components/Shortcut.svelte'
   import Shortcuts from './components/Shortcuts.svelte'
