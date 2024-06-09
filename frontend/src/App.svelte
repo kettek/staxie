@@ -151,6 +151,22 @@
     focusedFileIndex = index
   }
   
+  function toggle3D(e: InputEvent) {
+    const target = e.currentTarget as HTMLInputElement
+    is3D = target.checked
+    if (is3D) {
+      toolSettings.store("2D")
+      if (!toolSettings.restore("3D")) {
+        toolSettings.swapTool(toolVoxelPlace)
+      }
+    } else {
+      toolSettings.store("3D")
+      if (!toolSettings.restore("2D")) {
+        toolSettings.swapTool(toolBrush)
+      }
+    }
+  }
+  
   async function loadPNG() {
     importFilepath = await GetFilePath(
       [ "PNG" ],
@@ -321,7 +337,7 @@
     <OverflowMenu size="sm">
       <div slot="menu">View</div>
       <OverflowMenuItem>
-        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={is3D} labelText="3D" />
+        <Checkbox on:click={(e)=>e.stopPropagation()} checked={is3D} on:change={toggle3D} labelText="3D" />
       </OverflowMenuItem>
       <OverflowMenuItem>
         <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={orthographicCamera} labelText="Orthographic" disabled={!is3D} />

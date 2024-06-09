@@ -3,6 +3,7 @@
   import Scene from "../components/3d/Scene.svelte"
   import { LoadedFile } from "../types/file"
   import { Palette } from "../types/palette"
+  import { PerfMonitor } from "@threlte/extras"
   
   export let file: LoadedFile
   export let palette: Palette|undefined
@@ -11,6 +12,7 @@
 
 <div>
   <Canvas>
+    <!--PerfMonitor anchorX={'right'} anchorY={'bottom'} /-->
     <Scene
       file={file}
       palette={palette}

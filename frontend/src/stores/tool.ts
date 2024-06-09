@@ -1,4 +1,4 @@
-import { writable, type Invalidator, type Subscriber, type Unsubscriber, type Updater } from 'svelte/store'
+import { get, writable, type Invalidator, type Subscriber, type Unsubscriber, type Updater } from 'svelte/store'
 import { BrushTool, EraserTool, FillTool, MagicWandTool, MoveTool, PickerTool, PlaceVoxelTool, ReplaceVoxelTool, SelectionTool, SprayTool, type Tool } from '../types/tools'
 
 type ToolSettings = {
@@ -22,6 +22,8 @@ interface ToolSettingsStore {
   set: (this: void, value: ToolSettings) => void
   update: (this: void, updater: Updater<ToolSettings>) => void
   swapTool: (tool: Tool) => void
+  store: (set: string) => void
+  restore: (set: string) => boolean
 }
 
 function createToolSettingsStore(): ToolSettingsStore {
@@ -29,6 +31,8 @@ function createToolSettingsStore(): ToolSettingsStore {
     current: toolBrush,
     previous: toolBrush,
   })
+  
+  const storage: Record<string, {current: Tool, previous: Tool}> = {}
 
   return {
     subscribe,
@@ -39,6 +43,28 @@ function createToolSettingsStore(): ToolSettingsStore {
       state.current = tool
       return state
     }),
+    store: (set: string) => {
+      update((state) => {
+        storage[set] = {
+          current: state.current,
+          previous: state.previous,
+        }
+        return state
+      })
+    },
+    restore: (set: string) => {
+      let has = false
+      update((state) => {
+        let pair = storage[set]
+        if (pair) {
+          has = true
+          state.current = pair.current
+          state.previous = pair.previous
+        }
+        return state
+      })
+      return has
+    },
   }
 }
 
