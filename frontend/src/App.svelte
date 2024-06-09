@@ -8,7 +8,6 @@
   import PaletteSection from './sections/Palette.svelte'
   import FloatingPanel from './components/FloatingPanel.svelte'
   import { Palette } from './types/palette'
-  import { defaultPalette } from './types/palette/undoables'
   
   import { brushSettings } from './stores/brush'
   import { editor2DSettings } from './stores/editor2d.js'
@@ -56,16 +55,6 @@
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
   
-  let palette: Palette = defaultPalette
-  
-  type Color = {r: number, g: number, b: number, a: number}
-  
-  let primaryColor: Color = {r: 0, g: 0, b: 0, a: 0}
-  let secondaryColor: Color = {r: 0, g: 0, b: 0, a: 0}
-  
-  $: primaryColor = palette?.[$brushSettings.primaryIndex]
-  $: secondaryColor = palette?.[$brushSettings.secondaryIndex]
-
   let red: number = 0
   let green: number = 0
   let blue: number = 0
@@ -125,19 +114,10 @@
   let showThemeSettings: boolean = false
   let showBackgroundSettings: boolean = false
 
-  let previewShowBaseSizeOutline: boolean = true
-  let previewBaseSizeOutlineColor: string = '#00FFFF77'
-  let previewShowSizeOutline: boolean = true
-  let previewSizeOutlineColor: string = '#FFFF0077'
   let previewUseMini: boolean = false
   
   let orthographicCamera: boolean = false
 
-  let brushSize: number = 1
-  let brushType: BrushType = 'circle'
-  let sprayRadius: number = 16
-  let sprayDensity: number = 2
-  
   let focusedFileIndex: number = -1
   let focusedFile: LoadedFile|null = null
   $: {
