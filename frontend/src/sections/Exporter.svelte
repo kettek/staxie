@@ -1,18 +1,9 @@
 <script lang='ts'>
-  import { Button, NumberInput, Checkbox, RadioButtonGroup, RadioButton } from 'carbon-components-svelte'
-  import { Form, FormGroup, InlineNotification, Tile, Truncate } from 'carbon-components-svelte'
+  import { Button } from 'carbon-components-svelte'
+  import { Form, FormGroup, InlineNotification } from 'carbon-components-svelte'
   import { Grid, Row, Column } from "carbon-components-svelte"
 
   import {
-    StructuredList,
-    StructuredListHead,
-    StructuredListRow,
-    StructuredListCell,
-    StructuredListBody,
-  } from "carbon-components-svelte"
-
-  import {
-    ComposedModal,
     ModalHeader,
     ModalBody,
     ModalFooter,

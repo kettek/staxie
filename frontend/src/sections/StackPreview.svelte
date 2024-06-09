@@ -4,8 +4,7 @@
   This component provides a sprite stack view of a file.
 -->
 <script lang='ts'>
-  import { Grid, Row, Column, Checkbox, Slider, Dropdown, Button } from "carbon-components-svelte"
-  import { Minimize, Maximize } from "carbon-icons-svelte"
+  import { Grid, Row, Column, Checkbox, Slider, Dropdown } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
   import { onMount } from "svelte"
   import { previewSettings } from '../stores/preview'

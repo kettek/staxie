@@ -2,7 +2,6 @@ import type { PixelPosition } from "./shapes"
 import { zlibSync } from 'fflate'
 import * as crc32 from 'crc-32'
 import { Buffer } from 'buffer/'
-import { SaveFileBytes } from "../../wailsjs/go/main/App.js"
 import type { LoadedFile } from './file'
 import { IndexedPNG } from './png'
 import { clog } from "../globals/log"

@@ -12,7 +12,8 @@
   import { brushSettings } from './stores/brush'
   import { editor2DSettings } from './stores/editor2d.js'
 
-  import { LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable } from './types/file'
+  import { LoadedFile } from './types/file'
+  import { PixelsPlaceUndoable, SelectionClearUndoable } from './types/file/undoables'
 
   import "carbon-components-svelte/css/all.css"
   import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput, Dropdown, Checkbox, TextInput, RadioButton, RadioButtonGroup } from "carbon-components-svelte"

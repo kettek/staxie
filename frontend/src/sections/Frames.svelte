@@ -1,5 +1,6 @@
 <script lang='ts'>
-  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, LoadedFile, RemoveAnimationFrameUndoable } from "../types/file"
+  import { LoadedFile } from "../types/file"
+  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, RemoveAnimationFrameUndoable } from "../types/file/undoables"
   import { Button, ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
   import { fileStates } from '../stores/file'
   import { AddAlt } from 'carbon-icons-svelte'

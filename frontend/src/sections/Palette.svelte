@@ -5,10 +5,10 @@
 -->
 <script lang='ts'>
   import type { Palette } from '../types/palette'
-  import { ReplaceSwatchUndoable, type LoadedFile, AddSwatchUndoable, MoveSwatchUndoable } from '../types/file'
+  import { type LoadedFile } from '../types/file'
+  import { MoveSwatchUndoable } from '../types/file/undoables'
   import { createEventDispatcher } from 'svelte'
-  import type { Undoable } from '../types/undo'
-  import { ContextMenu, ContextMenuOption, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
+  import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
   import DeletePaletteEntryModal from '../components/DeletePaletteEntryModal.svelte'
   
   import { brushSettings } from '../stores/brush'

@@ -10,7 +10,7 @@
   import type { Canvas } from '../types/canvas'
   
   import { Button, NumberInput, TextInput, Checkbox, RadioButtonGroup, RadioButton, ContentSwitcher, Switch } from 'carbon-components-svelte'
-  import { Form, FormGroup, InlineNotification, Tile, Truncate } from 'carbon-components-svelte'
+  import { Form, FormGroup, InlineNotification, Tile } from 'carbon-components-svelte'
   import { Grid, Row, Column } from "carbon-components-svelte"
   import { CloseLarge, AddLarge } from 'carbon-icons-svelte'
 

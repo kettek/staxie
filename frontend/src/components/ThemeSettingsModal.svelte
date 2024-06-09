@@ -4,7 +4,7 @@
   This component is a modal that provides settings for changing the theme.
 -->
 <script lang='ts'>
-  import { Column, Dropdown, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte";
+  import { Dropdown, Modal } from "carbon-components-svelte";
 
   export let theme: 'white'|'g10'|'g80'|'g90'|'g100' = "g90"
 

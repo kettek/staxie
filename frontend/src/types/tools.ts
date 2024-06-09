@@ -1,4 +1,5 @@
-import { PixelPlaceUndoable, type LoadedFile, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from "./file"
+import { type LoadedFile } from "./file"
+import { PixelPlaceUndoable, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from "./file/undoables"
 import { Preview } from "./preview"
 import type { Pointer } from "./pointer"
 import { FilledCircle, FilledSquare, RandomSpray, type PixelPosition } from "./shapes"

@@ -1,5 +1,6 @@
 import type { Canvas } from "./canvas"
-import { PixelPlaceUndoable, PixelsPlaceUndoable, SelectionMoveUndoable, SelectionSetUndoable, type LoadedFile } from "./file"
+import { type LoadedFile } from "./file"
+import { PixelPlaceUndoable, PixelsPlaceUndoable, SelectionMoveUndoable, SelectionSetUndoable } from "./file/undoables"
 import type { Undoable } from "./undo"
 
 export class CanvasView {

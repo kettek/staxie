@@ -1,4 +1,4 @@
-import { unzlibSync, zlibSync } from 'fflate'
+import { unzlibSync } from 'fflate'
 
 const range = (left, right, inclusive) => {
   let range = [];

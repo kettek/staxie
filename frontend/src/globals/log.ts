@@ -1,5 +1,4 @@
-import * as tslog from 'tslog'
-import { Logger, type ILogObjMeta, type ISettingsParam, type ILogObj } from 'tslog'
+import { Logger } from 'tslog'
 
 export const log = new Logger()
 export const clog = log.getSubLogger({ name: 'canvas' })

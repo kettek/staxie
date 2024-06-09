@@ -4,7 +4,7 @@
   This component is a modal settings dialog for changing the background color.
 -->
 <script lang='ts'>
-  import { Column, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte"
+  import { Column, Grid, Modal, Row, TextInput } from "carbon-components-svelte"
   import { editor2DSettings } from "../stores/editor2d"
 
   let pendingColor: string = $editor2DSettings.backgroundColor

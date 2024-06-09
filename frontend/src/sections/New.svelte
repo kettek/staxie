@@ -4,7 +4,6 @@
   This component provides a modal for creating a new file.
 -->
 <script lang='ts'>
-  import { onMount } from 'svelte';
   import { Canvas } from '../types/canvas'
   import { IndexedPNG } from '../types/png'
 

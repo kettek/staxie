@@ -1,5 +1,6 @@
 <script lang='ts'>
-  import { LoadedFile, PixelPlaceUndoable } from "../../types/file"
+  import { LoadedFile } from "../../types/file"
+  import { PixelPlaceUndoable } from "../../types/file/undoables"
   import { interactivity } from "@threlte/extras"
   import { T } from '@threlte/core'
   import * as THREE from 'three'

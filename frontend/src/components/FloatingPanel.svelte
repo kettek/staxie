@@ -5,14 +5,7 @@
 -->
 <script lang='ts'>
   import {
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-  } from "carbon-components-svelte"
-  
-  import {
-    Close, FolderMoveTo
-
+    Close
   } from 'carbon-icons-svelte'
   
   export let title: string = "Untitled"

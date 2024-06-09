@@ -4,7 +4,8 @@
   import { Undo, Redo, DocumentImport, DocumentExport, DocumentAdd, TrashCan } from "carbon-icons-svelte"
   
   import { palettesStore } from '../stores/palettes'
-  import { ReplacePaletteUndoable, type LoadedFile } from '../types/file'
+  import { type LoadedFile } from '../types/file'
+  import { ReplacePaletteUndoable } from '../types/file/undoables'
   import { GetFilePath, OpenFileBytes } from '../../wailsjs/go/main/App'
 
   export let file: LoadedFile

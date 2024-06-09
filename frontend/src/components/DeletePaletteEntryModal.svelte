@@ -5,7 +5,8 @@
 -->
 <script lang='ts'>
   import { Checkbox, Column, Dropdown, Grid, Modal, NumberInput, Row, TextInput } from "carbon-components-svelte";
-  import { RemoveSwatchUndoable, type LoadedFile } from "../types/file"
+  import { type LoadedFile } from "../types/file"
+  import { RemoveSwatchUndoable } from "../types/file/undoables"
   
   export let file: LoadedFile
 

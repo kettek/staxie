@@ -1,6 +1,7 @@
 <script lang='ts'>
-  import { FaceAdd, FolderAdd, GroupObjectsNew } from "carbon-icons-svelte";
-  import { type LoadedFile, RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddGroupUndoable, ChangeFrameTimeUndoable } from "../types/file"
+  import { FaceAdd, FolderAdd } from "carbon-icons-svelte";
+  import { type LoadedFile } from "../types/file"
+  import { RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddGroupUndoable, ChangeFrameTimeUndoable } from "../types/file/undoables"
   import { Button, ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
 

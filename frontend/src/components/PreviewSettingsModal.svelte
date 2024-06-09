@@ -4,7 +4,7 @@
   This component is a modal that provides UI for changing the stack preview settings.
 -->
 <script lang='ts'>
-  import { Checkbox, Column, FileUploader, Grid, Modal, NumberInput, Row, TextInput, FileUploaderButton } from "carbon-components-svelte";
+  import { Checkbox, Column, Grid, Modal, Row, TextInput, FileUploaderButton } from "carbon-components-svelte"
   import { previewSettings } from '../stores/preview'
   import { get } from "svelte/store"
 
