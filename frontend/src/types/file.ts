@@ -37,6 +37,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   sliceIndex: number = 0
   frame?: StaxFrame
   frameIndex: number = 0
+  selectedFrameIndices: number[] = []
   frameWidth: number
   frameHeight: number
 
@@ -108,6 +109,21 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
         }
       }
     }
+  }
+  
+  isFrameSelected(index: number): boolean {
+    return this.selectedFrameIndices.includes(index)
+  }
+  selectFrameIndex(index: number, clear: boolean) {
+    if (clear) {
+      this.selectedFrameIndices = []
+    }
+    if (!this.selectedFrameIndices.includes(index)) {
+      this.selectedFrameIndices.push(index)
+    }
+  }
+  deselectFrameIndex(index: number) {
+    this.selectedFrameIndices = this.selectedFrameIndices.filter(i => i !== index)
   }
   
   setFrameIndex(index: number) {
