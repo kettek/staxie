@@ -17,15 +17,15 @@
   import { PixelsPlaceUndoable, SelectionClearUndoable } from './types/file/undoables'
 
   import "carbon-components-svelte/css/all.css"
-  import { Tabs, Tab, TabContent, Theme, Button, Modal, Truncate, ButtonSet, NumberInput, Dropdown, Checkbox, TextInput, RadioButton, RadioButtonGroup } from "carbon-components-svelte"
+  import { Tabs, Tab, TabContent, Theme, Button, NumberInput, Dropdown, Checkbox } from "carbon-components-svelte"
   import { ComposedModal } from "carbon-components-svelte"
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Scale, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import { Canvas } from './types/canvas'
-  import { BrushTool, EraserTool, FillTool, PickerTool, SelectionTool, MagicWandTool, type BrushType, type Tool, MoveTool, SprayTool } from './types/tools'
+  import { type BrushType } from './types/tools'
   import BrushSize from './components/BrushSize.svelte'
   import Shortcut from './components/Shortcut.svelte'
   import Shortcuts from './components/Shortcuts.svelte'
