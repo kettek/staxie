@@ -4,14 +4,15 @@
   This component shows a given color swatch/index and provides controls for adding and replacing swatches within the palette.
 -->
 <script lang='ts'>
-  import { Button } from "carbon-components-svelte";
-  import { AddLarge, ColorSwitch } from "carbon-icons-svelte";
-  import { type LoadedFile } from "../types/file";
-  import { ReplaceSwatchUndoable, AddSwatchUndoable } from "../types/file/undoables";
-  import { createEventDispatcher } from "svelte";
+  import { Button } from "carbon-components-svelte"
+  import { AddLarge, ColorSwitch } from "carbon-icons-svelte"
+  import { type LoadedFile } from "../types/file"
+  import { ReplaceSwatchUndoable, AddSwatchUndoable } from "../types/file/undoables"
+  import { createEventDispatcher } from "svelte"
 
   import { brushSettings } from '../stores/brush'
-  import { PaletteAddSwatchUndoable, PaletteReplaceSwatchUndoable, type Palette } from '../types/palette'
+  import { type Palette } from '../types/palette'
+  import { PaletteAddSwatchUndoable, PaletteReplaceSwatchUndoable } from '../types/palette/undoables'
 
   export let file: LoadedFile
   export let palette: Palette | undefined

@@ -1,5 +1,6 @@
-import { writable } from "svelte/store"
-import { defaultPalette, type Palette } from "../types/palette"
+import { writable } from 'svelte/store'
+import { type Palette } from '../types/palette'
+import { defaultPalette } from '../types/palette/undoables'
 
 function createPalettesStore() {
   const { subscribe, set, update } = writable<Palette[]>([defaultPalette])

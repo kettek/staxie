@@ -7,7 +7,8 @@
   import Exporter from './sections/Exporter.svelte'
   import PaletteSection from './sections/Palette.svelte'
   import FloatingPanel from './components/FloatingPanel.svelte'
-  import { Palette, defaultPalette } from './types/palette'
+  import { Palette } from './types/palette'
+  import { defaultPalette } from './types/palette/undoables'
   
   import { brushSettings } from './stores/brush'
   import { editor2DSettings } from './stores/editor2d.js'

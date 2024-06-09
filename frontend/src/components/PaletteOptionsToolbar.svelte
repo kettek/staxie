@@ -1,5 +1,6 @@
 <script lang='ts'>
-  import { Palette, PaletteRenameUndoable } from '../types/palette'
+  import { Palette } from '../types/palette'
+  import { PaletteRenameUndoable } from '../types/palette/undoables'
   import { Button, TextInput } from "carbon-components-svelte"
   import { Undo, Redo, DocumentImport, DocumentExport, DocumentAdd, TrashCan } from "carbon-icons-svelte"
   
