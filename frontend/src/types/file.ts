@@ -309,7 +309,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     if (this.selectedFrameIndices.length > 1) {
       if (item instanceof PixelPlaceUndoable) {
         let items: Undoable<LoadedFile>[] = []
-        for (let i of this.selectedFrameIndices) {
+        let indices = this.selectedFrameIndices.filter(i => i < this.animation.frames.length) // Filter out any OOB indices.
+        for (let i of indices) {
           let offsetY = 0
           if (i < this.frameIndex) {
             offsetY = this.frameHeight * (i - this.frameIndex)
@@ -325,7 +326,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
         group = new UndoableGroup(items)
       } else if (item instanceof PixelsPlaceUndoable) {
         let pixels: {x: number, y: number, index: number }[] = []
-        for (let i of this.selectedFrameIndices) {
+        let indices = this.selectedFrameIndices.filter(i => i < this.animation.frames.length) // Filter out any OOB indices.
+        for (let i of indices) {
           let offsetY = 0
           if (i < this.frameIndex) {
             offsetY = this.frameHeight * (i - this.frameIndex)
