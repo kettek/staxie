@@ -3,9 +3,10 @@ import type { Canvas } from './canvas'
 import type { IndexedPNG, StaxAnimation, StaxFrame, StaxGroup, StaxSlice } from './png'
 import { Preview } from './preview'
 import { SelectionArea } from './selection'
-import { UndoableStack, type Undoable } from './undo'
+import { UndoableStack, type Undoable, UndoableGroup } from './undo'
 import type { CanvasView } from './canvasview'
 import { flog } from '../globals/log'
+import { PixelPlaceUndoable, PixelsPlaceUndoable } from './file/undoables'
 
 export interface LoadedFileOptions {
   filepath: string
@@ -282,6 +283,11 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     return { x: slice.x, y: slice.y, width: this.frameWidth, height: this.frameHeight }
   }
   
+  transformUndoableBySelectedFrames(item: Undoable<LoadedFile>): Undoable<LoadedFile> {
+    
+    return item
+  }
+  
   undo() {
     flog.debug('undo')
     super.undo()
@@ -302,8 +308,51 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       flog.debug('...transforming by view')
       item = view.transformUndoable(item)
     }
+    
+    // Transform pixel placement to work across frames. NOTE: It feels somewhat dangerous to just make modifications based upon frameIndex * frameHeight offsets, but it'll probably be fine. FIXME: make sure selected frame indices are valid and not OOB for the current animation.
+    let group: UndoableGroup<LoadedFile>|null = null
+    if (this.selectedFrameIndices.length > 1) {
+      if (item instanceof PixelPlaceUndoable) {
+        let items: Undoable<LoadedFile>[] = []
+        for (let i of this.selectedFrameIndices) {
+          let offsetY = 0
+          if (i < this.frameIndex) {
+            offsetY = this.frameHeight * (i - this.frameIndex)
+          } else if (i > this.frameIndex) {
+            offsetY = i * this.frameHeight
+          } else {
+            continue
+          }
+          let p = this.canvas.getPixel(item.x, item.y+offsetY)
+          let item2 = new PixelPlaceUndoable(item.x, item.y+offsetY, p, item.newIndex)
+          items.push(item2)
+        }
+        group = new UndoableGroup(items)
+      } else if (item instanceof PixelsPlaceUndoable) {
+        let pixels: {x: number, y: number, index: number }[] = []
+        for (let i of this.selectedFrameIndices) {
+          let offsetY = 0
+          if (i < this.frameIndex) {
+            offsetY = this.frameHeight * (i - this.frameIndex)
+          } else if (i > this.frameIndex) {
+            offsetY = i * this.frameHeight
+          } else {
+            continue
+          }
+          for (let pixel of item.pixels) {
+            pixels.push({ x: pixel.x, y: pixel.y+offsetY, index: pixel.index })
+          }
+        }
+        item.pixels = [...item.pixels, ...pixels]
+      }
+    }
 
-    super.push(item)
+    if (group) {
+      group.add(item)
+      super.push(group)
+    } else {
+      super.push(item)
+    }
     this.canvas.refreshCanvas()
     this.selection.refresh()
     this.set(this)
