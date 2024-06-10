@@ -283,11 +283,6 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     return { x: slice.x, y: slice.y, width: this.frameWidth, height: this.frameHeight }
   }
   
-  transformUndoableBySelectedFrames(item: Undoable<LoadedFile>): Undoable<LoadedFile> {
-    
-    return item
-  }
-  
   undo() {
     flog.debug('undo')
     super.undo()
