@@ -304,7 +304,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       item = view.transformUndoable(item)
     }
     
-    // Transform pixel placement to work across frames. NOTE: It feels somewhat dangerous to just make modifications based upon frameIndex * frameHeight offsets, but it'll probably be fine. FIXME: make sure selected frame indices are valid and not OOB for the current animation.
+    // Transform pixel placement to work across frames. NOTE: It feels somewhat dangerous to just make modifications based upon frameIndex * frameHeight offsets, but it'll probably be fine.
     let group: UndoableGroup<LoadedFile>|null = null
     if (this.selectedFrameIndices.length > 1) {
       if (item instanceof PixelPlaceUndoable) {
