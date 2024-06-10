@@ -29,7 +29,7 @@
   function hover(e: any) {
     if (ignoreEvents) return
     e.stopPropagation()
-    $scale = 1.2
+    $scale = 1.15
     hovered = true
     dispatch('hover', {
       position: {
