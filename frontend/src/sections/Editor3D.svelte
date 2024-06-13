@@ -58,6 +58,7 @@
     font-size: 0.75rem;
     text-align: left;
     font-family: monospace;
+    color: var(--cds-text-04);
   }
   .cursor span {
     min-width: 2rem;
