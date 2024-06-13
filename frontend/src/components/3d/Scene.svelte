@@ -2,7 +2,7 @@
   import { LoadedFile } from "../../types/file"
   import { PixelPlaceUndoable } from "../../types/file/undoables"
   import { interactivity } from "@threlte/extras"
-  import { T } from '@threlte/core'
+  import { T, type CurrentWritable, currentWritable } from '@threlte/core'
   import * as THREE from 'three'
   import Voxel from './Voxel.svelte'
   import { Grid, Gizmo, OrbitControls, Align } from '@threlte/extras'
@@ -10,6 +10,7 @@
   import type { VoxelClickEvent, VoxelEvent } from "../../types/editor3d"
   import { brushSettings } from "../../stores/brush"
   import { editor3DSettings } from "../../stores/editor3d"
+  import { OrbitControls as ThreeOrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
   import { editor2DSettings } from "../../stores/editor2d"
   
   import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker } from "../../stores/tool"
@@ -21,6 +22,9 @@
   let showTarget = false
   export let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
   export let hover: { x: number, y: number, z: number }|null = null
+  
+  let orbitControls: ThreeOrbitControls
+  let center: CurrentWritable<[number, number, number]> = currentWritable([0, 0, 0])
   
   function placePixelAt({ x, y, z }: { x: number, y: number, z: number }, color: number) {
     // TODO: whinge about being OOB in a lil footer err/warn thing.
@@ -134,10 +138,14 @@
     }}
   >
     <OrbitControls
+      bind:ref={orbitControls}
       mouseButtons={{
         LEFT: -1,
         MIDDLE: THREE.MOUSE.PAN,
         RIGHT: THREE.MOUSE.ROTATE,
+      }}
+      on:change={() => {
+        center.set([orbitControls.target.x, orbitControls.target.y, orbitControls.target.z])
       }}
     />
   </T.PerspectiveCamera>
@@ -240,3 +248,11 @@
     side={THREE.DoubleSide}
   />
 </T.Mesh>
+
+<Gizmo
+  center={$center}
+  verticalPlacement={"top"}
+  size={64}
+  paddingX={8}
+  paddingY={8}
+/>
