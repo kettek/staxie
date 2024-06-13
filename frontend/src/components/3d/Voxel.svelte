@@ -10,6 +10,8 @@
   export let color: number = 0xff00ffff // RGBA
   export let ignoreEvents: boolean = false
   export let visible: boolean = true
+  export let hideTransparent: boolean = false
+  export let ignoreAlpha: boolean = false
   
   let realColor: number = 0xff00ff // RGB
   let opacity = 1
@@ -19,6 +21,7 @@
     let g = (color >> 8) & 0xff
     let b = (color >> 16) & 0xff
     let a = (color >> 24) & 0xff
+    if (ignoreAlpha) a = 0xff
     realColor = (r << 16) | (g << 8) | b
     opacity = a / 0xff
   }
@@ -26,8 +29,11 @@
   const scale = spring(1)
   let hovered = false
   
+  let hidden = false
+  $: hidden = !visible || (hideTransparent && opacity < 1)
+  
   function hover(e: any) {
-    if (ignoreEvents) return
+    if (ignoreEvents || hidden) return
     e.stopPropagation()
     $scale = 1.15
     hovered = true
@@ -46,7 +52,7 @@
     })
   }
   function move(e: any) {
-    if (ignoreEvents) return
+    if (ignoreEvents || hidden) return
     e.stopPropagation()
     dispatch('move', {
       position: {
@@ -63,7 +69,7 @@
     })
   }
   function leave(e: any) {
-    if (ignoreEvents) return
+    if (ignoreEvents || hidden) return
     e.stopPropagation()
     $scale = 1.0
     hovered = false
@@ -82,7 +88,7 @@
     })
   }
   function click(e: any) {
-    if (ignoreEvents) return
+    if (ignoreEvents || hidden) return
     e.stopPropagation()
     dispatch('click', {
       position: {
@@ -100,7 +106,7 @@
     })
   }
   function contextmenu(e: any) {
-    if (ignoreEvents) return
+    if (ignoreEvents || hidden) return
     e.stopPropagation()
     dispatch('click', {
       position: {
@@ -122,7 +128,7 @@
 <T.Mesh
   scale={$scale}
   position={[position[0]+offset[0]+0.5, position[1]+offset[1]+0.5, position[2]+offset[2]+0.5]}
-  visible={visible}
+  visible={!hidden}
   on:pointerenter={hover}
   on:pointerleave={leave}
   on:pointermove={move}
