@@ -11,6 +11,7 @@
   
   import { brushSettings } from './stores/brush'
   import { editor2DSettings } from './stores/editor2d.js'
+  import { editor3DSettings } from './stores/editor3d.js'
 
   import { LoadedFile } from './types/file'
   import { PixelsPlaceUndoable, SelectionClearUndoable } from './types/file/undoables'
@@ -335,6 +336,17 @@
       <OverflowMenuItem hasDivider text="Theme..." on:click={()=>showThemeSettings = true} />
       <OverflowMenuItem hasDivider text="Fullscreen" on:click={()=>ToggleFullscreen()} />
     </OverflowMenu>
+    {#if is3D}
+      <OverflowMenu size="sm">
+        <div slot="menu">3D</div>
+        <OverflowMenuItem>
+          <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor3DSettings.ignoreAlpha} labelText="Ignore Alpha" />
+        </OverflowMenuItem>
+        <OverflowMenuItem>
+          <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor3DSettings.hideTransparent} labelText="Hide Transparent" />
+        </OverflowMenuItem>
+      </OverflowMenu>
+    {/if}
     <OverflowMenu size="sm">
       <div slot="menu">Mode</div>
       <OverflowMenuItem>

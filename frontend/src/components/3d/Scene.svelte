@@ -9,6 +9,7 @@
   import { Palette } from "../../types/palette"
   import type { VoxelClickEvent, VoxelEvent } from "../../types/editor3d"
   import { brushSettings } from "../../stores/brush"
+  import { editor3DSettings } from "../../stores/editor3d"
   
   import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker } from "../../stores/tool"
   
@@ -150,6 +151,8 @@
       {#each $file.canvas.getPixels(slice.x, slice.y, $file.frameWidth, $file.frameHeight) as pixel, index}
         {#if pixel !== 0}
           <Voxel
+            hideTransparent={$editor3DSettings.hideTransparent}
+            ignoreAlpha={$editor3DSettings.ignoreAlpha}
             position={[index%$file.frameWidth, y, Math.floor(index/$file.frameWidth)]}
             offset={[-$file.frameWidth/2, 0, -$file.frameHeight/2]}
             color={$palette?$palette.swatches[pixel]:$file.canvas.getPaletteColor(pixel)}
