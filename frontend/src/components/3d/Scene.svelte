@@ -17,8 +17,8 @@
   export let orthographic: boolean = false
   
   let showTarget = false
-  let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
-  let hover: { x: number, y: number, z: number }|null = null
+  export let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
+  export let hover: { x: number, y: number, z: number }|null = null
   
   function placePixelAt({ x, y, z }: { x: number, y: number, z: number }, color: number) {
     // TODO: whinge about being OOB in a lil footer err/warn thing.
