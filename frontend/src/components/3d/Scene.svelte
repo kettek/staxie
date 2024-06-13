@@ -10,6 +10,7 @@
   import type { VoxelClickEvent, VoxelEvent } from "../../types/editor3d"
   import { brushSettings } from "../../stores/brush"
   import { editor3DSettings } from "../../stores/editor3d"
+  import { editor2DSettings } from "../../stores/editor2d"
   
   import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker } from "../../stores/tool"
   
@@ -177,9 +178,11 @@
 
 <Grid
   position={[0, -0.01, 0]}
-  cellColor={0xff00ff}
-  sectionColor={0x00ff00}
+  cellColor={$editor2DSettings.gridMinorColor}
+  sectionColor={$editor2DSettings.gridMajorColor}
   gridSize={[$file.frameWidth, $file.frameHeight]}
+  cellThickness={1}
+  sectionThickness={1}
 />
 
 <T.Mesh

@@ -4,6 +4,7 @@
   import { LoadedFile } from "../types/file"
   import { Palette } from "../types/palette"
   import { PerfMonitor } from "@threlte/extras"
+  import { editor2DSettings } from "../stores/editor2d"
   
   export let file: LoadedFile
   export let palette: Palette|undefined
@@ -14,7 +15,7 @@
 
 </script>
 
-<main>
+<main style={`background: ${$editor2DSettings.backgroundColor}`}>
   <Canvas>
     <!--PerfMonitor anchorX={'right'} anchorY={'bottom'} /-->
     <Scene
