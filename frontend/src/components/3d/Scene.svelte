@@ -1,6 +1,6 @@
 <script lang='ts'>
   import { LoadedFile } from "../../types/file"
-  import { PixelPlaceUndoable } from "../../types/file/undoables"
+  import { PixelPlaceUndoable, PixelsPlaceUndoable } from "../../types/file/undoables"
   import { interactivity } from "@threlte/extras"
   import { T, type CurrentWritable, currentWritable } from '@threlte/core'
   import * as THREE from 'three'
@@ -13,7 +13,7 @@
   import { OrbitControls as ThreeOrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
   import { editor2DSettings } from "../../stores/editor2d"
   
-  import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker } from "../../stores/tool"
+  import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker, toolFill } from "../../stores/tool"
   
   export let file: LoadedFile
   export let palette: Palette|undefined
@@ -38,6 +38,53 @@
     if (p !== -1 && file.selection.isPixelMarked(slice.x + x, slice.y + z)) {
       file.push(new PixelPlaceUndoable(slice.x + x, slice.y + z, p, color))
     }
+  }
+  
+  function fillPixelAt({ x, y, z }: { x: number, y: number, z: number }, color: number) {
+    if (x === -1 || x === file.frameWidth) return
+    if (z === -1 || z === file.frameHeight) return
+    if (y === -1 || y === file.frame?.slices.length) return
+    
+    let traversed = new Set<number>()
+    
+    let pixels: {x: number, y: number, index: number}[] = []
+
+    if (!file.frame) return
+    
+    let slice = file.frame?.slices[y]
+    if (!slice) return
+    let p = file.canvas.getPixel(slice.x + x, slice.y + z)
+    if (p !== -1) {
+      let queue: [{ x: number, y: number, z: number }] = [{ x, y, z }]
+      while (queue.length > 0) {
+        let {x, y, z} = queue.shift()
+        if (x === -1 || x === file.frameWidth) continue
+        if (z === -1 || z === file.frameHeight) continue
+        if (y === -1 || y === file.frame?.slices.length) continue
+        let index = y * file.frameWidth * file.frameHeight + z * file.frameWidth + x
+        if (traversed.has(index)) continue
+        traversed.add(index)
+        let slice = file.frame?.slices[y]
+        if (!slice) continue
+        let p2 = file.canvas.getPixel(slice.x + x, slice.y + z)
+        if (p2 === p) {
+          pixels.push({x: slice.x+x, y: slice.y+z, index: color})
+          if ($editor3DSettings.floodFillX) {
+            if (slice.x+x > 0) queue.push({ x: x+1, y, z })
+            if (slice.x+x < file.canvas.width-1) queue.push({ x: x-1, y, z })
+          }
+          if ($editor3DSettings.floodFillZ) {
+            if (slice.y+z > 0) queue.push({ x, y, z: z+1 })
+            if (slice.y+z < file.canvas.height-1) queue.push({ x, y, z: z-1 })
+          }
+          if ($editor3DSettings.floodFillY) {
+            if (y > 0) queue.push({ x, y: y-1, z })
+            if (y < file.frame.slices.length-1) queue.push({ x, y: y+1, z })
+          }
+        }
+      }
+    }
+    file.push(new PixelsPlaceUndoable(pixels))
   }
   
   function onVoxelHover(e: CustomEvent & {detail: VoxelEvent}) {
@@ -68,6 +115,9 @@
   function onVoxelClick(e: CustomEvent & {detail: VoxelClickEvent}) {
     if ($toolSettings.current === toolVoxelPlace) {
       placePixelAt(target, $brushSettings.primaryIndex)
+    } else if ($toolSettings.current === toolFill) {
+      if (!hover) return
+      fillPixelAt(hover, $brushSettings.primaryIndex)
     } else if ($toolSettings.current === toolErase) {
       if (!hover) return
       placePixelAt(hover, 0)

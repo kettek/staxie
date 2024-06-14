@@ -345,6 +345,15 @@
         <OverflowMenuItem>
           <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor3DSettings.hideTransparent} labelText="Hide Transparent" />
         </OverflowMenuItem>
+        <OverflowMenuItem hasDivider text="Fill X">
+          <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor3DSettings.floodFillX} labelText="Flood X" />
+        </OverflowMenuItem>
+        <OverflowMenuItem hasDivider text="Fill Y">
+          <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor3DSettings.floodFillY} labelText="Flood Y" />
+        </OverflowMenuItem>
+        <OverflowMenuItem hasDivider text="Fill Z">
+          <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor3DSettings.floodFillZ} labelText="Flood Z" />
+        </OverflowMenuItem>
       </OverflowMenu>
     {/if}
     <OverflowMenu size="sm">
@@ -414,11 +423,13 @@
         <Button isSelected={$toolSettings.current === toolVoxelReplace} kind="ghost" size="small" icon={WatsonHealth3DCursor} iconDescription="replace" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelReplace)}></Button>
         <Button isSelected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}></Button>
         <Button isSelected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
+        <Button isSelected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
         <Shortcuts group='editor3D'>
           <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>toolSettings.swapTool(toolVoxelPlace)} />
           <Shortcut global cmd='replace' keys={['r']} on:trigger={()=>toolSettings.swapTool(toolVoxelReplace)} />
           <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>toolSettings.swapTool(toolPicker)} />
           <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>toolSettings.swapTool(toolErase)} />
+          <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>toolSettings.swapTool(toolFill)} />
           <Shortcut global cmd='placeToPicker' keys={['alt']} on:trigger={()=>($toolSettings.current===toolVoxelPlace||$toolSettings.current===toolVoxelReplace)?toolSettings.swapTool(toolPicker):null} on:release={()=>($toolSettings.previous===toolVoxelPlace||$toolSettings.previous===toolVoxelReplace)&&$toolSettings.current===toolPicker?toolSettings.swapTool($toolSettings.previous):null} />
         </Shortcuts>
       {:else}

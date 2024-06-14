@@ -12,6 +12,10 @@ type Editor3DSettings = {
   gridMinorColor: string
   gridMajorSize: number
   gridMinorSize: number
+  // Tool settings
+  floodFillX: boolean
+  floodFillY: boolean
+  floodFillZ: boolean
 }
 
 export const editor3DSettings = writable<Editor3DSettings>({
@@ -26,4 +30,8 @@ export const editor3DSettings = writable<Editor3DSettings>({
   gridMinorSize: 8,
   gridMajorColor: '#0000ff',
   gridMinorColor: '#006666',
+  // Tool settings
+  floodFillX: true,
+  floodFillY: true,
+  floodFillZ: true,
 })
