@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store'
+import { writable, get } from 'svelte/store'
 import type { LoadedFile } from '../types/file'
 
 export type FileStates = LoadedFile[]
@@ -10,6 +10,13 @@ function createFileStates() {
     subscribe,
     set,
     refresh: () => update((state) => state),
+    getFile: (index: number): LoadedFile | null => {
+      let fs = get(fileStates)
+      if (index < 0 || index >= fs.length) {
+        return null
+      }
+      return fs[index]
+    },
     addFile: (file: LoadedFile) => update((state) => {
       state.push(file)
       return state
@@ -22,6 +29,14 @@ function createFileStates() {
       state[index] = file
       return state
     }),
+    length: (): number => {
+      let length = 0
+      update((state) => {
+        length = state.length
+        return state
+      })
+      return length
+    },
   }
 }
 

@@ -120,17 +120,15 @@
 
   let focusedFileIndex: number = -1
   let focusedFile: LoadedFile|null = null
-  $: {
-    if ($fileStates[focusedFileIndex] && focusedFile !== $fileStates[focusedFileIndex]) {
-      exportPath = $fileStates[focusedFileIndex].filepath
-      console.log('set exportPath', exportPath)
-    }
-    focusedFile = $fileStates[focusedFileIndex] ?? null
-  }
   
-  function selectFile(file: LoadedFile, index: number) {
-    if (index < 0 || index >= $fileStates.length) return
+  function selectFile(file: LoadedFile, index: number, id: number) {
+    if (index < 0 || index >= fileStates.length()) return
+    
+    if (focusedFile !== file) {
+      exportPath = file.filepath
+    }
     focusedFileIndex = index
+    focusedFile = file
   }
   
   function toggle3D(e: InputEvent) {
@@ -165,14 +163,16 @@
       showOpen = true
       return
     }
-    fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG}))
-    focusedFileIndex = $fileStates.length - 1
+    let file = new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG})
+    fileStates.addFile(file)
+    selectFile(file, fileStates.length()-1, file.id)
   }
 
   function engageOpen() {
     if (importValid) {
-      fileStates.addFile(new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG}))
-      focusedFileIndex = $fileStates.length - 1
+      let file = new LoadedFile({filepath: importFilepath, title: importTitle, canvas: importCanvas, data: importPNG})
+      fileStates.addFile(file)
+      selectFile(file, fileStates.length()-1, file.id)
       importCanvas = null
       importPNG = null
     }
@@ -183,7 +183,7 @@
     let file = await importHandler()
     if (file) {
       fileStates.addFile(file)
-      focusedFileIndex = $fileStates.length - 1
+      selectFile(file, fileStates.length()-1, file.id)
     }
     showImport = false
   }
@@ -211,9 +211,9 @@
   }
 
   function engageNew() {
-  console.log('make new', importPNG.groups)
-    fileStates.addFile(new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importPNG}))
-    focusedFileIndex = $fileStates.length - 1
+    let file = new LoadedFile({filepath: "", title: 'Untitled', canvas: importCanvas, data: importPNG})
+    fileStates.addFile(file)
+    selectFile(file, fileStates.length()-1, file.id)
     importCanvas = null
     importPNG = null
 
@@ -263,8 +263,14 @@
 
   function closeFile(index: number) {
     fileStates.removeFile(index)
+    let nextIndex = index
     if (focusedFileIndex === index) {
-      focusedFileIndex = Math.min($fileStates.length-1, focusedFileIndex)
+      if (nextIndex >= fileStates.length()) nextIndex--
+      if (nextIndex < 0) nextIndex = 0
+    }
+    let file = fileStates.getFile(nextIndex)
+    if (file) {
+      selectFile(file, nextIndex, file.id)
     }
   }
 
@@ -481,8 +487,8 @@
         {/if}
       </menu>
       <Tabs bind:selected={focusedFileIndex}>
-        {#each $fileStates as file, index (file.id)}
-          <Tab on:click={()=>selectFile(file, index)} title={file.filepath}>
+        {#each $fileStates as file, index}
+          <Tab on:click={()=>selectFile(file, index, file.id)} title={file.filepath}>
             <span class='tab'>
               <span>{file.title.substring(0, file.title.lastIndexOf('.')) || file.title}</span>
               <Button size="small" kind="ghost" iconDescription="close" icon={Close} href="#" on:click={(e)=>{e.preventDefault();closeFile(index)}} />
@@ -490,13 +496,13 @@
           </Tab>
         {/each}
         <svelte:fragment slot="content">
-          {#each $fileStates as file, index (file.id)}
+          {#each $fileStates as file, index}
             <TabContent>
               {#if is3D}
                 <Shortcuts group='editor3D' active={focusedFile===file}>
                   <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
                   <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
-                  <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
+                  <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index, file.id)} />
                 </Shortcuts>
                 <Editor3D
                   bind:file={file}
@@ -507,7 +513,7 @@
                 <Shortcuts group='editor2D' active={focusedFile===file}>
                   <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
                   <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
-                  <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index)} />
+                  <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index, file.id)} />
                 </Shortcuts>
                 <Editor2D
                   bind:file={file}
