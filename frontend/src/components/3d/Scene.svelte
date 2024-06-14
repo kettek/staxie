@@ -66,9 +66,6 @@
     showTarget = false
   }
   function onVoxelClick(e: CustomEvent & {detail: VoxelClickEvent}) {
-    let slice = file.frame?.slices[target.y]
-    if (!slice) return
-    
     if ($toolSettings.current === toolVoxelPlace) {
       placePixelAt(target, $brushSettings.primaryIndex)
     } else if ($toolSettings.current === toolErase) {
@@ -210,7 +207,7 @@
 </T.Mesh>
 
 <T.Mesh
-  visible={target.y === $file?.frame?.slices.length}
+  visible={$toolSettings.current === toolVoxelPlace && target.y === $file?.frame?.slices.length}
   position={[0, ($file?.frame?.slices.length??0)+0.01, 0]}
   rotation={[-Math.PI/2, 0, 0]}
 >
@@ -223,7 +220,7 @@
 </T.Mesh>
 
 <T.Mesh
-  visible={target.x === -1 || target.x === $file.frameWidth}
+  visible={$toolSettings.current === toolVoxelPlace && (target.x === -1 || target.x === $file.frameWidth)}
   position={[target.x-$file.frameWidth/2+(target.x===$file.frameWidth?0:1), ($file.frame?.slices.length??0)/2, 0]}
   rotation={[0, Math.PI/2, 0]}
 >
@@ -237,7 +234,7 @@
 </T.Mesh>
 
 <T.Mesh
-  visible={target.z === -1 || target.z === $file.frameHeight}
+  visible={$toolSettings.current === toolVoxelPlace && (target.z === -1 || target.z === $file.frameHeight)}
   position={[0, ($file.frame?.slices.length??0)/2, target.z-$file.frameHeight/2+(target.z===$file.frameHeight?0:1)]}
 >
   <T.PlaneGeometry args={[$file.frameWidth, $file.frame?.slices.length]} />
