@@ -66,7 +66,6 @@ export class UndoableStack<T> {
     this.capturing = false;
     this.entries.splice(this.entriesIndex, this.entries.length - this.entriesIndex, new UndoableGroup(this.captureStack));
     this.entriesIndex++;
-    console.log(this.entries, this.entriesIndex)
     this.captureStack = [];
   }
 
