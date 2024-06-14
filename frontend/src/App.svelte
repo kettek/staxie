@@ -12,6 +12,7 @@
   import { brushSettings } from './stores/brush'
   import { editor2DSettings } from './stores/editor2d.js'
   import { editor3DSettings } from './stores/editor3d.js'
+  import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
   import { PixelsPlaceUndoable, SelectionClearUndoable } from './types/file/undoables'
@@ -403,6 +404,9 @@
     <OverflowMenu size="sm">
       <div slot="menu">Help</div>
       <OverflowMenuItem text="About" on:click={() => showAbout = true}/>
+      <OverflowMenuItem>
+        <Checkbox on:click={(e)=>e.stopPropagation()} on:change={(e)=>e.target.checked?logSettings.setLevel('debug'):logSettings.setLevel('info')} checked={$logSettings.level==='debug'} labelText="Debug Logging" />
+      </OverflowMenuItem>
     </OverflowMenu>
   </menu>
   <section class='content'>
