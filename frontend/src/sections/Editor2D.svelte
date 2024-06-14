@@ -70,9 +70,9 @@
           view.height = height
         }
         break
-      case 'group':
-        if ($file.group) {
-          let { x, y, width, height } = $file.getGroupAreaFromGroup($file.group)
+      case 'stack':
+        if ($file.stack) {
+          let { x, y, width, height } = $file.getStackAreaFromStack($file.stack)
           view.x = x
           view.y = y
           view.width = width
