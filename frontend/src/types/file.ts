@@ -132,6 +132,9 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   
   setFrameIndex(index: number) {
     if (this.animation) {
+      if (index >= this.animation.frames.length) {
+        index = this.animation.frames.length - 1
+      }
       this.frameIndex = index
       this.frame = this.animation.frames[index]
       if (this.sliceIndex >= this.frame.slices.length) {
@@ -163,7 +166,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       this.animation = this.stack.animations.find(a => a.name === name)
       this.animationName = name
       if (this.animation) {
-        this.setFrameIndex(this.animation.frames.length - 1)
+        this.setFrameIndex(this.frameIndex)
       }
     }
   }
