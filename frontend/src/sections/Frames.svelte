@@ -6,9 +6,9 @@
   import { AddAlt } from 'carbon-icons-svelte'
 
   export let file: LoadedFile
-
   function setSlice(sliceIndex: number) {
     file.setSliceIndex(sliceIndex)
+    file.refresh()
     fileStates.refresh()
   }
 
@@ -40,6 +40,7 @@
       file.selectFrameIndex(frameIndex, true)
       file.setFrameIndex(frameIndex)
     }
+    file.refresh()
     fileStates.refresh()
   }
   function contextFrameDelete() {

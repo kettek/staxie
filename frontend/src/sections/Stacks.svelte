@@ -36,6 +36,7 @@
       file.setStack(stack)
       file.setAnimation(animation)
     }
+    file.refresh()
     fileStates.refresh()
   }
   
