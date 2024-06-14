@@ -41,9 +41,9 @@
   import { SaveFileBytes } from '../wailsjs/go/main/App.js'
   import { onMount } from 'svelte'
   import About from './sections/About.svelte'
-  import Groups from './sections/Groups.svelte'
+  import Stacks from './sections/Stacks.svelte'
   import { fileStates } from './stores/file'
-  import { IndexedPNG, type StaxGroup } from './types/png.js'
+  import { IndexedPNG, type StaxStack } from './types/png.js'
   import { palettesStore } from './stores/palettes.js';
   import PaletteOptionsToolbar from './components/PaletteOptionsToolbar.svelte';
   import Editor3D from './sections/Editor3D.svelte'
@@ -384,7 +384,7 @@
       </OverflowMenuItem>
       <OverflowMenuItem>
         <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
-          <span>Group</span>
+          <span>Stack</span>
           <input type='radio' name='view-mode' value='group' bind:group={$editor2DSettings.viewMode} />
         </label>
       </OverflowMenuItem>
@@ -527,7 +527,7 @@
     <section class='right'>
       {#if focusedFile}
         <Frames file={focusedFile} />
-        <Groups file={focusedFile} />
+        <Stacks file={focusedFile} />
       {/if}
     </section>
     {#if showPreview}

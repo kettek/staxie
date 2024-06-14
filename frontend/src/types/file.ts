@@ -1,6 +1,6 @@
 import { type Writable, writable, type Subscriber, type Unsubscriber, type Updater } from 'svelte/store'
 import type { Canvas } from './canvas'
-import type { IndexedPNG, StaxAnimation, StaxFrame, StaxGroup, StaxSlice } from './png'
+import type { IndexedPNG, StaxAnimation, StaxFrame, StaxStack, StaxSlice } from './png'
 import { Preview } from './preview'
 import { SelectionArea } from './selection'
 import { UndoableStack, type Undoable, UndoableGroup } from './undo'
@@ -13,7 +13,7 @@ export interface LoadedFileOptions {
   title: string
   canvas: Canvas
   data: IndexedPNG
-  groups?: StaxGroup[]
+  stacks?: StaxStack[]
   frameWidth?: number
   frameHeight?: number
 }
@@ -29,9 +29,9 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   preview: Preview
   data?: IndexedPNG
   //
-  groups: StaxGroup[] = []
-  group?: StaxGroup
-  groupName: string = ''
+  stacks: StaxStack[] = []
+  stack?: StaxStack
+  stackName: string = ''
   animation?: StaxAnimation
   animationName: string = ''
   slice?: StaxSlice
@@ -57,8 +57,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     this.update = update
 
     this.setTarget(this)
-    if (options.groups) {
-      this.groups = options.groups
+    if (options.stacks) {
+      this.stacks = options.stacks
     }
     this.frameWidth = options.frameWidth ?? 8
     this.frameHeight = options.frameHeight ?? 8
@@ -66,13 +66,13 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       this.data = options.data
       this.frameWidth = this.data.frameWidth
       this.frameHeight = this.data.frameHeight
-      this.groups = this.data.groups
-      if (this.data.groups.length > 0) {
-        this.group = this.data.groups[0]
-        this.groupName = this.data.groups[0].name
+      this.stacks = this.data.stacks
+      if (this.data.stacks.length > 0) {
+        this.stack = this.data.stacks[0]
+        this.stackName = this.data.stacks[0].name
         
-        if (this.group.animations.length > 0) {
-          this.animation = this.group.animations[0]
+        if (this.stack.animations.length > 0) {
+          this.animation = this.stack.animations[0]
           this.animationName = this.animation.name
           this.frameIndex = this.animation.frames.length - 1
           if (this.frameIndex >= 0) {
@@ -85,7 +85,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
         }
       }
     }
-    // Process groups to get slice position information.
+    // Process stacks to get slice position information.
     this.cacheSlicePositions()
 
     this.filepath = options.filepath
@@ -97,8 +97,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   
   cacheSlicePositions() {
     let y = 0
-    for (let group of this.groups) {
-      for (let animation of group.animations) {
+    for (let stack of this.stacks) {
+      for (let animation of stack.animations) {
         for (let frame of animation.frames) {
           let x = 0
           for (let slice of frame.slices) {
@@ -147,8 +147,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
   }
   
-  getAnimation(group: string, name: string): StaxAnimation|undefined {
-    const g = this.getGroup(group)
+  getAnimation(stack: string, name: string): StaxAnimation|undefined {
+    const g = this.getStack(stack)
     if (g) {
       return g.animations.find(v=>v.name===name)
     }
@@ -156,8 +156,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   }
   
   setAnimation(name: string) {
-    if (this.group) {
-      this.animation = this.group.animations.find(a => a.name === name)
+    if (this.stack) {
+      this.animation = this.stack.animations.find(a => a.name === name)
       this.animationName = name
       if (this.animation) {
         this.setFrameIndex(this.animation.frames.length - 1)
@@ -165,34 +165,34 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
   }
   
-  getGroup(name: string): StaxGroup | undefined {
-    return this.groups.find(g => g.name === name)
+  getStack(name: string): StaxStack | undefined {
+    return this.stacks.find(g => g.name === name)
   }
   
-  setGroup(name: string) {
-    this.group = this.groups.find(g => g.name === name)
-    this.groupName = name
-    if (this.group.animations.find(a => a.name === this.animationName)) {
+  setStack(name: string) {
+    this.stack = this.stacks.find(g => g.name === name)
+    this.stackName = name
+    if (this.stack.animations.find(a => a.name === this.animationName)) {
       this.setAnimation(this.animationName)
     } else {
-      this.setAnimation(this.group.animations[0]?.name)
+      this.setAnimation(this.stack.animations[0]?.name)
     }
   }
   
-  getGroupArea(group: string): { x: number, y: number, width: number, height: number } {
-    let g = this.groups.find(g => g.name === group)
+  getStackArea(stack: string): { x: number, y: number, width: number, height: number } {
+    let g = this.stacks.find(g => g.name === stack)
     if (!g) {
-      throw new Error('group not found: ' + group)
+      throw new Error('stack not found: ' + stack)
     }
-    return this.getGroupAreaFromGroup(g)
+    return this.getStackAreaFromStack(g)
   }
-  getGroupAreaFromGroup(group: StaxGroup): { x: number, y: number, width: number, height: number } {
+  getStackAreaFromStack(stack: StaxStack): { x: number, y: number, width: number, height: number } {
     let x = 0
     let y = 0
     let width = 0
     let height = 0
     let hasFirst = false
-    for (let animation of group.animations) {
+    for (let animation of stack.animations) {
       for (let frame of animation.frames) {
         width = Math.max(width, frame.slices.length * this.frameWidth)
         if (!hasFirst) {
@@ -210,10 +210,10 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     return { x, y, width, height }
   }
   
-  getAnimationArea(group: string, anim: string): {x: number, y: number, width: number, height: number } {
-    let g = this.groups.find(g => g.name === group)
+  getAnimationArea(stack: string, anim: string): {x: number, y: number, width: number, height: number } {
+    let g = this.stacks.find(g => g.name === stack)
     if (!g) {
-      throw new Error('group not found: ' + group)
+      throw new Error('stack not found: ' + stack)
     }
     let animation = g.animations.find(a => a.name === anim)
     if (!animation) {
@@ -244,10 +244,10 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     return { x, y, width, height }
   }
   
-  getFrameArea(group: string, anim: string, frameIndex: number): {x: number, y: number, width: number, height: number} {
-    let g = this.groups.find(g => g.name === group)
+  getFrameArea(stack: string, anim: string, frameIndex: number): {x: number, y: number, width: number, height: number} {
+    let g = this.stacks.find(g => g.name === stack)
     if (!g) {
-      throw new Error('group not found: ' + group)
+      throw new Error('stack not found: ' + stack)
     }
     let animation = g.animations.find(a => a.name === anim)
     if (!animation) {

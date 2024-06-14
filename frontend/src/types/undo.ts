@@ -1,8 +1,8 @@
 // UndoableStack provides an undo/redo system.
 export class UndoableStack<T> {
   private target: T;
-  private stack: Undoable<T>[] = [];
-  private stackIndex: number = 0;
+  private entries: Undoable<T>[] = [];
+  private entriesIndex: number = 0;
   
   private captureStack: Undoable<T>[] = [];
   private capturing: boolean = false;
@@ -20,42 +20,42 @@ export class UndoableStack<T> {
       return;
     }
 
-    this.stack.splice(this.stackIndex, this.stack.length - this.stackIndex, item);
+    this.entries.splice(this.entriesIndex, this.entries.length - this.entriesIndex, item);
     item.apply(this.target);
-    this.stackIndex++;
+    this.entriesIndex++;
     this.emit('push', item)
   }
 
   public pop(): Undoable<T> {
-    if (this.stack.length === 0) {
+    if (this.entries.length === 0) {
       return null;
     }
-    this.stack[this.stack.length - 1].unapply(this.target);
-    return this.stack.pop();
+    this.entries[this.entries.length - 1].unapply(this.target);
+    return this.entries.pop();
   }
   
   public undo() {
-    if (this.stackIndex === 0) {
+    if (this.entriesIndex === 0) {
       return;
     }
-    this.stack[--this.stackIndex].unapply(this.target);
-    this.emit('undo', this.stack[this.stackIndex])
+    this.entries[--this.entriesIndex].unapply(this.target);
+    this.emit('undo', this.entries[this.entriesIndex])
   }
 
   public redo() {
-    if (this.stackIndex === this.stack.length) {
+    if (this.entriesIndex === this.entries.length) {
       return;
     }
-    this.stack[this.stackIndex++].apply(this.target);
-    this.emit('redo', this.stack[this.stackIndex - 1])
+    this.entries[this.entriesIndex++].apply(this.target);
+    this.emit('redo', this.entries[this.entriesIndex - 1])
   }
   
   public canUndo() {
-    return this.stackIndex > 0;
+    return this.entriesIndex > 0;
   }
 
   public canRedo() {
-    return this.stackIndex < this.stack.length;
+    return this.entriesIndex < this.entries.length;
   }
   
   public capture() {
@@ -64,9 +64,9 @@ export class UndoableStack<T> {
   }
   public release() {
     this.capturing = false;
-    this.stack.splice(this.stackIndex, this.stack.length - this.stackIndex, new UndoableGroup(this.captureStack));
-    this.stackIndex++;
-    console.log(this.stack, this.stackIndex)
+    this.entries.splice(this.entriesIndex, this.entries.length - this.entriesIndex, new UndoableGroup(this.captureStack));
+    this.entriesIndex++;
+    console.log(this.entries, this.entriesIndex)
     this.captureStack = [];
   }
 
@@ -98,7 +98,7 @@ export class UndoableStack<T> {
   }
 }
 
-// Undoable is an interface for undoable actions stored in the stack.
+// Undoable is an interface for undoable actions stored in the entries.
 export interface Undoable<T> {
   apply(t: T): void;
   unapply(t: T): void;

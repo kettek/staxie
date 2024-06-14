@@ -9,9 +9,9 @@
   import { onMount } from "svelte"
   import { previewSettings } from '../stores/preview'
   import type { LoadedFile } from "../types/file"
-  import type { StaxGroup } from "../types/png"
+  import type { StaxStack } from "../types/png"
   
-  type GroupState = {
+  type StackState = {
     visible: boolean
     animation: string
     frameIndex: number
@@ -19,7 +19,7 @@
   }
   type VisibleState = {
     visible: boolean
-    groups: Record<string, GroupState>
+    stacks: Record<string, StackState>
   }
 
   export let shronked: boolean = false
@@ -92,12 +92,12 @@
     let sortedFiles = $fileStates.filter(file => visibleFiles[file.id]).sort((a, b) => filePositions[a.id].z - filePositions[b.id].z)
     for (let file of sortedFiles) {
       if (visibleFiles[file.id]?.visible) {
-        let sortedGroups = visibleFiles[file.id].groups ? file.groups.filter(group => visibleFiles[file.id].groups[group.name]?.visible).sort((a, b) => visibleFiles[file.id].groups[a.name].orderIndex - visibleFiles[file.id].groups[b.name].orderIndex) : []
+        let sortedStacks = visibleFiles[file.id].stacks ? file.stacks.filter(stack => visibleFiles[file.id].stacks[stack.name]?.visible).sort((a, b) => visibleFiles[file.id].stacks[a.name].orderIndex - visibleFiles[file.id].stacks[b.name].orderIndex) : []
         let sliceOffset = 0
-        for (let group of sortedGroups) {
+        for (let stack of sortedStacks) {
           let done = false
-          if (!visibleFiles[file.id]?.groups[group.name]?.visible) continue
-          let animation = group.animations.find(animation => animation.name === visibleFiles[file.id].groups[group.name].animation)
+          if (!visibleFiles[file.id]?.stacks[stack.name]?.visible) continue
+          let animation = stack.animations.find(animation => animation.name === visibleFiles[file.id].stacks[stack.name].animation)
           if (animation) {
             let frameIndex = Math.floor(timeElapsed / animation.frameTime) % animation.frames.length
             let frame = animation.frames[frameIndex]
@@ -187,22 +187,22 @@
   }
   
   function toggleFile(file: LoadedFile, i: number, e: any) {
-    visibleFiles[file.id] = visibleFiles[file.id] || {visible: e.target.checked, groups: {}}
+    visibleFiles[file.id] = visibleFiles[file.id] || {visible: e.target.checked, stacks: {}}
     visibleFiles[file.id].visible = e.target.checked
-    for (let group of file.groups) {
-      visibleFiles[file.id].groups[group.name] = visibleFiles[file.id].groups[group.name] || {visible: e.target.checked, animation: group.animations[0]?.name, frameIndex: 0, orderIndex: 0}
-      visibleFiles[file.id].groups[group.name].visible = e.target.checked
+    for (let stack of file.stacks) {
+      visibleFiles[file.id].stacks[stack.name] = visibleFiles[file.id].stacks[stack.name] || {visible: e.target.checked, animation: stack.animations[0]?.name, frameIndex: 0, orderIndex: 0}
+      visibleFiles[file.id].stacks[stack.name].visible = e.target.checked
     }
     visibleFiles = {...visibleFiles}
     timeElapsed = 0 // Reset time on change
   }
   
-  function toggleGroup(file: LoadedFile, group: StaxGroup, e: any) {
-    if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, groups: {}}
-    visibleFiles[file.id].groups[group.name] = visibleFiles[file.id].groups[group.name] || {visible: e.target.checked, animation: group.animations[0]?.name, frameIndex: 0, orderIndex: 0}
-    visibleFiles[file.id].groups[group.name].visible = e.target.checked
+  function toggleStack(file: LoadedFile, stack: StaxStack, e: any) {
+    if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, stacks: {}}
+    visibleFiles[file.id].stacks[stack.name] = visibleFiles[file.id].stacks[stack.name] || {visible: e.target.checked, animation: stack.animations[0]?.name, frameIndex: 0, orderIndex: 0}
+    visibleFiles[file.id].stacks[stack.name].visible = e.target.checked
 
-    visibleFiles[file.id].groups[group.name].orderIndex = Object.values(visibleFiles[file.id].groups).reduce((acc, val) => Math.max(acc, val.orderIndex), 0) + 1
+    visibleFiles[file.id].stacks[stack.name].orderIndex = Object.values(visibleFiles[file.id].stacks).reduce((acc, val) => Math.max(acc, val.orderIndex), 0) + 1
 
     visibleFiles = {...visibleFiles}
     timeElapsed = 0 // Reset time on change
@@ -210,20 +210,20 @@
   
   function isFileIndeterminate(file: LoadedFile) {
     let visible = visibleFiles[file.id]?.visible
-    let groupCount = 0
-    let visibleGroupCount = 0
-    for (let group of file.groups) {
-      groupCount++
-      if (visibleFiles[file.id]?.groups[group.name]) {
-        visibleGroupCount++
+    let stackCount = 0
+    let visibleStackCount = 0
+    for (let stack of file.stacks) {
+      stackCount++
+      if (visibleFiles[file.id]?.stacks[stack.name]) {
+        visibleStackCount++
       }
     }
-    return (visible && visibleGroupCount !== groupCount) || (!visible && visibleGroupCount === 0)
+    return (visible && visibleStackCount !== stackCount) || (!visible && visibleStackCount === 0)
   }
-  function changeGroupAnimation(file: LoadedFile, group: StaxGroup, e: any) {
-    if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, groups: {}}
-    visibleFiles[file.id].groups[group.name] = visibleFiles[file.id].groups[group.name] || {visible: true, animation: group.animations[0]?.name, frameIndex: 0, orderIndex: 0}
-    visibleFiles[file.id].groups[group.name].animation = e.detail.selectedId
+  function changeStackAnimation(file: LoadedFile, stack: StaxStack, e: any) {
+    if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, stacks: {}}
+    visibleFiles[file.id].stacks[stack.name] = visibleFiles[file.id].stacks[stack.name] || {visible: true, animation: stack.animations[0]?.name, frameIndex: 0, orderIndex: 0}
+    visibleFiles[file.id].stacks[stack.name].animation = e.detail.selectedId
     visibleFiles = {...visibleFiles}
     timeElapsed = 0 // Reset time on change
   }
@@ -245,10 +245,10 @@
       <Column sm>
         {#each $fileStates as file, i}
           <Checkbox on:change={(e)=>toggleFile(file, i, e)} checked={visibleFiles[file.id]?.visible} indeterminate={isFileIndeterminate(file)} labelText={file.title.length>20?'…'+file.title.substring(file.title.length-20):file.title}></Checkbox>
-          {#each file.groups as group, groupIndex}
+          {#each file.stacks as stack, stackIndex}
             <div class='subcheck'>
-              <Checkbox on:change={(e)=>toggleGroup(file, group, e)} checked={visibleFiles[file.id]?.groups[group.name]?.visible} labelText={group.name.length>20?'…'+group.name.substring(group.name.length-20):group.name}></Checkbox>
-              <Dropdown on:select={(e)=>changeGroupAnimation(file, group, e)} selectedId={visibleFiles[file.id]?.groups[group.name]?.animation} items={group.animations.map(animation => ({id: animation.name, text: animation.name}))}></Dropdown>
+              <Checkbox on:change={(e)=>toggleStack(file, stack, e)} checked={visibleFiles[file.id]?.stacks[stack.name]?.visible} labelText={stack.name.length>20?'…'+stack.name.substring(stack.name.length-20):stack.name}></Checkbox>
+              <Dropdown on:select={(e)=>changeStackAnimation(file, stack, e)} selectedId={visibleFiles[file.id]?.stacks[stack.name]?.animation} items={stack.animations.map(animation => ({id: animation.name, text: animation.name}))}></Dropdown>
             </div>
           {/each}
         {/each}

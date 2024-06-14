@@ -15,7 +15,7 @@ type Editor2DSettings = {
   gridMajorSize: number
   gridMinorSize: number
   // View mode
-  viewMode: 'slice' | 'frame' | 'animation' | 'group' | 'sheet'
+  viewMode: 'slice' | 'frame' | 'animation' | 'stack' | 'sheet'
 }
 
 export const editor2DSettings = writable<Editor2DSettings>({

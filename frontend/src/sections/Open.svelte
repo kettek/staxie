@@ -1,12 +1,12 @@
 <!--
   @component
   
-  This component provides importing an indexed or RGBA PNG file with options for how to interpret columns and rows as groups and animations.
+  This component provides importing an indexed or RGBA PNG file with options for how to interpret columns and rows as stacks and animations.
 -->
 <script lang='ts'>
   import { onMount } from 'svelte'
   
-  import type { IndexedPNG, StaxAnimation, StaxFrame, StaxGroup, StaxSlice } from '../types/png'
+  import type { IndexedPNG, StaxAnimation, StaxFrame, StaxStack, StaxSlice } from '../types/png'
   import type { Canvas } from '../types/canvas'
   
   import { Button, NumberInput, TextInput, Checkbox, RadioButtonGroup, RadioButton, ContentSwitcher, Switch } from 'carbon-components-svelte'
@@ -35,7 +35,7 @@
   
   type AreaRule = {
     animation: string
-    group: string
+    stack: string
     fromX: number
     fromY: number
     toX: number
@@ -53,8 +53,8 @@
   let error2: string = ""
   let cols: number = 0
   let rows: number = 0
-  let importFramesAs: 'groups' | 'animations' = 'groups'
-  let groups: number = 0
+  let importFramesAs: 'stacks' | 'animations' = 'stacks'
+  let stacks: number = 0
   let animations: number = 0
   
   let areaRules: AreaRule[] = []
@@ -90,25 +90,25 @@
     png.frameWidth = width
     png.frameHeight = height
 
-    groups = 0
+    stacks = 0
     animations = 0
-    if (importFramesAs === 'groups') {
-      groups = rowBasedFrames ? rows : cols
+    if (importFramesAs === 'stacks') {
+      stacks = rowBasedFrames ? rows : cols
       animations = 1
     } else {
-      groups = 1
+      stacks = 1
       animations = rowBasedFrames ? rows : cols
     }
     remakeFile()
   }
 
   function remakeFile() {
-    png.groups = []
+    png.stacks = []
     let cx = 0
     let cy = 0
-    for (let gi = 0; gi < groups; gi++) {
-      let group: StaxGroup = {
-        name: "group "+gi,
+    for (let gi = 0; gi < stacks; gi++) {
+      let stack: StaxStack = {
+        name: "stack "+gi,
         animations: [],
         sliceCount: rowBasedFrames ? cols : rows,
       }
@@ -144,20 +144,20 @@
           frames,
           frameTime: 100,
         }
-        group.animations.push(animation)
+        stack.animations.push(animation)
       }
-      png.groups.push(group)
+      png.stacks.push(stack)
     }
   }
 
   $: valid = error === ""
   
   let animationName: string = ''
-  let groupName: string = ''
+  let stackName: string = ''
   function addAreaRule() {
     areaRules = [...areaRules, {
       animation: animationName,
-      group: groupName,
+      stack: stackName,
       fromX: 0,
       fromY: 0,
       toX: 0,
@@ -224,7 +224,7 @@
                 bind:selected={importFramesAs}
                 on:change={recalc}
               >
-                <RadioButton labelText="groups" value="groups" />
+                <RadioButton labelText="stacks" value="stacks" />
                 <RadioButton labelText="animations" value="animations" />
               </RadioButtonGroup>
             </Column>
@@ -244,13 +244,13 @@
                 </StructuredListBody>
                 <StructuredListHead>
                   <StructuredListRow head>
-                    <StructuredListCell head>Groups</StructuredListCell>
+                    <StructuredListCell head>Stacks</StructuredListCell>
                     <StructuredListCell head>Animations</StructuredListCell>
                   </StructuredListRow>
                 </StructuredListHead>
                 <StructuredListBody>
                   <StructuredListRow>
-                    <StructuredListCell noWrap>{groups}</StructuredListCell>
+                    <StructuredListCell noWrap>{stacks}</StructuredListCell>
                     <StructuredListCell>{animations}</StructuredListCell>
                   </StructuredListRow>
                 </StructuredListBody>
@@ -293,7 +293,7 @@
         <Grid condensed narrow>
           <Row condensed narrow>
             <Column>
-              <TextInput placeholder='group name' size="sm" bind:value={groupName}/>
+              <TextInput placeholder='stack name' size="sm" bind:value={stackName}/>
             </Column>
             <Column>
               <TextInput placeholder='animation name' size="sm" bind:value={animationName}/>
@@ -308,7 +308,7 @@
                 <StructuredListHead>
                   <StructuredListRow head>
                     <StructuredListCell head></StructuredListCell>
-                    <StructuredListCell head>Group</StructuredListCell>
+                    <StructuredListCell head>Stack</StructuredListCell>
                     <StructuredListCell head>Animation</StructuredListCell>
                     <StructuredListCell head>Area</StructuredListCell>
                   </StructuredListRow>
@@ -320,7 +320,7 @@
                         <Button kind="danger-ghost" size="small" icon={CloseLarge} iconDescription="Remove" on:click={e=>removeAreaRule(ruleIndex)}/>
                       </StructuredListCell>
                       <StructuredListCell>
-                        <TextInput size="sm" bind:value={rule.group}/>
+                        <TextInput size="sm" bind:value={rule.stack}/>
                       </StructuredListCell>
                       <StructuredListCell>
                         <TextInput size="sm" bind:value={rule.animation}/>

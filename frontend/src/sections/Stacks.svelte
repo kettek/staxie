@@ -1,7 +1,7 @@
 <script lang='ts'>
   import { FaceAdd, FolderAdd } from "carbon-icons-svelte";
   import { type LoadedFile } from "../types/file"
-  import { RemoveGroupUndoable, ShrinkGroupSliceUndoable, GrowGroupSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddGroupUndoable, ChangeFrameTimeUndoable } from "../types/file/undoables"
+  import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable } from "../types/file/undoables"
   import { Button, ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
 
@@ -12,13 +12,13 @@
   let children: ({id: string, text: string, children: ({id: string, text: string})[]})[] = []
   $: {
     if ($file) {
-      children = $file.groups.map(group => {
+      children = $file.stacks.map(stack => {
         return {
-          id: group.name,
-          text: group.name,
-          children: group.animations.map(animation => {
+          id: stack.name,
+          text: stack.name,
+          children: stack.animations.map(animation => {
             return {
-              id: group.name+'__'+animation.name,
+              id: stack.name+'__'+animation.name,
               text: animation.name
             }
           })
@@ -28,12 +28,12 @@
   }
   
   function handleSelect(e) {
-    if (!e.detail.leaf) { // Group
-      file.setGroup(e.detail.id)
+    if (!e.detail.leaf) { // Stack
+      file.setStack(e.detail.id)
     } else { // Animation
-      const group = e.detail.id.substring(0, e.detail.id.indexOf('__'))
+      const stack = e.detail.id.substring(0, e.detail.id.indexOf('__'))
       const animation = e.detail.id.substring(e.detail.id.indexOf('__')+2)
-      file.setGroup(group)
+      file.setStack(stack)
       file.setAnimation(animation)
     }
     fileStates.refresh()
@@ -41,10 +41,10 @@
   
   let contextX: number = 0
   let contextY: number = 0
-  let contextGroupOpen: boolean = false
+  let contextStackOpen: boolean = false
   let contextAnimationOpen: boolean = false
   let contextNode: any = null
-  function onGroupRightClick(e: MouseEvent, node: any) {
+  function onStackRightClick(e: MouseEvent, node: any) {
     contextX = e.clientX
     contextY = e.clientY
     contextNode = node
@@ -52,46 +52,46 @@
       contextAnimationOpen = true
       return
     }
-    contextGroupOpen = true
+    contextStackOpen = true
   }
-  function contextGroupDelete() {
-    if (file.groups.length === 1) {
-      alert('thou shall not delete the last group')
+  function contextStackDelete() {
+    if (file.stacks.length === 1) {
+      alert('thou shall not delete the last stack')
       return
     }
-    file.push(new RemoveGroupUndoable(contextNode.id))
+    file.push(new RemoveStackUndoable(contextNode.id))
   }
   function contextAnimationDelete() {
-    const groupName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
+    const stackName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
     const animationName = contextNode.id.substring(contextNode.id.indexOf('__')+2)
-    if (file?.group?.animations.length === 1) {
+    if (file?.stack?.animations.length === 1) {
       alert('thou shall not delete the last animation')
       return
     }
-    file.push(new RemoveAnimationUndoable(groupName, animationName))
+    file.push(new RemoveAnimationUndoable(stackName, animationName))
   }
   
-  function onGroupContextMenu(e: CustomEvent) {
+  function onStackContextMenu(e: CustomEvent) {
   }
   function changeSlices(e: CustomEvent) {
     if (e.detail <= 0) {
       alert('thou shall not have less than 1 slice')
       return
     }
-    if (e.detail < file.group.sliceCount) { // shrink
-      file.push(new ShrinkGroupSliceUndoable(file.group.name, file.group.sliceCount-Number(e.detail)))
-    } else if (e.detail > file.group.sliceCount) { // grow
-      file.push(new GrowGroupSliceUndoable(file.group.name, Number(e.detail)-file.group.sliceCount))
+    if (e.detail < file.stack.sliceCount) { // shrink
+      file.push(new ShrinkStackSliceUndoable(file.stack.name, file.stack.sliceCount-Number(e.detail)))
+    } else if (e.detail > file.stack.sliceCount) { // grow
+      file.push(new GrowStackSliceUndoable(file.stack.name, Number(e.detail)-file.stack.sliceCount))
     }
   }
   function changeFrameTime(e: CustomEvent) {
-    file.push(new ChangeFrameTimeUndoable(file.groupName, file.animationName, Number(e.detail)))
+    file.push(new ChangeFrameTimeUndoable(file.stackName, file.animationName, Number(e.detail)))
   }
-  function addGroup() {
-    file.push(new AddGroupUndoable())
+  function addStack() {
+    file.push(new AddStackUndoable())
   }
   function addAnimation() {
-    file.push(new AddAnimationUndoable(file.group.name))
+    file.push(new AddAnimationUndoable(file.stack.name))
   }
 </script>
 
@@ -101,11 +101,11 @@
       kind="ghost"
       size="small"
       icon={FolderAdd}
-      iconDescription="Add Group"
+      iconDescription="Add Stack"
       tooltipPosition="bottom"
       tooltipAlignment="end"
       disabled={!file}
-      on:click={addGroup}
+      on:click={addStack}
     />
     <hr />
     <Button
@@ -115,15 +115,15 @@
       iconDescription="Add Animation"
       tooltipPosition="bottom"
       tooltipAlignment="end"
-      disabled={!file || !file.group}
+      disabled={!file || !file.stack}
       on:click={addAnimation}
     />
   </menu>
   <section class='selected'>
-    <NumberInput label='slices' value={$file?.group?.sliceCount} on:change={changeSlices}/>
+    <NumberInput label='slices' value={$file?.stack?.sliceCount} on:change={changeSlices}/>
     <NumberInput label='frametime (ms)' value={$file?.animation?.frameTime} on:change={changeFrameTime}/>
   </section>
-  <section class='groups'>
+  <section class='stacks'>
     {#if file}
       <TreeView
         size="compact"
@@ -133,14 +133,14 @@
         on:select={handleSelect}
         let:node
       >
-        <span on:contextmenu|preventDefault={(e)=>onGroupRightClick(e, node)}>{node.text}</span>
+        <span on:contextmenu|preventDefault={(e)=>onStackRightClick(e, node)}>{node.text}</span>
       </TreeView>
     {/if}
   </section>
-  <ContextMenu bind:open={contextGroupOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onGroupContextMenu}>
-    <ContextMenuOption labelText="Delete Group" kind="danger" on:click={contextGroupDelete} />
+  <ContextMenu bind:open={contextStackOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onStackContextMenu}>
+    <ContextMenuOption labelText="Delete Stack" kind="danger" on:click={contextStackDelete} />
   </ContextMenu>
-  <ContextMenu bind:open={contextAnimationOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onGroupContextMenu}>
+  <ContextMenu bind:open={contextAnimationOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onStackContextMenu}>
     <ContextMenuOption labelText="Delete Animation" kind="danger" on:click={contextAnimationDelete} />
   </ContextMenu>
 </main>
@@ -165,7 +165,7 @@
     background-color: var(--cds-text-02, #c6c6c6);
     margin: 0 0.5rem;
   }
-  .groups {
+  .stacks {
   }
   .slices {
     display: flex;

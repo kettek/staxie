@@ -13,7 +13,7 @@
   }
 
   function addFrame() {
-    file.push(new AddAnimationFrameUndoable(file.group.name, file.animation.name))
+    file.push(new AddAnimationFrameUndoable(file.stack.name, file.animation.name))
   }
   
   let contextFrameOpen: boolean = false
@@ -47,10 +47,10 @@
       alert('thou shalt not delete the last frame')
       return
     }
-    file.push(new RemoveAnimationFrameUndoable(file.group.name, file.animation.name, contextFrameIndex))
+    file.push(new RemoveAnimationFrameUndoable(file.stack.name, file.animation.name, contextFrameIndex))
   }
   function contextFrameClear() {
-    file.push(new ClearAnimationFrameUndoable(file.group.name, file.animation.name, contextFrameIndex))
+    file.push(new ClearAnimationFrameUndoable(file.stack.name, file.animation.name, contextFrameIndex))
   }
 </script>
 

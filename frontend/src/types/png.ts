@@ -28,7 +28,7 @@ export type StaxAnimation = {
   frameTime: number
 }
 
-export type StaxGroup = {
+export type StaxStack = {
   animations: StaxAnimation[]
   name: string
   sliceCount: number
@@ -61,7 +61,7 @@ export class IndexedPNG {
   
   public frameWidth: number
   public frameHeight: number
-  public groups: StaxGroup[]
+  public stacks: StaxStack[]
 
   constructor(data?: Uint8Array) {
     if (data) {
@@ -160,26 +160,26 @@ export class IndexedPNG {
           }
           const frameWidth = this.readUInt16();
           const frameHeight = this.readUInt16();
-          const groupCount = this.readUInt16();
-          const groups: StaxGroup[] = [];
+          const stackCount = this.readUInt16();
+          const stacks: StaxStack[] = [];
           
-          // Read groups.
-          for (let i = 0; i < groupCount; i++) {
-            let group: StaxGroup = {
+          // Read stacks.
+          for (let i = 0; i < stackCount; i++) {
+            let stack: StaxStack = {
               name: 'missing',
               animations: [],
               sliceCount: 0,
             };
-            // Read group name.
+            // Read stack name.
             const nameLength = this.data[this.pos++];
             let name = '';
             for (let i = 0; i < nameLength; i++) {
               name += String.fromCharCode(this.data[this.pos++]);
             }
-            group.name = name
+            stack.name = name
             // Read slice count.
             const sliceCount = this.readUInt16();
-            group.sliceCount = sliceCount;
+            stack.sliceCount = sliceCount;
             // Read animation count.
             const animationCount = this.readUInt16();
             const animations: StaxAnimation[] = [];
@@ -216,12 +216,12 @@ export class IndexedPNG {
               }
               animations.push(animation);
             }
-            group.animations = animations;
-            groups.push(group);
+            stack.animations = animations;
+            stacks.push(stack);
           }
           this.frameWidth = frameWidth;
           this.frameHeight = frameHeight;
-          this.groups = groups;
+          this.stacks = stacks;
 
           break;
   
@@ -482,6 +482,6 @@ export class IndexedPNG {
   }
   
   hasStax(): boolean {
-    return this.groups && this.groups.length > 0
+    return this.stacks && this.stacks.length > 0
   }
 };

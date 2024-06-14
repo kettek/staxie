@@ -565,21 +565,21 @@ export class Canvas {
       dbuffer.writeUInt8(0) // Write version 0 stAx
       dbuffer.writeUInt16BE(file.frameWidth) // write frame width
       dbuffer.writeUInt16BE(file.frameHeight) // write frame height
-      dbuffer.writeUInt16BE(file.groups.length) // write group count
-      // Write our groups.
-      for (let i = 0; i < file.groups.length; i++) {
-        let group = file.groups[i]
-        // Write our group name's length and name data.
-        dbuffer.writeUInt8(group.name.length)
-        for (let j = 0; j < group.name.length; j++) {
-          dbuffer.writeUInt8(group.name.charCodeAt(j))
+      dbuffer.writeUInt16BE(file.stacks.length) // write stack count
+      // Write our stacks.
+      for (let i = 0; i < file.stacks.length; i++) {
+        let stack = file.stacks[i]
+        // Write our stack name's length and name data.
+        dbuffer.writeUInt8(stack.name.length)
+        for (let j = 0; j < stack.name.length; j++) {
+          dbuffer.writeUInt8(stack.name.charCodeAt(j))
         }
-        // Write layer count in the group.
-        dbuffer.writeUInt16BE(group.sliceCount)
+        // Write layer count in the stack.
+        dbuffer.writeUInt16BE(stack.sliceCount)
         // Write animation count and animations.
-        dbuffer.writeUInt16BE(group.animations.length)
-        for (let j = 0; j < group.animations.length; j++) {
-          let animation = group.animations[j]
+        dbuffer.writeUInt16BE(stack.animations.length)
+        for (let j = 0; j < stack.animations.length; j++) {
+          let animation = stack.animations[j]
           // Write animation name's length and name data.
           dbuffer.writeUInt8(animation.name.length)
           for (let k = 0; k < animation.name.length; k++) {

@@ -30,8 +30,8 @@
       png.frameWidth = width
       png.frameHeight = height
       
-      png.groups = [{
-        name: 'group',
+      png.stacks = [{
+        name: 'stack',
         sliceCount: 1,
         animations: [{
           name: 'animation',

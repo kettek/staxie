@@ -62,7 +62,7 @@ export async function Read(filepath: string): Promise<VioImportResults> {
     name: string
     frames: ImportFrame[]
   }
-  type ImportGroup = {
+  type ImportStack = {
     name: string
     animations: ImportAnimation[]
     sliceCount: number
@@ -70,10 +70,10 @@ export async function Read(filepath: string): Promise<VioImportResults> {
   let maxWidth = 0
   let maxHeight = 0
   let frameSizeCounts: Record<string, number> = {}
-  let importGroups: ImportGroup[] = []
+  let importStacks: ImportStack[] = []
   for (let [animationName, animation] of Object.entries(yml.animations)) {
     if (animationName !== 'top' && animationName !== 'bot') continue
-    let ingroup: ImportGroup = {
+    let instack: ImportStack = {
       name: animationName,
       animations: [],
       sliceCount: 0,
@@ -83,13 +83,13 @@ export async function Read(filepath: string): Promise<VioImportResults> {
       let anim = parts[0]
       let frame = Number(parts[1])
 
-      let inanimation: ImportAnimation = ingroup.animations.find(v=>v.name === anim)
+      let inanimation: ImportAnimation|undefined = instack.animations.find(v=>v.name === anim)
       if (!inanimation) {
-        ingroup.animations.push({
+        instack.animations.push({
           name: anim,
           frames: [],
         })
-        inanimation = ingroup.animations[ingroup.animations.length-1]
+        inanimation = instack.animations[instack.animations.length-1]
       }
 
       for (let i = inanimation.frames.length; i <= frame; i++) {
@@ -105,12 +105,12 @@ export async function Read(filepath: string): Promise<VioImportResults> {
           pixels: canvas.getPixels(slice.x, slice.y, slice.width, slice.height),
           origSubset: subset,
         }
-        ingroup.sliceCount = Math.max(ingroup.sliceCount, sliceIndex+1)
+        instack.sliceCount = Math.max(instack.sliceCount, sliceIndex+1)
         inanimation.frames[frame][sliceIndex] = inslice
         frameSizeCounts[`${slice.width}x${slice.height}`] = (frameSizeCounts[`${slice.width}x${slice.height}`] || 0) + 1
       }
     }
-    importGroups.push(ingroup)
+    importStacks.push(instack)
   }
 
   canvas.clear()
@@ -126,14 +126,14 @@ export async function Read(filepath: string): Promise<VioImportResults> {
 
   png.frameWidth = frameWidth
   png.frameHeight = frameHeight
-  png.groups = []
-  for (let group of importGroups) {
-    let pngGroup = {
+  png.stacks = []
+  for (let stack of importStacks) {
+    let pngStack = {
       animations: [],
-      name: group.name,
-      sliceCount: group.sliceCount,
+      name: stack.name,
+      sliceCount: stack.sliceCount,
     }
-    for (let animation of group.animations) {
+    for (let animation of stack.animations) {
       let pngAnimation = {
         name: animation.name,
         frames: [],
@@ -168,9 +168,9 @@ export async function Read(filepath: string): Promise<VioImportResults> {
         maxHeight = Math.max(maxHeight, y)
         pngAnimation.frames.push(pngFrame)
       }
-      pngGroup.animations.push(pngAnimation)
+      pngStack.animations.push(pngAnimation)
     }
-    png.groups.push(pngGroup)
+    png.stacks.push(pngStack)
   }
   canvas.resizeCanvas(maxWidth, maxHeight)
   canvas.refreshCanvas()
