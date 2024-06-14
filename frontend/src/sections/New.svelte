@@ -17,8 +17,6 @@
 
   let width: number = 64
   let height: number = 64
-  let frameWidth: number = 64
-  let frameHeight: number = 64
   let indexed: boolean = true
   export let png: IndexedPNG
   export let canvas: Canvas
@@ -29,12 +27,9 @@
       png = new IndexedPNG()
       png.width = width
       png.height = height
-      png.frameWidth = frameWidth
-      png.frameHeight = frameHeight
+      png.frameWidth = width
+      png.frameHeight = height
       
-      let rows = Math.floor(height / frameHeight)
-      let cols = Math.floor(width / frameWidth)
-
       png.groups = [{
         name: 'group',
         sliceCount: 1,
@@ -57,28 +52,16 @@
 <ModalBody>
   <NumberInput
     id="width"
-    label="Width"
+    label="Slice Width"
     min={1}
     max={1024}
     bind:value={width}/>
   <NumberInput
     id="height"
-    label="Height"
+    label="Slice Height"
     min={1}
     max={1024}
     bind:value={height}/>
-  <NumberInput
-    id="frameWidth"
-    label="Frame Width"
-    min={1}
-    max={1024}
-    bind:value={frameWidth}/>
-  <NumberInput
-    id="frameHeight"
-    label="Frame Height"
-    min={1}
-    max={1024}
-    bind:value={frameHeight}/>
   <Checkbox labelText="Indexed" bind:checked={indexed}/>
 </ModalBody>
 <ModalFooter
