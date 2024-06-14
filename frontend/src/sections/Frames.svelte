@@ -69,7 +69,7 @@
     <section class='slices'>
       {#if $file.frame}
         {#each $file.frame.slices as slice, sliceIndex}
-          <article class='slice{sliceIndex===file.sliceIndex?' --focused':''}' on:click={()=>setSlice(sliceIndex)}>
+          <article class='slice{sliceIndex===$file.sliceIndex?' --focused':''}' on:click={()=>setSlice(sliceIndex)}>
             <span class='sliceIndex'>{sliceIndex+1}</span>
           </article>
         {/each}
@@ -90,7 +90,7 @@
     <section class='frames'>
       {#if $file.animation}
         {#each $file.animation.frames as frame, frameIndex}
-          <article class='frame{frameIndex===file.frameIndex?' --focused':''}{$file.isFrameSelected(frameIndex)?' --selected':''}' on:click={(e)=>onFrameClick(e, frameIndex)} on:contextmenu|preventDefault={(e)=>onFrameRightClick(e, frameIndex)}>
+          <article class='frame{frameIndex===$file.frameIndex?' --focused':''}{$file.isFrameSelected(frameIndex)?' --selected':''}' on:click={(e)=>onFrameClick(e, frameIndex)} on:contextmenu|preventDefault={(e)=>onFrameRightClick(e, frameIndex)}>
             <span class='frameIndex'>{frameIndex+1}</span>
           </article>
         {/each}
