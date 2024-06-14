@@ -682,6 +682,9 @@
     padding-top: 0;
     top: -.25rem;
   }
+  :global(.bx--number input[type=number]) {
+    padding-right: 1rem !important;
+  }
   hr {
     width: 50%;
     height: 1px;
