@@ -1,6 +1,6 @@
 import { LoadedFile } from '../file'
 import { type Undoable } from '../undo'
-import { type StaxStack } from '../png'
+import { type StaxFrame, type StaxStack } from '../png'
 
 export class PixelPlaceUndoable implements Undoable<LoadedFile> {
   x: number
@@ -606,6 +606,73 @@ export class ShrinkStackSliceUndoable implements Undoable<LoadedFile> {
     }
     g.sliceCount = sliceCount
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+}
+
+export class DuplicateSliceUndoable implements Undoable<LoadedFile> {
+  private stack: string
+  private sliceIndex: number
+  private growUndoable: GrowStackSliceUndoable
+  constructor(stack: string, sliceIndex: number) {
+    this.stack = stack
+    this.sliceIndex = sliceIndex
+    this.growUndoable = new GrowStackSliceUndoable(stack, 1)
+  }
+  apply(file: LoadedFile) {
+    let g = file.stacks.find(g => g.name === this.stack)
+    if (!g) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+
+    let { x, y, width, height } = file.getStackArea(this.stack)
+    x += this.sliceIndex * file.frameWidth
+    width -= this.sliceIndex * file.frameWidth
+
+    this.growUndoable.apply(file)
+    
+    let pixels = file.canvas.getPixels(x, y, width, height)
+    file.canvas.setPixels(x+file.frameWidth, y, width, height, pixels)
+
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+  unapply(file: LoadedFile) {
+    let g = file.stacks.find(g => g.name === this.stack)
+    if (!g) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+    
+    let { x, y, width, height } = file.getStackArea(this.stack)
+    x += this.sliceIndex * file.frameWidth
+    width -= this.sliceIndex * file.frameWidth
+    
+    let pixels = file.canvas.getPixels(x+file.frameWidth, y, width, height)
+    file.canvas.setPixels(x, y, width, height, pixels)
+
+    this.growUndoable.unapply(file)
+    
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+}
+
+export class ClearSliceUndoable implements Undoable<LoadedFile> {
+  private frame: StaxFrame
+  private sliceIndex: number
+  // @ts-expect-error
+  private pixels: Uint8Array
+  // Yeah, yeah, this constructor is different, don't care.
+  constructor(frame: StaxFrame, sliceIndex: number) {
+    this.frame = frame
+    this.sliceIndex = sliceIndex
+  }
+  apply(file: LoadedFile) {
+    let {x, y, width, height} = file.getSliceAreaFromFrame(this.frame, this.sliceIndex)
+
+    this.pixels = file.canvas.getPixels(x, y, width, height)
+    file.canvas.clearPixels(x, y, width, height)
+  }
+  unapply(file: LoadedFile) {
+    let {x, y, width, height} = file.getSliceAreaFromFrame(this.frame, this.sliceIndex)
+    file.canvas.setPixels(x, y, width, height, this.pixels)
   }
 }
 

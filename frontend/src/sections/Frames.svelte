@@ -1,11 +1,17 @@
 <script lang='ts'>
   import { LoadedFile } from "../types/file"
-  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, RemoveAnimationFrameUndoable } from "../types/file/undoables"
+  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateSliceUndoable, RemoveAnimationFrameUndoable } from "../types/file/undoables"
   import { Button, ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
   import { fileStates } from '../stores/file'
   import { AddAlt } from 'carbon-icons-svelte'
 
   export let file: LoadedFile
+  function onSliceRightClick(e: MouseEvent, sliceIndex: number) {
+    contextSliceOpen = true
+    contextX = e.clientX
+    contextY = e.clientY
+    contextSliceIndex = sliceIndex
+  }
   function setSlice(sliceIndex: number) {
     file.setSliceIndex(sliceIndex)
     file.refresh()
@@ -18,6 +24,8 @@
   
   let contextFrameOpen: boolean = false
   let contextFrameIndex: number = -1
+  let contextSliceOpen: boolean = false
+  let contextSliceIndex: number = -1
   let contextX: number = 0
   let contextY: number = 0
   function onFrameRightClick(e: MouseEvent, frameIndex: number) {
@@ -53,6 +61,12 @@
   function contextFrameClear() {
     file.push(new ClearAnimationFrameUndoable(file.stack.name, file.animation.name, contextFrameIndex))
   }
+  function contextSliceClear() {
+    file.push(new ClearSliceUndoable(file.frame, contextSliceIndex))
+  }
+  function contextSliceDuplicate() {
+    file.push(new DuplicateSliceUndoable(file.stack.name, contextSliceIndex))
+  }
 </script>
 
 <main>
@@ -69,7 +83,7 @@
     <section class='slices'>
       {#if $file.frame}
         {#each $file.frame.slices as slice, sliceIndex}
-          <article class='slice{sliceIndex===$file.sliceIndex?' --focused':''}' on:click={()=>setSlice(sliceIndex)}>
+          <article class='slice{sliceIndex===$file.sliceIndex?' --focused':''}' on:click={()=>setSlice(sliceIndex)} on:contextmenu|preventDefault={(e)=>onSliceRightClick(e, sliceIndex)}>
             <span class='sliceIndex'>{sliceIndex+1}</span>
           </article>
         {/each}
@@ -100,6 +114,10 @@
   <ContextMenu bind:open={contextFrameOpen} bind:x={contextX} bind:y={contextY} target={[]}>
     <ContextMenuOption labelText="Clear Frame" on:click={contextFrameClear} />
     <ContextMenuOption labelText="Delete Frame" kind="danger" on:click={contextFrameDelete} />
+  </ContextMenu>
+  <ContextMenu bind:open={contextSliceOpen} bind:x={contextX} bind:y={contextY} target={[]}>
+    <ContextMenuOption labelText="Clear Slice" on:click={contextSliceClear} />
+    <ContextMenuOption labelText="Duplicate Slice" on:click={contextSliceDuplicate} />
   </ContextMenu>
 </main>
 
