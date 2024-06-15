@@ -59,14 +59,76 @@ export interface PickerToolContext {
 
 // BrushTool is a tool that allows the user to draw with a brush.
 export class BrushTool implements Tool {
-  private lastX: number
-  private lastY: number
+  private lastX: number = -1
+  private lastY: number = -1
   private active: boolean
   isActive(): boolean {
     return this.active
   }
+  
+  // FIXME: Move this to some standalone 2D utility library.
+  drawLine(ctx: ToolContext & BrushToolContext, ptr: Pointer) {
+    let startX = this.lastX
+    let startY = this.lastY
+    let endX = ptr.x
+    let endY = ptr.y
+    // Bresenham it
+    let dx = Math.abs(endX - startX)
+    let dy = Math.abs(endY - startY)
+    let sx = (startX < endX) ? 1 : -1
+    let sy = (startY < endY) ? 1 : -1
+    let err = dx - dy
+    while (true) {
+      if (startX >= 0 && startY >= 0 && startX < ctx.file.canvas.width && startY < ctx.file.canvas.height) {
+        if (ctx.brushSize == 1) {
+          let p = ctx.file.canvas.getPixel(startX, startY)
+          if (p !== -1 && ctx.file.selection.isPixelMarked(startX, startY)) {
+            ctx.file.push(new PixelPlaceUndoable(startX, startY, p, ctx.colorIndex), ctx.view)
+          }
+        } else if (ctx.brushSize == 2) {
+          for (let x1 = 0; x1 < 2; x1++) {
+            for (let y1 = 0; y1 < 2; y1++) {
+              let p = ctx.file.canvas.getPixel(startX+x1, startY+y1)
+              if (p !== -1 && ctx.file.selection.isPixelMarked(startX+x1, startY+y1)) {
+                ctx.file.push(new PixelPlaceUndoable(startX+x1, startY+y1, p, ctx.colorIndex), ctx.view)
+              }
+            }
+          }
+        } else {
+          let shape: PixelPosition[]
+          if (ctx.brushType == "circle") {
+            shape = FilledCircle(startX, startY, ctx.brushSize-2, ctx.colorIndex)
+          } else if (ctx.brushType == "square") {
+            shape = FilledSquare(startX, startY, ctx.brushSize, ctx.colorIndex)
+          }
+          shape = shape.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
+          ctx.file.push(new PixelsPlaceUndoable(shape), ctx.view)
+        }
+      }
+      if (startX == endX && startY == endY) break
+      let e2 = 2*err
+      if (e2 > -dy) {
+        err -= dy
+        startX += sx
+      }
+      if (e2 < dx) {
+        err += dx
+        startY += sy
+      }
+    }
+  }
 
   pointerDown(ctx: ToolContext & BrushToolContext, ptr: Pointer) {
+    // Do basic line drawing when shift is held.
+    if (ptr.shift && this.lastX !== -1 && this.lastY !== -1) {
+      this.active = true
+      ctx.file.capture()
+      this.drawLine(ctx, ptr)
+      this.lastX = ptr.x
+      this.lastY = ptr.y
+      return
+    }
+
     // Store last for interp.
     this.lastX = ptr.x
     this.lastY = ptr.y
