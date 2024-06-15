@@ -5,6 +5,27 @@ export interface PixelPosition {
   index: number
 }
 
+export function NormalizeShape(shape: PixelPosition[]): {shape: PixelPosition[], minX: number, minY: number, maxX: number, maxY: number, width: number, height: number} {
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+
+  for (let pixel of shape) {
+    if (pixel.x < minX) minX = pixel.x
+    if (pixel.y < minY) minY = pixel.y
+    if (pixel.x > maxX) maxX = pixel.x
+    if (pixel.y > maxY) maxY = pixel.y
+  }
+
+  return {
+    shape: shape.map(pixel => ({x: pixel.x - minX, y: pixel.y - minY, index: pixel.index})),
+    minX, minY, maxX, maxY,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+  }
+}
+
 // FilledCircle returns an array of PixelPositions that correspond to a filled circle.
 export function FilledCircle(x: number, y: number, radius: number, index: number): PixelPosition[] {
   let pixels: PixelPosition[] = []
@@ -51,6 +72,26 @@ export function FilledSquare(x: number, y: number, size: number, index: number):
   return pixels
 }
 
+export function RectangleShape(x1: number, y1: number, x2: number, y2: number, fill: boolean, index: number): PixelPosition[] {
+  let pixels: PixelPosition[] = []
+
+  let xmin = Math.min(x1, x2)
+  let xmax = Math.max(x1, x2)
+  let ymin = Math.min(y1, y2)
+  let ymax = Math.max(y1, y2)
+
+  for (let x = xmin; x <= xmax; x++) {
+    for (let y = ymin; y <= ymax; y++) {
+      if (!fill && x > xmin && x < xmax && y > ymin && y < ymax) {
+        continue
+      }
+      pixels.push({x, y, index})
+    }
+  }
+  
+  return pixels
+}
+
 // RandomSpray returns an array of PixelPositions that correspond to a random spray of pixels.
 export function RandomSpray(x: number, y: number, radius: number, density: number, index: number): PixelPosition[] {
   let pixels: PixelPosition[] = []
@@ -79,6 +120,9 @@ export function ShapeToImageData(shape: PixelPosition[], ctx: CanvasRenderingCon
     if (pixel.x > width) width = pixel.x
     if (pixel.y > height) height = pixel.y
   }
+  // This feels wrong. If this isn't added, then normalized rectangular shapes get shrunken by 1... FIXME: should probably double check normalization.
+  width += 1
+  height += 1
 
   let imageData = ctx.createImageData(width, height)
 

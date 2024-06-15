@@ -10,11 +10,11 @@
   import { CanvasView } from '../types/canvasview'
 
   import { type LoadedFile } from '../types/file'
-  import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
+  import { FilledCircle, FilledSquare, NormalizeShape, RectangleShape, ShapeToImageData, type PixelPosition } from '../types/shapes'
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionTool, SprayTool, RectangleTool, OvalTool } from '../types/tools'
   import { Button, NumberInput } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
-  import { toolSettings } from '../stores/tool'
+  import { toolCanvas, toolSettings } from '../stores/tool'
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -202,20 +202,18 @@
       ctx.save()
       ctx.imageSmoothingEnabled = false
       ctx.scale(zoom, zoom)
-      let { r, g, b, a } = file.canvas.getPaletteAsRGBA($toolSettings.current.colorIndex)
-      let xmin = Math.min($toolSettings.current.x1, $toolSettings.current.x2)
-      let xmax = Math.max($toolSettings.current.x1, $toolSettings.current.x2)
-      let ymin = Math.min($toolSettings.current.y1, $toolSettings.current.y2)
-      let ymax = Math.max($toolSettings.current.y1, $toolSettings.current.y2)
-      if ($toolSettings.current.fill) {
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-        ctx.fillRect(offsetX+xmin, offsetY+ymin, xmax-xmin+1, ymax-ymin+1)
-      } else {
-        ctx.translate(0.5, 0.5)
-        ctx.lineWidth = 1
-        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`
-        ctx.strokeRect(offsetX+xmin, offsetY+ymin, xmax-xmin, ymax-ymin)
+      
+      toolCanvas.width = Math.abs($toolSettings.current.x1 - $toolSettings.current.x2) + 1
+      toolCanvas.height = Math.abs($toolSettings.current.y1 - $toolSettings.current.y2) + 1
+      let tctx = toolCanvas.getContext('2d')
+      if (tctx) {
+        let { r, g, b, a } = file.canvas.getPaletteAsRGBA($toolSettings.current.colorIndex)
+        let {shape, minX, minY} = NormalizeShape(RectangleShape($toolSettings.current.x1, $toolSettings.current.y1, $toolSettings.current.x2, $toolSettings.current.y2, $toolSettings.current.fill, $brushSettings.primaryIndex))
+        let imageData = ShapeToImageData(shape, tctx, [r, g, b, a])
+        tctx.putImageData(imageData, 0, 0)
+        ctx.drawImage(toolCanvas, offsetX+minX, offsetY+minY)
       }
+
       ctx.restore()
     }
 

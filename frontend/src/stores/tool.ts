@@ -18,6 +18,7 @@ export const toolPicker = new PickerTool()
 export const toolMove = new MoveTool()
 export const toolVoxelPlace = new PlaceVoxelTool()
 export const toolVoxelReplace = new ReplaceVoxelTool()
+export const toolCanvas = document.createElement('canvas') // Publicly useable canvas for tool operations.
 
 interface ToolSettingsStore {
   subscribe: (this: void, run: Subscriber<ToolSettings>, invalidate?: Invalidator<ToolSettings> | undefined) => Unsubscriber

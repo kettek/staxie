@@ -2,7 +2,7 @@ import { type LoadedFile } from "./file"
 import { PixelPlaceUndoable, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from "./file/undoables"
 import { Preview } from "./preview"
 import type { Pointer } from "./pointer"
-import { FilledCircle, FilledOval, FilledSquare, OutlinedOval, RandomSpray, type PixelPosition } from "./shapes"
+import { FilledCircle, FilledOval, FilledSquare, OutlinedOval, RandomSpray, RectangleShape, type PixelPosition } from "./shapes"
 import type { CanvasView } from "./canvasview"
 
 export interface ToolContext {
@@ -252,18 +252,8 @@ export class RectangleTool implements Tool {
   }
   pointerUp(ctx: ToolContext , ptr: Pointer): void {
     let pixels: PixelPosition[] = []
-    let xmin = Math.min(this.x1, this.x2)
-    let xmax = Math.max(this.x1, this.x2)
-    let ymin = Math.min(this.y1, this.y2)
-    let ymax = Math.max(this.y1, this.y2)
-    for (let x = xmin; x <= xmax; x++) {
-      for (let y = ymin; y <= ymax; y++) {
-        if (!this.fill && x > xmin && x < xmax && y > ymin && y < ymax) {
-          continue
-        }
-        pixels.push({x, y, index: this.colorIndex})
-      }
-    }
+    
+    pixels = RectangleShape(this.x1, this.y1, this.x2, this.y2, this.fill, this.colorIndex)
     ctx.file.push(new PixelsPlaceUndoable(pixels), ctx.view)
     this.active = false
   }
