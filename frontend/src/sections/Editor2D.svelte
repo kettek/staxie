@@ -11,7 +11,7 @@
 
   import { type LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionTool, SprayTool, SquareTool, OvalTool } from '../types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionTool, SprayTool, RectangleTool, OvalTool } from '../types/tools'
   import { Button, NumberInput } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
   import { toolSettings } from '../stores/tool'
@@ -198,7 +198,7 @@
       let {x, y} = $toolSettings.current.previewPosition()
       ctx.drawImage($toolSettings.current.preview.canvas, offsetX+x, offsetY+y)
       ctx.restore()
-    } else if ($toolSettings.current instanceof SquareTool && $toolSettings.current.isActive()) {
+    } else if ($toolSettings.current instanceof RectangleTool && $toolSettings.current.isActive()) {
       ctx.save()
       ctx.imageSmoothingEnabled = false
       ctx.scale(zoom, zoom)
@@ -371,7 +371,7 @@
           $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if ($toolSettings.current instanceof EraserTool) {
           $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
-        } else if ($toolSettings.current instanceof SquareTool || $toolSettings.current instanceof OvalTool) {
+        } else if ($toolSettings.current instanceof RectangleTool || $toolSettings.current instanceof OvalTool) {
           $toolSettings.current.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor, fill: $brushSettings.fill}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if ($toolSettings.current instanceof SprayTool) {
           $toolSettings.current.pointerDown({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
@@ -442,7 +442,7 @@
             $toolSettings.current.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
           } else if ($toolSettings.current instanceof EraserTool) {
             $toolSettings.current.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: 0 })
-          } else if ($toolSettings.current instanceof SquareTool) {
+          } else if ($toolSettings.current instanceof RectangleTool) {
             $toolSettings.current.pointerMove({file, view}, {x: viewPixelX, y: viewPixelY, id: 0})
           } else if ($toolSettings.current instanceof SprayTool) {
             $toolSettings.current.pointerMove({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })

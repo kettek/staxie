@@ -42,8 +42,8 @@ export interface EraserToolContext {
   brushType: BrushType
 }
 
-// SquareToolContext provides context specific to the square tool.
-export interface SquareToolContext {
+// RectangleToolContext provides context specific to the square tool.
+export interface RectangleToolContext {
   fill: boolean
   colorIndex: number
   color: [number, number, number, number]
@@ -225,7 +225,7 @@ export class EraserTool extends BrushTool {
   }
 }
 
-export class SquareTool implements Tool {
+export class RectangleTool implements Tool {
   public colorIndex: number = -1
   public fill: boolean = false
   private active: boolean = false
@@ -239,7 +239,7 @@ export class SquareTool implements Tool {
     return this.active
   }
   
-  pointerDown(ctx: ToolContext & SquareToolContext, ptr: Pointer): void {
+  pointerDown(ctx: ToolContext & RectangleToolContext, ptr: Pointer): void {
     this.active = true
     this.x1 = this.x2 = ptr.x
     this.y1 = this.y2 = ptr.y
@@ -282,7 +282,7 @@ export class OvalTool implements Tool {
     return this.active
   }
 
-  pointerDown(ctx: ToolContext & SquareToolContext, ptr: Pointer): void {
+  pointerDown(ctx: ToolContext & RectangleToolContext, ptr: Pointer): void {
     this.active = true
     this.x1 = this.x2 = ptr.x
     this.y1 = this.y2 = ptr.y
