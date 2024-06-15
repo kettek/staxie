@@ -15,6 +15,8 @@ type BrushSettings = {
   // Spray settings
   sprayDensity: number
   sprayRadius: number
+  // Square/Circle settings
+  fill: boolean
 }
 
 export const brushSettings = writable<BrushSettings>({
@@ -26,4 +28,5 @@ export const brushSettings = writable<BrushSettings>({
   type: 'circle',
   sprayDensity: 1,
   sprayRadius: 1,
+  fill: true,
 })

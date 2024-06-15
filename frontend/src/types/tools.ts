@@ -42,6 +42,13 @@ export interface EraserToolContext {
   brushType: BrushType
 }
 
+// SquareToolContext provides context specific to the square tool.
+export interface SquareToolContext {
+  fill: boolean
+  colorIndex: number
+  color: [number, number, number, number]
+}
+
 // FloodToolContext provides context specific to the flood tool.
 export interface FloodToolContext {
   colorIndex: number
@@ -215,6 +222,50 @@ export class EraserTool extends BrushTool {
   }
   pointerMove(ctx: ToolContext & EraserToolContext, ptr: Pointer) {
     super.pointerMove({...ctx, colorIndex: 0}, ptr)
+  }
+}
+
+export class SquareTool implements Tool {
+  public colorIndex: number = -1
+  public fill: boolean = false
+  private active: boolean = false
+  
+  public x1: number = -1
+  public y1: number = -1
+  public x2: number = -1
+  public y2: number = -1
+
+  isActive(): boolean {
+    return this.active
+  }
+  
+  pointerDown(ctx: ToolContext & SquareToolContext, ptr: Pointer): void {
+    this.active = true
+    this.x1 = this.x2 = ptr.x
+    this.y1 = this.y2 = ptr.y
+    this.fill = ctx.fill
+    this.colorIndex = ctx.colorIndex
+  }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {
+    this.x2 = ptr.x
+    this.y2 = ptr.y
+  }
+  pointerUp(ctx: ToolContext , ptr: Pointer): void {
+    let pixels: PixelPosition[] = []
+    let xmin = Math.min(this.x1, this.x2)
+    let xmax = Math.max(this.x1, this.x2)
+    let ymin = Math.min(this.y1, this.y2)
+    let ymax = Math.max(this.y1, this.y2)
+    for (let x = xmin; x <= xmax; x++) {
+      for (let y = ymin; y <= ymax; y++) {
+        if (!this.fill && x > xmin && x < xmax && y > ymin && y < ymax) {
+          continue
+        }
+        pixels.push({x, y, index: this.colorIndex})
+      }
+    }
+    ctx.file.push(new PixelsPlaceUndoable(pixels), ctx.view)
+    this.active = false
   }
 }
 

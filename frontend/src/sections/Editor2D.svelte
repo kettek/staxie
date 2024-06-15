@@ -11,7 +11,7 @@
 
   import { type LoadedFile } from '../types/file'
   import { FilledCircle, FilledSquare, type PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionTool, SprayTool } from '../types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionTool, SprayTool, SquareTool } from '../types/tools'
   import { Button, NumberInput } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
   import { toolSettings } from '../stores/tool'
@@ -198,6 +198,25 @@
       let {x, y} = $toolSettings.current.previewPosition()
       ctx.drawImage($toolSettings.current.preview.canvas, offsetX+x, offsetY+y)
       ctx.restore()
+    } else if ($toolSettings.current instanceof SquareTool && $toolSettings.current.isActive()) {
+      ctx.save()
+      ctx.imageSmoothingEnabled = false
+      ctx.scale(zoom, zoom)
+      let { r, g, b, a } = file.canvas.getPaletteAsRGBA($toolSettings.current.colorIndex)
+      let xmin = Math.min($toolSettings.current.x1, $toolSettings.current.x2)
+      let xmax = Math.max($toolSettings.current.x1, $toolSettings.current.x2)
+      let ymin = Math.min($toolSettings.current.y1, $toolSettings.current.y2)
+      let ymax = Math.max($toolSettings.current.y1, $toolSettings.current.y2)
+      if ($toolSettings.current.fill) {
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+        ctx.fillRect(offsetX+xmin, offsetY+ymin, xmax-xmin+1, ymax-ymin+1)
+      } else {
+        ctx.translate(0.5, 0.5)
+        ctx.lineWidth = 1
+        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`
+        ctx.strokeRect(offsetX+xmin, offsetY+ymin, xmax-xmin, ymax-ymin)
+      }
+      ctx.restore()
     }
 
     // Draw our grid.
@@ -352,6 +371,8 @@
           $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if ($toolSettings.current instanceof EraserTool) {
           $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+        } else if ($toolSettings.current instanceof SquareTool) {
+          $toolSettings.current.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor, fill: $brushSettings.fill}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if ($toolSettings.current instanceof SprayTool) {
           $toolSettings.current.pointerDown({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if ($toolSettings.current instanceof FillTool) {
@@ -421,6 +442,8 @@
             $toolSettings.current.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
           } else if ($toolSettings.current instanceof EraserTool) {
             $toolSettings.current.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: 0 })
+          } else if ($toolSettings.current instanceof SquareTool) {
+            $toolSettings.current.pointerMove({file, view}, {x: viewPixelX, y: viewPixelY, id: 0})
           } else if ($toolSettings.current instanceof SprayTool) {
             $toolSettings.current.pointerMove({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
           } else if ($toolSettings.current instanceof FillTool) {
