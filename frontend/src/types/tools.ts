@@ -2,7 +2,7 @@ import { type LoadedFile } from "./file"
 import { PixelPlaceUndoable, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from "./file/undoables"
 import { Preview } from "./preview"
 import type { Pointer } from "./pointer"
-import { FilledCircle, FilledSquare, RandomSpray, type PixelPosition } from "./shapes"
+import { FilledCircle, FilledOval, FilledSquare, OutlinedOval, RandomSpray, type PixelPosition } from "./shapes"
 import type { CanvasView } from "./canvasview"
 
 export interface ToolContext {
@@ -265,6 +265,42 @@ export class SquareTool implements Tool {
       }
     }
     ctx.file.push(new PixelsPlaceUndoable(pixels), ctx.view)
+    this.active = false
+  }
+}
+
+export class OvalTool implements Tool {
+  private active: boolean = false
+  private x1: number = -1
+  private y1: number = -1
+  private x2: number = -1
+  private y2: number = -1
+  private fill: boolean = false
+  private colorIndex: number = 0
+
+  isActive(): boolean {
+    return this.active
+  }
+
+  pointerDown(ctx: ToolContext & SquareToolContext, ptr: Pointer): void {
+    this.active = true
+    this.x1 = this.x2 = ptr.x
+    this.y1 = this.y2 = ptr.y
+    this.fill = ctx.fill
+    this.colorIndex = ctx.colorIndex
+  }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {
+    this.x2 = ptr.x
+    this.y2 = ptr.y
+  }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {
+    let shape: PixelPosition[]
+    if (this.fill) {
+      shape = FilledOval(this.x1, this.y1, Math.abs(this.x2-this.x1), Math.abs(this.y2-this.y1), this.colorIndex)
+    } else {
+      shape = OutlinedOval(this.x1, this.y1, Math.abs(this.x2-this.x1), Math.abs(this.y2-this.y1), this.colorIndex)
+    }
+    ctx.file.push(new PixelsPlaceUndoable(shape), ctx.view)
     this.active = false
   }
 }

@@ -1,5 +1,5 @@
 import { get, writable, type Invalidator, type Subscriber, type Unsubscriber, type Updater } from 'svelte/store'
-import { BrushTool, EraserTool, FillTool, MagicWandTool, MoveTool, PickerTool, PlaceVoxelTool, ReplaceVoxelTool, SelectionTool, SprayTool, SquareTool, type Tool } from '../types/tools'
+import { BrushTool, EraserTool, FillTool, MagicWandTool, MoveTool, OvalTool, PickerTool, PlaceVoxelTool, ReplaceVoxelTool, SelectionTool, SprayTool, SquareTool, type Tool } from '../types/tools'
 
 type ToolSettings = {
   current: Tool
@@ -12,6 +12,7 @@ export const toolFill = new FillTool()
 export const toolErase = new EraserTool()
 export const toolBrush = new BrushTool()
 export const toolSquare = new SquareTool()
+export const toolOval = new OvalTool()
 export const toolSpray = new SprayTool()
 export const toolPicker = new PickerTool()
 export const toolMove = new MoveTool()
