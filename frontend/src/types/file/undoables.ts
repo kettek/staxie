@@ -1,6 +1,6 @@
 import { LoadedFile } from '../file'
 import { type Undoable } from '../undo'
-import { type StaxFrame, type StaxStack } from '../png'
+import { type StaxFrame, type StaxStack, type StaxSlice } from '../png'
 
 export class PixelPlaceUndoable implements Undoable<LoadedFile> {
   x: number
@@ -499,6 +499,60 @@ export class RenameStackUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class DuplicateStackUndoable implements Undoable<LoadedFile> {
+  private stack: string
+  private name: string = ''
+  private stackX: number = -1
+  private stackY: number = -1
+  private stackWidth: number = -1
+  private stackHeight: number = -1
+  constructor(stack: string) {
+    this.stack = stack
+  }
+  apply(file: LoadedFile) {
+    let g = file.stacks.find(g => g.name === this.stack)
+    if (!g) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+    let name = this.stack + ' copy'
+    for (let count = 0; file.stacks.find(g => g.name === name); name = `${this.stack} copy ${count++}`) {}
+    this.name = name
+
+    let { x, y, width, height } = file.getStackArea(this.stack)
+    this.stackX = x
+    this.stackY = y
+    this.stackWidth = width
+    this.stackHeight = height
+
+    // 1. Get pixels to copy
+    let stackPixels = file.canvas.getPixels(x, y, width, height)
+    // 2. Resize canvas
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + height)
+    // 3. Shift all pixels after stack area down by stack area's height*2
+    let pixels = file.canvas.getPixels(x, y + height, width, file.canvas.height - (y + height))
+    file.canvas.setPixels(x, y + height * 2, width, file.canvas.height - (y + height), pixels)
+    // 4. Set pixels at stack area + stack area height to stored
+    file.canvas.setPixels(x, y + height, width, height, stackPixels)
+    // 5. Update data structure
+    file.stacks.splice(file.stacks.findIndex(g => g.name === this.stack) + 1, 0, {name, animations: JSON.parse(JSON.stringify(g.animations)), sliceCount: g.sliceCount})
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+  unapply(file: LoadedFile): void {
+    let g = file.stacks.find(g => g.name === this.stack)
+    if (!g) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+    // 1. Shift all pixels after stack area up by stack area's height
+    let pixels = file.canvas.getPixels(this.stackX, this.stackY + this.stackHeight * 2, this.stackWidth, file.canvas.height - (this.stackY + this.stackHeight))
+    file.canvas.setPixels(this.stackX, this.stackY + this.stackHeight, this.stackWidth, file.canvas.height - (this.stackY + this.stackHeight), pixels)
+    // 2. Resize canvas
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - this.stackHeight)
+    // 3. Update data structure
+    file.stacks.splice(file.stacks.findIndex(g => g.name === this.name), 1)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+}
+
 export class GrowStackSliceUndoable implements Undoable<LoadedFile> {
   private stack: string
   private sliceCount: number
@@ -854,6 +908,67 @@ export class MoveAnimationUndoable implements Undoable<LoadedFile> {
     // TODO: See logic for MoveStackUndoable, but apply to the stack's animations.
   }
 }
+
+export class DuplicateAnimationUndoable implements Undoable<LoadedFile> {
+  private stack: string
+  private animation: string
+  private name: string = ''
+  private areaX: number = -1
+  private areaY: number = -1
+  private areaWidth: number = -1
+  private areaHeight: number = -1
+  constructor(stack: string, animation: string) {
+    this.stack = stack
+    this.animation = animation
+  }
+  apply(file: LoadedFile) {
+    let g = file.stacks.find(g => g.name === this.stack)
+    if (!g) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+    let a = g.animations.find(v=>v.name === this.animation)
+    if (!a) {
+      throw new Error('animation not found: ' + this.animation)
+    }
+    let name = this.animation + ' copy'
+    for (let count = 0; g.animations.find(a => a.name === name); name = `${this.animation} copy ${count++}`) {}
+    this.name = name
+
+    let { x, y, width, height } = file.getAnimationAreaFromAnimation(a)
+    this.areaX = x
+    this.areaY = y
+    this.areaWidth = width
+    this.areaHeight = height
+
+    // 1. Get pixels to copy
+    let areaPixels = file.canvas.getPixels(x, y, width, height)
+    // 2. Resize canvas
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + height)
+    // 3. Shift all pixels after animation area down by animation area's height*2
+    let pixels = file.canvas.getPixels(x, y + height, width, file.canvas.height - (y + height))
+    file.canvas.setPixels(x, y + height * 2, width, file.canvas.height - (y + height), pixels)
+    // 4. Set pixels at animation area + animation area height to stored
+    file.canvas.setPixels(x, y + height, width, height, areaPixels)
+    // 5. Update data structure
+    g.animations.splice(g.animations.findIndex(a => a.name === this.animation) + 1, 0, {name, frameTime: a.frameTime, frames: JSON.parse(JSON.stringify(a.frames))})
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+  unapply(file: LoadedFile): void {
+    let g = file.stacks.find(g => g.name === this.stack)
+    if (!g) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+    // 1. Shift all pixels after stack area up by stack area's height
+    let pixels = file.canvas.getPixels(this.areaX, this.areaY + this.areaHeight * 2, this.areaWidth, file.canvas.height - (this.areaY + this.areaHeight))
+    file.canvas.setPixels(this.areaX, this.areaY + this.areaHeight, this.areaWidth, file.canvas.height - (this.areaY + this.areaHeight), pixels)
+    // 2. Resize canvas
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - this.areaHeight)
+    // 3. Update data structure
+    g.animations.splice(g.animations.findIndex(a => a.name === this.name), 1)
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+}
+
 
 export class RenameAnimationUndoable implements Undoable<LoadedFile> {
   private stack: string
