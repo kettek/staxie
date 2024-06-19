@@ -474,6 +474,31 @@ export class MoveStackUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class RenameStackUndoable implements Undoable<LoadedFile> {
+  private stack: string
+  private oldName: string = ''
+  private newName: string
+  constructor(stack: string, newName: string) {
+    this.stack = stack
+    this.newName = newName
+  }
+  apply(file: LoadedFile) {
+    let g = file.stacks.find(g => g.name === this.stack)
+    if (!g) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+    this.oldName = g.name
+    g.name = this.newName
+  }
+  unapply(file: LoadedFile) {
+    let g = file.stacks.find(g => g.name === this.newName)
+    if (!g) {
+      throw new Error('stack not found: ' + this.newName)
+    }
+    g.name = this.oldName
+  }
+}
+
 export class GrowStackSliceUndoable implements Undoable<LoadedFile> {
   private stack: string
   private sliceCount: number
@@ -827,6 +852,41 @@ export class MoveAnimationUndoable implements Undoable<LoadedFile> {
   }
   unapply(file: LoadedFile) {
     // TODO: See logic for MoveStackUndoable, but apply to the stack's animations.
+  }
+}
+
+export class RenameAnimationUndoable implements Undoable<LoadedFile> {
+  private stack: string
+  private animation: string
+  private oldName: string = ''
+  private newName: string
+  constructor(stack: string, animation: string, newName: string) {
+    this.stack = stack
+    this.animation = animation
+    this.newName = newName
+  }
+  apply(file: LoadedFile) {
+    let g = file.stacks.find(v=>v.name === this.stack)
+    if (!g) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+    let a = g.animations.find(v=>v.name === this.animation)
+    if (!a) {
+      throw new Error('animation not found: ' + this.animation)
+    }
+    this.oldName = a.name
+    a.name = this.newName
+  }
+  unapply(file: LoadedFile): void {
+    let g = file.stacks.find(v=>v.name === this.stack)
+    if (!g) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+    let a = g.animations.find(v=>v.name === this.newName)
+    if (!a) {
+      throw new Error('animation not found: ' + this.newName)
+    }
+    a.name = this.oldName
   }
 }
 

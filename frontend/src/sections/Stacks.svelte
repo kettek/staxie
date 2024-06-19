@@ -1,9 +1,10 @@
 <script lang='ts'>
   import { FaceAdd, FolderAdd } from "carbon-icons-svelte";
   import { type LoadedFile } from "../types/file"
-  import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable } from "../types/file/undoables"
+  import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable, RenameAnimationUndoable, RenameStackUndoable } from "../types/file/undoables"
   import { Button, ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
   import { fileStates } from "../stores/file"
+  import RenameModal from "../components/RenameModal.svelte"
 
   export let file: LoadedFile
   
@@ -94,6 +95,30 @@
   function addAnimation() {
     file.push(new AddAnimationUndoable(file.stack.name))
   }
+
+  let showAnimationRenameModal: boolean = false
+  let pendingAnimationRename: string = ''
+  function contextAnimationRename() {
+    showAnimationRenameModal = true
+    pendingAnimationRename = contextNode.id.substring(contextNode.id.indexOf('__')+2)
+  }
+  function renameAnimation(v: string) {
+    const stackName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
+    const animationName = contextNode.id.substring(contextNode.id.indexOf('__')+2)
+
+    file.push(new RenameAnimationUndoable(stackName, animationName, v))
+  }
+
+  let showStackRenameModal: boolean = false
+  let pendingStackRename: string = ''
+  function contextStackRename() {
+    showStackRenameModal = true
+    pendingStackRename = contextNode.id
+  }
+  function renameStack(v: string) {
+    const stackName = contextNode.id
+    file.push(new RenameStackUndoable(stackName, v))
+  }
 </script>
 
 <main>
@@ -139,11 +164,19 @@
     {/if}
   </section>
   <ContextMenu bind:open={contextStackOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onStackContextMenu}>
+    <ContextMenuOption labelText="Rename Stack" on:click={contextStackRename} />
     <ContextMenuOption labelText="Delete Stack" kind="danger" on:click={contextStackDelete} />
   </ContextMenu>
   <ContextMenu bind:open={contextAnimationOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onStackContextMenu}>
+    <ContextMenuOption labelText="Rename Animation" on:click={contextAnimationRename} />
     <ContextMenuOption labelText="Delete Animation" kind="danger" on:click={contextAnimationDelete} />
   </ContextMenu>
+  {#if showAnimationRenameModal}
+    <RenameModal bind:open={showAnimationRenameModal} bind:text={pendingAnimationRename} heading="Rename Animation" onsubmit={renameAnimation} />
+  {/if}
+  {#if showStackRenameModal}
+    <RenameModal bind:open={showStackRenameModal} bind:text={pendingStackRename} heading="Rename Stack" onsubmit={renameStack} />
+  {/if}
 </main>
 
 <style>
