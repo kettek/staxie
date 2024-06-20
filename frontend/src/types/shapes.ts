@@ -46,22 +46,6 @@ export function FilledCircle(x: number, y: number, radius: number, index: number
   return pixels
 }
 
-export function FilledOval(x: number, y: number, radiusX: number, radiusY: number, index: number): PixelPosition[] {
-  let pixels: PixelPosition[] = []
-  
-  // TODO
-
-  return pixels
-}
-
-export function OutlinedOval(x: number, y: number, radiusX: number, radiusY: number, index: number): PixelPosition[] {
-  let pixels: PixelPosition[] = []
-  
-  // TODO
-
-  return pixels
-}
-
 // FilledSquare returns an array of PixelPositions that correspond to a filled square.
 export function FilledSquare(x: number, y: number, size: number, index: number): PixelPosition[] {
   let pixels: PixelPosition[] = []
@@ -97,7 +81,7 @@ export function RectangleShape(x1: number, y1: number, x2: number, y2: number, f
   return pixels
 }
 
-export function EllipsisShape(x1: number, y1: number, x2: number, y2: number, fill: boolean, index: number): PixelPosition[] {
+export function EllipseShape(x1: number, y1: number, x2: number, y2: number, fill: boolean, index: number): PixelPosition[] {
   let pixels: PixelPosition[] = []
 
   let xmin = Math.min(x1, x2)
@@ -118,7 +102,7 @@ export function EllipsisShape(x1: number, y1: number, x2: number, y2: number, fi
     }
   }
 
-  // FIXME: Let's blame this method of getting the edges of a filled ellipsis to make an outlined ellipsis a sympton of having the 'rona.
+  // FIXME: Let's blame this method of getting the edges of a filled ellipse to make an outlined ellipse a sympton of having the 'rona.
   if (!fill) {
     let outlinePixels: PixelPosition[] = []
     for (let pixel of pixels) {

@@ -50,7 +50,7 @@
   import Editor3D from './sections/Editor3D.svelte'
   import Frames from './sections/Frames.svelte'
   
-  import { toolSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolOval, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle } from './stores/tool'
+  import { toolSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolEllipse, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle } from './stores/tool'
   import ColorMode from './sections/ColorMode.svelte'
 
   let is3D: boolean = false
@@ -464,7 +464,7 @@
         <Button isSelected={$toolSettings.current === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolBrush)}></Button>
         <Button isSelected={$toolSettings.current === toolSpray} kind="ghost" size="small" icon={SprayPaint} iconDescription="spray" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolSpray)}></Button>
         <Button isSelected={$toolSettings.current === toolRectangle} kind="ghost" size="small" icon={SquareOutline} iconDescription="rectangle" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolRectangle)}></Button>
-        <Button isSelected={$toolSettings.current === toolOval} kind="ghost" size="small" icon={CircleOutline} iconDescription="oval" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolOval)}></Button>
+        <Button isSelected={$toolSettings.current === toolEllipse} kind="ghost" size="small" icon={CircleOutline} iconDescription="Ellipse" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolEllipse)}></Button>
         <Button isSelected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}></Button>
         <Button isSelected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
         <Button isSelected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
@@ -501,7 +501,7 @@
         {#if $toolSettings.current === toolBrush || $toolSettings.current === toolErase}
           <BrushSize bind:brushSize={$brushSettings.size} bind:brushType={$brushSettings.type}/>
           <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.size}/>
-        {:else if $toolSettings.current === toolRectangle || $toolSettings.current === toolOval}
+        {:else if $toolSettings.current === toolRectangle || $toolSettings.current === toolEllipse}
           fill:&nbsp; <Checkbox bind:checked={$brushSettings.fill}/>
         {:else if $toolSettings.current === toolSpray}
           radius:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.sprayRadius}/>

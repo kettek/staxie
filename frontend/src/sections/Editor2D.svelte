@@ -10,8 +10,8 @@
   import { CanvasView } from '../types/canvasview'
 
   import { type LoadedFile } from '../types/file'
-  import { EllipsisShape, FilledCircle, FilledSquare, NormalizeShape, RectangleShape, ShapeToImageData, type PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionTool, SprayTool, RectangleTool, OvalTool } from '../types/tools'
+  import { EllipseShape, FilledCircle, FilledSquare, NormalizeShape, RectangleShape, ShapeToImageData, type PixelPosition } from '../types/shapes'
+  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionTool, SprayTool, RectangleTool, EllipseTool } from '../types/tools'
   import { Button, NumberInput } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
   import { toolCanvas, toolSettings } from '../stores/tool'
@@ -215,8 +215,8 @@
         ctx.drawImage(toolCanvas, offsetX+minX, offsetY+minY)
       }
       ctx.restore()
-    } else if ($toolSettings.current instanceof OvalTool && $toolSettings.current.isActive()) {
-      rlog.warn('FIXME: Implement oval tool preview. (it freezes if enabled)')
+    } else if ($toolSettings.current instanceof EllipseTool && $toolSettings.current.isActive()) {
+      rlog.warn('FIXME: Implement Ellipse tool preview. (it freezes if enabled)')
       if (false) {
         ctx.save()
         ctx.imageSmoothingEnabled = false
@@ -227,7 +227,7 @@
         let tctx = toolCanvas.getContext('2d')
         if (tctx) {
           let { r, g, b, a } = file.canvas.getPaletteAsRGBA($toolSettings.current.colorIndex)
-          let {shape, minX, minY} = NormalizeShape(EllipsisShape($toolSettings.current.x1, $toolSettings.current.y1, $toolSettings.current.x2, $toolSettings.current.y2, $toolSettings.current.fill, $brushSettings.primaryIndex))
+          let {shape, minX, minY} = NormalizeShape(EllipseShape($toolSettings.current.x1, $toolSettings.current.y1, $toolSettings.current.x2, $toolSettings.current.y2, $toolSettings.current.fill, $brushSettings.primaryIndex))
           let imageData = ShapeToImageData(shape, tctx, [r, g, b, a])
           tctx.putImageData(imageData, 0, 0)
           ctx.drawImage(toolCanvas, offsetX+minX, offsetY+minY)
@@ -388,7 +388,7 @@
           $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if ($toolSettings.current instanceof EraserTool) {
           $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
-        } else if ($toolSettings.current instanceof RectangleTool || $toolSettings.current instanceof OvalTool) {
+        } else if ($toolSettings.current instanceof RectangleTool || $toolSettings.current instanceof EllipseTool) {
           $toolSettings.current.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor, fill: $brushSettings.fill}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if ($toolSettings.current instanceof SprayTool) {
           $toolSettings.current.pointerDown({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
