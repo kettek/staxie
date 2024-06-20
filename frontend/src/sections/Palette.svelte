@@ -10,6 +10,7 @@
   import { createEventDispatcher } from 'svelte'
   import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
   import DeletePaletteEntryModal from '../components/DeletePaletteEntryModal.svelte'
+  import MovePaletteEntryModal from '../components/MovePaletteEntryModal.svelte'
   
   import { brushSettings } from '../stores/brush'
 
@@ -119,6 +120,11 @@
   function showDeleteSwatchDialog(e: CustomEvent) {
     showDeleteDialog = true
   }
+
+  let showMoveDialog: boolean = false
+  function showMoveSwatchDialog(e: CustomEvent) {
+    showMoveDialog = true
+  }
   
   // These are entry refs for sharing the ContextMenu.
   let _refs = []
@@ -144,9 +150,11 @@
     {/if}
   {/each}
   <ContextMenu target={_refs} on:open={onContextMenu}>
+    <ContextMenuOption labelText="Move..." on:click={showMoveSwatchDialog} />
     <ContextMenuOption labelText="Delete..." on:click={showDeleteSwatchDialog} kind='danger' />
   </ContextMenu>
   <DeletePaletteEntryModal bind:open={showDeleteDialog} paletteIndex={targetIndex} file={file}/>
+  <MovePaletteEntryModal bind:open={showMoveDialog} paletteIndex={targetIndex} file={file}/>
 </main>
 
 <style>

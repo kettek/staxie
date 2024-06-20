@@ -280,16 +280,42 @@ export class RemoveSwatchUndoable implements Undoable<LoadedFile> {
 export class SwapSwatchUndoable implements Undoable<LoadedFile> {
   private index1: number
   private index2: number
-  constructor(index1: number, index2: number) {
+  private updatePixels: boolean
+  constructor(index1: number, index2: number, updatePixels: boolean = true) {
     this.index1 = index1
     this.index2 = index2
+    this.updatePixels = updatePixels
   }
   apply(file: LoadedFile) {
+    if (this.updatePixels) {
+      for (let y = 0; y < file.canvas.height; y++) {
+        for (let x = 0; x < file.canvas.width; x++) {
+          let p = file.canvas.getPixel(x, y)
+          if (p === this.index1) {
+            file.canvas.setPixel(x, y, this.index2)
+          } else if (p === this.index2) {
+            file.canvas.setPixel(x, y, this.index1)
+          }
+        }
+      }
+    }
     file.canvas.swapPaletteColors(this.index1, this.index2)
     file.canvas.refreshImageData()
     file.canvas.refreshCanvas()
   }
   unapply(file: LoadedFile) {
+    if (this.updatePixels) {
+      for (let y = 0; y < file.canvas.height; y++) {
+        for (let x = 0; x < file.canvas.width; x++) {
+          let p = file.canvas.getPixel(x, y)
+          if (p === this.index1) {
+            file.canvas.setPixel(x, y, this.index2)
+          } else if (p === this.index2) {
+            file.canvas.setPixel(x, y, this.index1)
+          }
+        }
+      }
+    }
     file.canvas.swapPaletteColors(this.index2, this.index1)
     file.canvas.refreshImageData()
     file.canvas.refreshCanvas()
@@ -299,16 +325,45 @@ export class SwapSwatchUndoable implements Undoable<LoadedFile> {
 export class MoveSwatchUndoable implements Undoable<LoadedFile> {
   private index: number
   private newIndex: number
-  constructor(index: number, newIndex: number) {
+  private updatePixels: boolean
+  private oldPixels: { x: number, y: number, index: number }[] = []
+  constructor(index: number, newIndex: number, updatePixels: boolean = true) {
     this.index = index
     this.newIndex = newIndex
+    this.updatePixels = updatePixels
   }
   apply(file: LoadedFile) {
+    if (this.updatePixels) {
+      for (let y = 0; y < file.canvas.height; y++) {
+        for (let x = 0; x < file.canvas.width; x++) {
+          let p = file.canvas.getPixel(x, y)
+          if (p >= this.newIndex && p < this.index) {
+            file.canvas.setPixel(x, y, p + 1)
+          } else if (p === this.index) {
+            file.canvas.setPixel(x, y, this.newIndex)
+          }
+        }
+      }
+    }
+
     file.canvas.movePaletteColor(this.index, this.newIndex)
     file.canvas.refreshImageData()
     file.canvas.refreshCanvas()
   }
   unapply(file: LoadedFile) {
+    if (this.updatePixels) {
+      for (let y = 0; y < file.canvas.height; y++) {
+        for (let x = 0; x < file.canvas.width; x++) {
+          let p = file.canvas.getPixel(x, y)
+          if (p === this.newIndex) {
+            file.canvas.setPixel(x, y, this.index)
+          } else if (p > this.newIndex && p <= this.index) {
+            file.canvas.setPixel(x, y, p - 1)
+          }
+        }
+      }
+    }
+
     file.canvas.movePaletteColor(this.newIndex, this.index)
     file.canvas.refreshImageData()
     file.canvas.refreshCanvas()
