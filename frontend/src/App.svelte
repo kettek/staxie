@@ -15,7 +15,7 @@
   import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
-  import { PixelsPlaceUndoable, SelectionClearUndoable } from './types/file/undoables'
+  import { ChangeColorModeUndoable, PixelsPlaceUndoable, SelectionClearUndoable } from './types/file/undoables'
 
   import "carbon-components-svelte/css/all.css"
   import { Tabs, Tab, TabContent, Theme, Button, NumberInput, Dropdown, Checkbox } from "carbon-components-svelte"
@@ -51,6 +51,7 @@
   import Frames from './sections/Frames.svelte'
   
   import { toolSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolOval, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle } from './stores/tool'
+  import ColorMode from './sections/ColorMode.svelte'
 
   let is3D: boolean = false
   
@@ -107,6 +108,9 @@
   
   let exportPath: string = ''
   let exportFormat: 'png' = 'png'
+
+  let showColorMode: boolean = false
+  let newColorMode: boolean = false
   
   let showPreview: boolean = false
   let showPreviewSettings: boolean = false
@@ -262,6 +266,12 @@
     console.log('paste results', paletteDiff, missingColors, cp)
   }
 
+  function engageColorMode() {
+    if (!focusedFile) return
+    focusedFile.push(new ChangeColorModeUndoable(newColorMode))
+    showColorMode = false
+  }
+
   function closeFile(index: number) {
     fileStates.removeFile(index)
     let nextIndex = index
@@ -322,6 +332,10 @@
       <OverflowMenuItem on:click={() => focusedFile?.redo()} disabled={!focusedFile?.canRedo()}>
         Redo &nbsp; <Redo/>
       </OverflowMenuItem>
+    </OverflowMenu>
+    <OverflowMenu size="sm">
+      <div slot="menu">Image</div>
+      <OverflowMenuItem text="Mode" on:click={() => showColorMode = true}/>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">View</div>
@@ -604,6 +618,16 @@
       bind:open={showNew}
       bind:canvas={importCanvas}
       bind:png={importPNG}
+    />
+  </ComposedModal>
+{/if}
+
+{#if showColorMode && focusedFile}
+  <ComposedModal bind:open={showColorMode} size="sm" preventCloseOnClickOutside on:click:button--primary={engageColorMode}>
+    <ColorMode
+      bind:open={showColorMode}
+      bind:file={focusedFile}
+      bind:indexed={newColorMode}
     />
   </ComposedModal>
 {/if}
