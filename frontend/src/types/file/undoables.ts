@@ -315,6 +315,25 @@ export class MoveSwatchUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class ChangeColorModeUndoable implements Undoable<LoadedFile> {
+  private newIndexed: boolean
+  private oldIndexed: boolean = false
+  constructor(value: boolean) {
+    this.newIndexed = value
+  }
+  apply(file: LoadedFile) {
+    this.oldIndexed = file.canvas.isIndexed
+    file.canvas.isIndexed = this.newIndexed
+    file.canvas.refreshImageData()
+    file.canvas.refreshCanvas()
+  }
+  unapply(t: LoadedFile): void {
+    t.canvas.isIndexed = this.oldIndexed
+    t.canvas.refreshImageData()
+    t.canvas.refreshCanvas()
+  }
+}
+
 export class ChangeFrameTimeUndoable implements Undoable<LoadedFile> {
   private stack: string
   private animation: string
