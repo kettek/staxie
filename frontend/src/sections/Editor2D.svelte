@@ -197,6 +197,8 @@
       ctx.imageSmoothingEnabled = false
       ctx.scale(zoom, zoom)
       let {x, y} = $toolSettings.current.previewPosition()
+      x -= view.x
+      y -= view.y
       ctx.drawImage($toolSettings.current.preview.canvas, offsetX+x, offsetY+y)
       ctx.restore()
     } else if ($toolSettings.current instanceof RectangleTool && $toolSettings.current.isActive()) {
@@ -269,7 +271,7 @@
     // Draw our selection overlay.
     if (file.selection.active) {
       ctx.imageSmoothingEnabled = false
-      ctx.drawImage(file.selection.marchingCanvas, offsetX*zoom, offsetY*zoom)
+      ctx.drawImage(file.selection.marchingCanvas, (offsetX-view.x)*zoom, (offsetY-view.y)*zoom)
     }
 
     // Draw our overlay with difference composition so visibility is better.
@@ -333,6 +335,8 @@
       // Draw bounding box selection preview.
       if ($toolSettings.current instanceof SelectionTool && $toolSettings.current.isActive()) {
         let {x, y, width, height} = $toolSettings.current.getArea()
+        x -= view.x
+        y -= view.y
         ctx.strokeRect(offsetX*zoom+x*zoom, offsetY*zoom+y*zoom, width*zoom, height*zoom)
       }
       // Draw zoomed pixel-sized square where mouse is.
