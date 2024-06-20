@@ -1,5 +1,7 @@
 <script lang='ts'>
   import { Modal, TextInput } from "carbon-components-svelte"
+  import { enableShortcuts, disableShortcuts } from "./Shortcuts.svelte"
+  import { onMount } from "svelte"
 
   export let open: boolean = false
   export let heading: string = "Rename"
@@ -7,6 +9,12 @@
 
   export let text: string = ""
 
+  onMount(() => {
+    disableShortcuts()
+    return () => {
+      enableShortcuts()
+    }
+  })
 </script>
 
 <Modal
@@ -21,5 +29,5 @@
     onsubmit(text)
   }}
 >
-  <TextInput id="rename" labelText="New name" bind:value={text} />
+  <TextInput id="rename" labelText="New name" bind:value={text}/>
 </Modal>
