@@ -23,6 +23,14 @@
   let keystring = ''
   
   const modifiers = ['control', 'command', 'option', 'shift', 'alt', 'altgr', 'super', 'meta']
+
+  let disabled: boolean = false
+  export function disableShortcuts() {
+    disabled = true
+  }
+  export function enableShortcuts() {
+    disabled = false
+  }
   
   function normalizeKey(event: KeyboardEvent): string {
     let key = event.key
@@ -38,6 +46,7 @@
   }
   
   window.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (disabled) return
     if (event.key === 'Alt') event.preventDefault() // Prevent alt because that opens a menu that doesn't exist.
     let key = normalizeKey(event)
     keys.add(key.toLowerCase())
@@ -54,6 +63,7 @@
     }
   })
   window.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (disabled) return
     keystring = keysToString([...keys])
 
     if (triggered.has(keystring)) {
@@ -73,6 +83,7 @@
   })
 
   window.addEventListener('wheel', (event: WheelEvent) => {
+    if (disabled) return
     if (event.deltaY < 0 || event.deltaX < 0) {
       keys.add('wheelup')
     } else if (event.deltaY > 0 || event.deltaX > 0) {
