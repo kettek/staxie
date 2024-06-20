@@ -89,6 +89,7 @@
   }
   function click(e: any) {
     if (ignoreEvents || hidden) return
+    if (e.nativeEvent.button !== 0) return
     e.stopPropagation()
     dispatch('click', {
       position: {
@@ -105,7 +106,7 @@
       original: e,
     })
   }
-  function contextmenu(e: any) {
+  /*function contextmenu(e: any) {
     if (ignoreEvents || hidden) return
     e.stopPropagation()
     dispatch('click', {
@@ -122,7 +123,7 @@
       },
       original: e,
     })
-  }
+  }*/
 </script>
 
 <T.Mesh
@@ -133,7 +134,6 @@
   on:pointerleave={leave}
   on:pointermove={move}
   on:click={click}
-  on:contextmenu={contextmenu}
 >
   <T.BoxGeometry />
   <T.MeshStandardMaterial
