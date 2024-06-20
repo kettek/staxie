@@ -5,11 +5,13 @@ export interface PixelPosition {
   index: number
 }
 
-export function NormalizeShape(shape: PixelPosition[]): {shape: PixelPosition[], minX: number, minY: number, maxX: number, maxY: number, width: number, height: number} {
+export function NormalizeShape(shape: PixelPosition[], transform?: {x: number, y: number}): {shape: PixelPosition[], minX: number, minY: number, maxX: number, maxY: number, width: number, height: number} {
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity
   let maxY = -Infinity
+  let transformX = transform ? transform.x : 0
+  let transformY = transform ? transform.y : 0
 
   for (let pixel of shape) {
     if (pixel.x < minX) minX = pixel.x
@@ -19,8 +21,11 @@ export function NormalizeShape(shape: PixelPosition[]): {shape: PixelPosition[],
   }
 
   return {
-    shape: shape.map(pixel => ({x: pixel.x - minX, y: pixel.y - minY, index: pixel.index})),
-    minX, minY, maxX, maxY,
+    shape: shape.map(pixel => ({x: pixel.x - minX + transformX, y: pixel.y - minY + transformY, index: pixel.index})),
+    minX: minX + transformX,
+    minY: minY + transformY,
+    maxX: maxX + transformX,
+    maxY: maxY + transformY,
     width: maxX - minX + 1,
     height: maxY - minY + 1,
   }
@@ -89,6 +94,48 @@ export function RectangleShape(x1: number, y1: number, x2: number, y2: number, f
     }
   }
   
+  return pixels
+}
+
+export function EllipsisShape(x1: number, y1: number, x2: number, y2: number, fill: boolean, index: number): PixelPosition[] {
+  let pixels: PixelPosition[] = []
+
+  let xmin = Math.min(x1, x2)
+  let xmax = Math.max(x1, x2)
+  let ymin = Math.min(y1, y2)
+  let ymax = Math.max(y1, y2)
+
+  let xcenter = (xmin + xmax) / 2
+  let ycenter = (ymin + ymax) / 2
+  let xr = (xmax - xmin) / 2
+  let yr = (ymax - ymin) / 2
+
+  for (let x = xmin; x <= xmax; x++) {
+    for (let y = ymin; y <= ymax; y++) {
+      if (((x - xcenter) / xr) ** 2 + ((y - ycenter) / yr) ** 2 <= 1) {
+        pixels.push({x, y, index})
+      }
+    }
+  }
+
+  // FIXME: Let's blame this method of getting the edges of a filled ellipsis to make an outlined ellipsis a sympton of having the 'rona.
+  if (!fill) {
+    let outlinePixels: PixelPosition[] = []
+    for (let pixel of pixels) {
+      let adjacentCount = 0
+      for (let pixel2 of pixels) {
+        if (pixel2.x === pixel.x && pixel2.y === pixel.y) continue
+        if (Math.abs(pixel2.x - pixel.x) <= 1 && Math.abs(pixel2.y - pixel.y) <= 1) {
+          adjacentCount++
+        }
+      }
+      if (adjacentCount < 8) {
+        outlinePixels.push(pixel)
+      }
+    }
+    pixels = outlinePixels
+  }
+
   return pixels
 }
 

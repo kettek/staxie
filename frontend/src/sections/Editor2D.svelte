@@ -10,11 +10,12 @@
   import { CanvasView } from '../types/canvasview'
 
   import { type LoadedFile } from '../types/file'
-  import { FilledCircle, FilledSquare, NormalizeShape, RectangleShape, ShapeToImageData, type PixelPosition } from '../types/shapes'
+  import { EllipsisShape, FilledCircle, FilledSquare, NormalizeShape, RectangleShape, ShapeToImageData, type PixelPosition } from '../types/shapes'
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionTool, SprayTool, RectangleTool, OvalTool } from '../types/tools'
   import { Button, NumberInput } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
   import { toolCanvas, toolSettings } from '../stores/tool'
+  import { rlog } from '../globals/log'
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -213,8 +214,26 @@
         tctx.putImageData(imageData, 0, 0)
         ctx.drawImage(toolCanvas, offsetX+minX, offsetY+minY)
       }
-
       ctx.restore()
+    } else if ($toolSettings.current instanceof OvalTool && $toolSettings.current.isActive()) {
+      rlog.warn('FIXME: Implement oval tool preview. (it freezes if enabled)')
+      if (false) {
+        ctx.save()
+        ctx.imageSmoothingEnabled = false
+        ctx.scale(zoom, zoom)
+      
+        toolCanvas.width = Math.abs($toolSettings.current.x1 - $toolSettings.current.x2) + 1
+        toolCanvas.height = Math.abs($toolSettings.current.y1 - $toolSettings.current.y2) + 1
+        let tctx = toolCanvas.getContext('2d')
+        if (tctx) {
+          let { r, g, b, a } = file.canvas.getPaletteAsRGBA($toolSettings.current.colorIndex)
+          let {shape, minX, minY} = NormalizeShape(EllipsisShape($toolSettings.current.x1, $toolSettings.current.y1, $toolSettings.current.x2, $toolSettings.current.y2, $toolSettings.current.fill, $brushSettings.primaryIndex))
+          let imageData = ShapeToImageData(shape, tctx, [r, g, b, a])
+          tctx.putImageData(imageData, 0, 0)
+          ctx.drawImage(toolCanvas, offsetX+minX, offsetY+minY)
+        }
+        ctx.restore()
+      }
     }
 
     // Draw our grid.
