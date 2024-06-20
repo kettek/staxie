@@ -288,10 +288,21 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     let slice = frame.slices[sliceIndex]
     return { x: slice.x, y: slice.y, width: this.frameWidth, height: this.frameHeight }
   }
+
+  sanityCheck() {
+    if (this.animation && this.frameIndex >= this.animation.frames.length) {
+      this.setFrameIndex(this.animation.frames.length - 1)
+    }
+
+    if (this.frame && this.sliceIndex >= this.frame.slices.length) {
+      this.setSliceIndex(this.frame.slices.length - 1)
+    }
+  }
   
   undo() {
     flog.debug('undo')
     super.undo()
+    this.sanityCheck()
     this.canvas.refreshCanvas()
     this.selection.refresh()
     this.set(this)
@@ -299,6 +310,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   redo() {
     flog.debug('redo')
     super.redo()
+    this.sanityCheck()
     this.canvas.refreshCanvas()
     this.selection.refresh()
     this.set(this)
@@ -356,6 +368,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     } else {
       super.push(item)
     }
+
+    this.sanityCheck()
     this.canvas.refreshCanvas()
     this.selection.refresh()
     this.set(this)
