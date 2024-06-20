@@ -152,6 +152,7 @@
     showTarget = false
   }
   function onGridClick(e: any) {
+    if (e.nativeEvent.button !== 0) return
     let [x, z] = getGridXY(e)
     placePixelAt({ x, y: 0, z }, $brushSettings.primaryIndex)
   }
