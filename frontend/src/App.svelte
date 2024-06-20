@@ -335,7 +335,7 @@
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Image</div>
-      <OverflowMenuItem text="Mode" on:click={() => showColorMode = true}/>
+      <OverflowMenuItem text="Color Mode..." on:click={() => showColorMode = true}/>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">View</div>
