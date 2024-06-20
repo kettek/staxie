@@ -464,7 +464,7 @@
         <Button isSelected={$toolSettings.current === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolBrush)}></Button>
         <Button isSelected={$toolSettings.current === toolSpray} kind="ghost" size="small" icon={SprayPaint} iconDescription="spray" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolSpray)}></Button>
         <Button isSelected={$toolSettings.current === toolRectangle} kind="ghost" size="small" icon={SquareOutline} iconDescription="rectangle" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolRectangle)}></Button>
-        <Button isSelected={$toolSettings.current === toolEllipse} kind="ghost" size="small" icon={CircleOutline} iconDescription="Ellipse" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolEllipse)}></Button>
+        <Button isSelected={$toolSettings.current === toolEllipse} kind="ghost" size="small" icon={CircleOutline} iconDescription="ellipse" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolEllipse)}></Button>
         <Button isSelected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}></Button>
         <Button isSelected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
         <Button isSelected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
