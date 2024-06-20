@@ -55,8 +55,8 @@ export interface FloodToolContext {
   color: [number, number, number, number]
 }
 
-// SelectionToolContext provides context specific to the selection tool.
-export interface SelectionToolContext {
+// SelectionRectangularToolContext provides context specific to the selection tool.
+export interface SelectionRectangularToolContext {
 }
 
 // PickerToolContext provides context specific to the picker tool.
@@ -411,8 +411,8 @@ export class PickerTool implements Tool {
   }
 }
 
-// SelectionTool allows selecting an area of the canvas.
-export class SelectionTool implements Tool {
+// SelectionRectangularTool allows selecting an area of the canvas.
+export class SelectionRectangularTool implements Tool {
   private active: boolean
   private startX: number
   private startY: number
@@ -436,13 +436,13 @@ export class SelectionTool implements Tool {
     }
   }
 
-  pointerDown(ctx: ToolContext & SelectionToolContext, ptr: Pointer) {
+  pointerDown(ctx: ToolContext & SelectionRectangularToolContext, ptr: Pointer) {
     ctx.file.selection.active = true
     this.startX = this.endX = ptr.x
     this.startY = this.endY = ptr.y
     this.active = true
   }
-  pointerMove(ctx: ToolContext & SelectionToolContext, ptr: Pointer) {
+  pointerMove(ctx: ToolContext & SelectionRectangularToolContext, ptr: Pointer) {
     if (ptr.x < 0) ptr.x = 0
     if (ptr.y < 0) ptr.y = 0
     if (ptr.x >= ctx.file.canvas.width) ptr.x = ctx.file.canvas.width-1
@@ -450,7 +450,7 @@ export class SelectionTool implements Tool {
     this.endX = ptr.x
     this.endY = ptr.y
   }
-  pointerUp(ctx: ToolContext & SelectionToolContext, ptr: Pointer) {
+  pointerUp(ctx: ToolContext & SelectionRectangularToolContext, ptr: Pointer) {
     if (this.startX === this.endX && this.startY === this.endY) {
       ctx.file.push(new SelectionClearUndoable(), ctx.view)
       this.active = false
@@ -480,6 +480,74 @@ export class SelectionTool implements Tool {
     this.active = false
   }
 }
+
+// SelectionRectangularTool allows selecting an area of the canvas.
+export class SelectionEllipseTool implements Tool {
+  private active: boolean = false
+  private startX: number = -1
+  private startY: number = -1
+  private endX: number = -1
+  private endY: number = -1
+
+  isActive(): boolean {
+    return this.active
+  }
+
+  getArea(): { x: number, y: number, width: number, height: number } {
+    let x1 = Math.min(this.startX, this.endX)
+    let x2 = Math.max(this.startX, this.endX)
+    let y1 = Math.min(this.startY, this.endY)
+    let y2 = Math.max(this.startY, this.endY)
+    return {
+      x: x1,
+      y: y1,
+      width: x2-x1+1,
+      height: y2-y1+1,
+    }
+  }
+
+  pointerDown(ctx: ToolContext & SelectionRectangularToolContext, ptr: Pointer) {
+    ctx.file.selection.active = true
+    this.startX = this.endX = ptr.x
+    this.startY = this.endY = ptr.y
+    this.active = true
+  }
+  pointerMove(ctx: ToolContext & SelectionRectangularToolContext, ptr: Pointer) {
+    if (ptr.x < 0) ptr.x = 0
+    if (ptr.y < 0) ptr.y = 0
+    if (ptr.x >= ctx.file.canvas.width) ptr.x = ctx.file.canvas.width-1
+    if (ptr.y >= ctx.file.canvas.height) ptr.y = ctx.file.canvas.height-1
+    this.endX = ptr.x
+    this.endY = ptr.y
+  }
+  pointerUp(ctx: ToolContext & SelectionRectangularToolContext, ptr: Pointer) {
+    if (this.startX === this.endX && this.startY === this.endY) {
+      ctx.file.push(new SelectionClearUndoable(), ctx.view)
+      this.active = false
+      return
+    }
+
+    let value = true
+    let clear = false
+    if (!ptr.shift && !ptr.control) {
+      clear = true
+    }
+    if (ptr.control) {
+      value = false
+    }
+
+    let shape = EllipseShape(this.startX, this.startY, this.endX, this.endY, true, 1)
+
+    let pixels: { x: number, y: number, marked: boolean }[] = []
+
+    pixels = shape.map(v=>({x:v.x, y:v.y, marked: value}))
+
+    ctx.file.push(new SelectionSetUndoable(pixels, clear), ctx.view)
+
+    this.active = false
+  }
+}
+
 
 // MagicWandTool implements a magic wand tool.
 export class MagicWandTool implements Tool {

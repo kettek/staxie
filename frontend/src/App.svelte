@@ -23,7 +23,7 @@
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor, SquareOutline, CircleOutline } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor, SquareOutline, CircleOutline, CircleDash } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import { Canvas } from './types/canvas'
   import BrushSize from './components/BrushSize.svelte'
@@ -50,7 +50,7 @@
   import Editor3D from './sections/Editor3D.svelte'
   import Frames from './sections/Frames.svelte'
   
-  import { toolSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolEllipse, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle } from './stores/tool'
+  import { toolRectangularSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolEllipse, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle, toolEllipseSelection } from './stores/tool'
   import ColorMode from './sections/ColorMode.svelte'
 
   let is3D: boolean = false
@@ -458,7 +458,8 @@
         </Shortcuts>
       {:else}
         <Button isSelected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}></Button>
-        <Button isSelected={$toolSettings.current === toolSelection} kind="ghost" size="small" icon={Select_01} iconDescription="selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolSelection)}></Button>
+        <Button isSelected={$toolSettings.current === toolRectangularSelection} kind="ghost" size="small" icon={Select_01} iconDescription="rectangular selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolRectangularSelection)}></Button>
+        <Button isSelected={$toolSettings.current === toolEllipseSelection} kind="ghost" size="small" icon={CircleDash} iconDescription="ellipse selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolEllipseSelection)}></Button>
         <Button isSelected={$toolSettings.current === toolMagicWand} kind="ghost" size="small" icon={MagicWand} iconDescription="magic selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMagicWand)}></Button>
         <hr/>
         <Button isSelected={$toolSettings.current === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} iconDescription="paint" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolBrush)}></Button>
@@ -470,7 +471,7 @@
         <Button isSelected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
         <Shortcuts group='editor2D'>
           <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>focusedFile?.push(new SelectionClearUndoable())} />
-          <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolSelection)} />
+          <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolRectangularSelection)} />
           <Shortcut global cmd='magic selection' keys={['shift+s']} on:trigger={()=>toolSettings.swapTool(toolMagicWand)} />
           <Shortcut global cmd='move' keys={['m']} on:trigger={()=>toolSettings.swapTool(toolMove)} />
           <Shortcut global cmd='move left' keys={['arrowleft']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: -1, y: 0, id: 0})} />

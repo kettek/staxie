@@ -11,7 +11,7 @@
 
   import { type LoadedFile } from '../types/file'
   import { EllipseShape, FilledCircle, FilledSquare, NormalizeShape, RectangleShape, ShapeToImageData, type PixelPosition } from '../types/shapes'
-  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionTool, SprayTool, RectangleTool, EllipseTool } from '../types/tools'
+  import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionRectangularTool, SprayTool, RectangleTool, EllipseTool, SelectionEllipseTool } from '../types/tools'
   import { Button, NumberInput } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
   import { toolCanvas, toolSettings } from '../stores/tool'
@@ -333,7 +333,8 @@
       ctx.lineWidth = 1
       
       // Draw bounding box selection preview.
-      if ($toolSettings.current instanceof SelectionTool && $toolSettings.current.isActive()) {
+      if (($toolSettings.current instanceof SelectionRectangularTool || $toolSettings.current instanceof SelectionEllipseTool) && $toolSettings.current.isActive()) {
+        // FIXME: Show ellipse preview!
         let {x, y, width, height} = $toolSettings.current.getArea()
         x -= view.x
         y -= view.y
