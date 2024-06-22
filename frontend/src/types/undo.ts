@@ -1,8 +1,8 @@
 // UndoableStack provides an undo/redo system.
 export class UndoableStack<T> {
   private target: T;
-  private entries: Undoable<T>[] = [];
-  private entriesIndex: number = 0;
+  protected entries: Undoable<T>[] = [];
+  protected entriesIndex: number = 0;
   
   private captureStack: Undoable<T>[] = [];
   private capturing: boolean = false;
@@ -57,7 +57,6 @@ export class UndoableStack<T> {
   public canRedo() {
     return this.entriesIndex < this.entries.length;
   }
-  
   public capture() {
     this.captureStack = [];
     this.capturing = true;
