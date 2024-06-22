@@ -4,7 +4,6 @@
   import Editor2D from './sections/Editor2D.svelte'
   import Open from './sections/Open.svelte'
   import Import from './sections/Import.svelte'
-  import Exporter from './sections/Exporter.svelte'
   import PaletteSection from './sections/Palette.svelte'
   import FloatingPanel from './components/FloatingPanel.svelte'
   import { Palette } from './types/palette'
@@ -93,7 +92,6 @@
   
   let showOpen: boolean = false
   let showImport: boolean = false
-  let showExport: boolean = false
   let showNew: boolean = false
   let showAbout: boolean = false
   let importValid: boolean = false
@@ -193,23 +191,25 @@
     showImport = false
   }
   
-  async function engageExport() {
+  async function engageSave() {
+    if (!focusedFile) return
     try {
       let data = await focusedFile.canvas.toPNG(focusedFile)
-      
-      SaveFileBytes(exportPath, [...data])
+      SaveFileBytes(focusedFile.filepath, [...data])
     } catch(e) {
       alert(e)
     }
-
-    showExport = false
   }
   
   async function engageSaveAs() {
+    if (!focusedFile) return
      try {
       let data = await focusedFile.canvas.toPNG(focusedFile)
       let path = await SaveFilePath(focusedFile.filepath)
       SaveFileBytes(path, [...data])
+      focusedFile.filepath = path
+      focusedFile.title = /[^/\\]*$/.exec(path)[0]
+      fileStates.refresh()
     } catch(e) {
       alert(e)
     }
@@ -319,8 +319,7 @@
       <OverflowMenuItem text="New..." on:click={() => showNew = true}/>
       <OverflowMenuItem text="Open PNG..." on:click={loadPNG}/>
       <OverflowMenuItem text="Import..." on:click={()=>showImport = true}/>
-      <OverflowMenuItem text="Export to PNG" disabled={focusedFile===null} on:click={() => showExport = true}/>
-      <OverflowMenuItem text="Save"/>
+      <OverflowMenuItem text="Save" on:click={engageSave}/>
       <OverflowMenuItem text="Save As..." on:click={engageSaveAs}/>
       <OverflowMenuItem hasDivider danger text="Quit" on:click={engageQuit}/>
     </OverflowMenu>
@@ -605,13 +604,6 @@
     />
   </ComposedModal>
 {/if}
-<ComposedModal bind:open={showExport} size="sm" preventCloseOnClickOutside on:click:button--primary={engageExport}>
-  <Exporter
-    bind:open={showExport}
-    bind:path={exportPath}
-    bind:format={exportFormat}
-  />
-</ComposedModal>
 
 {#if showNew}
   <ComposedModal bind:open={showNew} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
