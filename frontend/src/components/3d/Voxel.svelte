@@ -31,6 +31,8 @@
   
   let hidden = false
   $: hidden = !visible || (hideTransparent && opacity < 1)
+
+  let suppressLeaveDueToLinuxBug = false // For some reason, on Linux wails, the "click" event is causing the "pointerleave" event to be emitted. This leave event, unfortunately, occurs _before_ the click event finishes, so it messes with voxel tool logic.
   
   function hover(e: any) {
     if (ignoreEvents || hidden) return
@@ -70,6 +72,7 @@
   }
   function leave(e: any) {
     if (ignoreEvents || hidden) return
+    if (suppressLeaveDueToLinuxBug) return
     e.stopPropagation()
     $scale = 1.0
     hovered = false
@@ -106,6 +109,13 @@
       original: e,
     })
   }
+  function down(e: any) {
+    suppressLeaveDueToLinuxBug = true
+  }
+  function up(e: any) {
+    // This forces the suppression to be maintained until the _next_ event flush, browser update, or whatever it actually is.
+    setTimeout(() => suppressLeaveDueToLinuxBug = false, 0)
+  }
   /*function contextmenu(e: any) {
     if (ignoreEvents || hidden) return
     e.stopPropagation()
@@ -130,9 +140,11 @@
   scale={$scale}
   position={[position[0]+offset[0]+0.5, position[1]+offset[1]+0.5, position[2]+offset[2]+0.5]}
   visible={!hidden}
-  on:pointerenter={hover}
-  on:pointerleave={leave}
+  on:pointerover={hover}
+  on:pointerout={leave}
   on:pointermove={move}
+  on:pointerdown={down}
+  on:pointerup={up}
   on:click={click}
 >
   <T.BoxGeometry />
