@@ -141,8 +141,8 @@
     }
     if (offsetX === undefined || offsetY === undefined) {
       // Adjust offset to center image on first LOAD.
-      offsetX = rootCanvas.width/2 - file.canvas.width/2
-      offsetY = rootCanvas.height/2 - file.canvas.height/2
+      offsetX = rootCanvas.width/2 - view?.width/2??file.canvas.width/2
+      offsetY = rootCanvas.height/2 - view?.height/2??file.canvas.height/2
     }
   }
 
