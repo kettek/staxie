@@ -283,7 +283,11 @@
     let file = fileStates.getFile(nextIndex)
     if (file) {
       selectFile(file, nextIndex, file.id)
+    } else {
+      focusedFileIndex = -1
+      focusedFile = null
     }
+    fileStates.refresh()
   }
 
   function handlePaletteSelect(event: CustomEvent) {
