@@ -51,6 +51,7 @@
   
   import { toolRectangularSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolEllipse, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle, toolEllipseSelection } from './stores/tool'
   import ColorMode from './sections/ColorMode.svelte'
+  import TabTitle from './components/TabTitle.svelte'
 
   let is3D: boolean = false
   
@@ -196,6 +197,9 @@
     try {
       let data = await focusedFile.canvas.toPNG(focusedFile)
       SaveFileBytes(focusedFile.filepath, [...data])
+      focusedFile.markSaved()
+      focusedFile.refresh()
+      fileStates.refresh()
     } catch(e) {
       alert(e)
     }
@@ -210,6 +214,7 @@
       SaveFileBytes(path, [...data])
       focusedFile.filepath = path
       focusedFile.title = /[^/\\]*$/.exec(path)[0]
+      focusedFile.markSaved()
       fileStates.refresh()
     } catch(e) {
       alert(e)
@@ -516,10 +521,7 @@
       <Tabs bind:selected={focusedFileIndex}>
         {#each $fileStates as file, index}
           <Tab on:click={()=>selectFile(file, index, file.id)} title={file.filepath}>
-            <span class='tab'>
-              <span>{file.title.substring(0, file.title.lastIndexOf('.')) || file.title}</span>
-              <Button size="small" kind="ghost" iconDescription="close" icon={Close} href="#" on:click={(e)=>{e.preventDefault();closeFile(index)}} />
-            </span>
+            <TabTitle file={file} on:close={()=>closeFile(index)}/>
           </Tab>
         {/each}
         <svelte:fragment slot="content">
@@ -688,22 +690,6 @@
   .middle {
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr) auto;
-  }
-  .tab {
-    display: inline-grid;
-    grid-template-columns: 9em minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-  .tab span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    direction: rtl;
   }
   :global(.middle .bx--tabs__nav-link) {
     position: relative;
