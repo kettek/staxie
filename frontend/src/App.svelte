@@ -206,6 +206,7 @@
      try {
       let data = await focusedFile.canvas.toPNG(focusedFile)
       let path = await SaveFilePath(focusedFile.filepath)
+      if (path === "") return
       SaveFileBytes(path, [...data])
       focusedFile.filepath = path
       focusedFile.title = /[^/\\]*$/.exec(path)[0]
@@ -522,6 +523,8 @@
             <TabContent>
               {#if is3D}
                 <Shortcuts group='editor3D' active={focusedFile===file}>
+                  <Shortcut cmd='save' keys={['ctrl+s']} on:trigger={engageSave} />
+                  <Shortcut cmd='saveAs' keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
                   <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
                   <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
                   <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index, file.id)} />
@@ -533,6 +536,8 @@
                 />
               {:else}
                 <Shortcuts group='editor2D' active={focusedFile===file}>
+                  <Shortcut cmd='save' keys={['ctrl+s']} on:trigger={engageSave} />
+                  <Shortcut cmd='saveAs' keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
                   <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
                   <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
                   <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index, file.id)} />
