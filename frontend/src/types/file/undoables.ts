@@ -595,18 +595,18 @@ export class DuplicateStackUndoable implements Undoable<LoadedFile> {
     let { x, y, width, height } = file.getStackArea(this.stack)
     this.stackX = x
     this.stackY = y
-    this.stackWidth = width
+    this.stackWidth = file.canvas.width
     this.stackHeight = height
 
     // 1. Get pixels to copy
-    let stackPixels = file.canvas.getPixels(x, y, width, height)
+    let stackPixels = file.canvas.getPixels(x, y, file.canvas.width, height)
     // 2. Resize canvas
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + height)
     // 3. Shift all pixels after stack area down by stack area's height*2
-    let pixels = file.canvas.getPixels(x, y + height, width, file.canvas.height - (y + height))
-    file.canvas.setPixels(x, y + height * 2, width, file.canvas.height - (y + height), pixels)
+    let pixels = file.canvas.getPixels(x, y + height, file.canvas.width, file.canvas.height - (y + height))
+    file.canvas.setPixels(x, y + height * 2, file.canvas.width, file.canvas.height - (y + height), pixels)
     // 4. Set pixels at stack area + stack area height to stored
-    file.canvas.setPixels(x, y + height, width, height, stackPixels)
+    file.canvas.setPixels(x, y + height, file.canvas.width, height, stackPixels)
     // 5. Update data structure
     file.stacks.splice(file.stacks.findIndex(g => g.name === this.stack) + 1, 0, {name, animations: JSON.parse(JSON.stringify(g.animations)), sliceCount: g.sliceCount})
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
