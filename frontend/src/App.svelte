@@ -341,6 +341,9 @@
       <OverflowMenuItem on:click={() => focusedFile?.redo()} disabled={!focusedFile?.canRedo()}>
         Redo &nbsp; <Redo/>
       </OverflowMenuItem>
+      <OverflowMenuItem hasDivider on:click={() => focusedFile?.repeat()} disabled={!focusedFile}>
+        Repeat Last
+      </OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Image</div>

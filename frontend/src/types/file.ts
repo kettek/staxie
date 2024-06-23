@@ -30,6 +30,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   data?: IndexedPNG
   //
   lastSaveIndex: number = 0
+  lastUndoable: Undoable<LoadedFile>|null = null
+  lastUndoableView: CanvasView|undefined
   //
   stacks: StaxStack[] = []
   stack?: StaxStack
@@ -323,11 +325,18 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     this.selection.refresh()
     this.set(this)
   }
+  repeat() {
+    if (!this.lastUndoable) return
+    flog.debug('repeat')
+    this.push(this.lastUndoable, this.lastUndoableView)
+  }
   push(item: Undoable<LoadedFile>, view?: CanvasView) {
     flog.debug('push', item.constructor.name)
     if (this.lastSaveIndex > this.entriesIndex) {
       this.lastSaveIndex = -1
     }
+    this.lastUndoable = item
+    this.lastUndoableView = view
 
     if (view) {
       flog.debug('...transforming by view')
