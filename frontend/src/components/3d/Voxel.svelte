@@ -72,10 +72,10 @@
   }
   function leave(e: any) {
     if (ignoreEvents || hidden) return
-    if (suppressLeaveDueToLinuxBug) return
-    e.stopPropagation()
     $scale = 1.0
     hovered = false
+    if (suppressLeaveDueToLinuxBug) return
+    e.stopPropagation()
     dispatch('leave', {
       position: {
         x: position[0],
