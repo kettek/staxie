@@ -364,8 +364,9 @@
 
       let x = offsetX - Math.floor(view.x) + Math.floor($toolSettings.current.lastX)
       let y = offsetY - view.y + Math.floor(Math.floor($toolSettings.current.lastY))
-      let x2 = (Math.floor(mouseX / zoom) + 0.5) * zoom
-      let y2 = (Math.floor(mouseY / zoom) + 0.5) * zoom
+
+      let x2 = offsetX*zoom+mousePixelX*zoom+zoom/2
+      let y2 = offsetY*zoom+mousePixelY*zoom+zoom/2
 
       ctx.moveTo((x+0.5)*zoom, (y+0.5)*zoom)
       ctx.lineTo(x2, y2)
