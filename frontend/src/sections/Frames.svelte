@@ -1,6 +1,6 @@
 <script lang='ts'>
   import { LoadedFile } from "../types/file"
-  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateSliceUndoable, RemoveAnimationFrameUndoable } from "../types/file/undoables"
+  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateAnimationFrameUndoable, DuplicateSliceUndoable, RemoveAnimationFrameUndoable } from "../types/file/undoables"
   import { Button, ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
   import { fileStates } from '../stores/file'
   import { AddAlt } from 'carbon-icons-svelte'
@@ -51,7 +51,12 @@
     file.refresh()
     fileStates.refresh()
   }
+  function contextFrameDuplicate() {
+    if (!file || !file.stack || !file.animation) return
+    file.push(new DuplicateAnimationFrameUndoable(file.stack.name, file.animation.name, contextFrameIndex))
+  }
   function contextFrameDelete() {
+    if (!file || !file.stack || !file.animation) return
     if (file.animation?.frames.length === 1) {
       alert('thou shalt not delete the last frame')
       return
@@ -59,12 +64,15 @@
     file.push(new RemoveAnimationFrameUndoable(file.stack.name, file.animation.name, contextFrameIndex))
   }
   function contextFrameClear() {
+    if (!file || !file.stack || !file.animation) return
     file.push(new ClearAnimationFrameUndoable(file.stack.name, file.animation.name, contextFrameIndex))
   }
   function contextSliceClear() {
+    if (!file || !file.frame) return
     file.push(new ClearSliceUndoable(file.frame, contextSliceIndex))
   }
   function contextSliceDuplicate() {
+    if (!file || !file.stack) return
     file.push(new DuplicateSliceUndoable(file.stack.name, contextSliceIndex))
   }
 </script>
@@ -112,6 +120,7 @@
     </section>
   </section>
   <ContextMenu bind:open={contextFrameOpen} bind:x={contextX} bind:y={contextY} target={[]}>
+    <ContextMenuOption labelText="Duplicate Frame" on:click={contextFrameDuplicate} />
     <ContextMenuOption labelText="Clear Frame" on:click={contextFrameClear} />
     <ContextMenuOption labelText="Delete Frame" kind="danger" on:click={contextFrameDelete} />
   </ContextMenu>
