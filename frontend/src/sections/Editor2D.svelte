@@ -305,12 +305,17 @@
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           if (r % 2 === 0 && c % 2 === 1 || r % 2 === 1 && c % 2 === 0) {
-            ctx.rect(
-              offsetX+c * $editor2DSettings.checkerboardSize,
-              offsetY+r * $editor2DSettings.checkerboardSize,
-              $editor2DSettings.checkerboardSize,
-              $editor2DSettings.checkerboardSize,
-            )
+            let x = offsetX+c * $editor2DSettings.checkerboardSize
+            let y = offsetY+r * $editor2DSettings.checkerboardSize
+            let w = $editor2DSettings.checkerboardSize
+            let h = $editor2DSettings.checkerboardSize
+            if (x+w > offsetX+view.width) {
+              w = offsetX+view.width - x
+            }
+            if (y+h > offsetY+view.height) {
+              h = offsetY+view.height - y
+            }
+            ctx.rect(x, y, w, h)
           }
         }
       }
