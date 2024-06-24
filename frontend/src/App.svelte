@@ -22,7 +22,7 @@
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor, SquareOutline, CircleOutline, CircleDash } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor, SquareOutline, CircleOutline, CircleDash, Chart_3D } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import { Canvas } from './types/canvas'
   import BrushSize from './components/BrushSize.svelte'
@@ -49,7 +49,7 @@
   import Editor3D from './sections/Editor3D.svelte'
   import Frames from './sections/Frames.svelte'
   
-  import { toolRectangularSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolEllipse, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle, toolEllipseSelection } from './stores/tool'
+  import { toolRectangularSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolEllipse, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle, toolEllipseSelection, toolVoxelCursor } from './stores/tool'
   import ColorMode from './sections/ColorMode.svelte'
   import TabTitle from './components/TabTitle.svelte'
 
@@ -373,6 +373,9 @@
       <OverflowMenu size="sm">
         <div slot="menu">3D</div>
         <OverflowMenuItem>
+          <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor3DSettings.showCursor} labelText="Cursor" />
+        </OverflowMenuItem>
+        <OverflowMenuItem>
           <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={$editor3DSettings.ignoreAlpha} labelText="Ignore Alpha" />
         </OverflowMenuItem>
         <OverflowMenuItem>
@@ -460,6 +463,8 @@
         <Button isSelected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}></Button>
         <Button isSelected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
         <Button isSelected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
+        <hr />
+        <Button isSelected={$toolSettings.current === toolVoxelCursor} kind="ghost" size="small" icon={Chart_3D} iconDescription="3D cursor" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelCursor)}></Button>
         <Shortcuts group='editor3D'>
           <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>toolSettings.swapTool(toolVoxelPlace)} />
           <Shortcut global cmd='replace' keys={['r']} on:trigger={()=>toolSettings.swapTool(toolVoxelReplace)} />
@@ -467,6 +472,7 @@
           <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>toolSettings.swapTool(toolErase)} />
           <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>toolSettings.swapTool(toolFill)} />
           <Shortcut global cmd='placeToPicker' keys={['alt']} on:trigger={()=>($toolSettings.current===toolVoxelPlace||$toolSettings.current===toolVoxelReplace||$toolSettings.current===toolFill)?toolSettings.swapTool(toolPicker):null} on:release={()=>($toolSettings.previous===toolVoxelPlace||$toolSettings.previous===toolVoxelReplace||$toolSettings.previous===toolFill)&&$toolSettings.current===toolPicker?toolSettings.swapTool($toolSettings.previous):null} />
+          <Shortcut global cmd='cursor' keys={['c']} on:trigger={()=>toolSettings.swapTool(toolVoxelCursor)} />
         </Shortcuts>
       {:else}
         <Button isSelected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}></Button>

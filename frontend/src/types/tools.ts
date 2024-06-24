@@ -66,8 +66,8 @@ export interface PickerToolContext {
 
 // BrushTool is a tool that allows the user to draw with a brush.
 export class BrushTool implements Tool {
-  private lastX: number = -1
-  private lastY: number = -1
+  public lastX: number = -1
+  public lastY: number = -1
   private active: boolean
   isActive(): boolean {
     return this.active
@@ -690,6 +690,30 @@ export class PlaceVoxelTool implements Tool {
 }
 
 export class ReplaceVoxelTool implements Tool {
+  isActive(): boolean {
+    return false
+  }
+  pointerDown(ctx: ToolContext, ptr: Pointer): void {
+  }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {
+  }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {
+  }
+}
+
+export class CursorVoxelTool implements Tool {
+  isActive(): boolean {
+    return false
+  }
+  pointerDown(ctx: ToolContext, ptr: Pointer): void {
+  }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {
+  }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {
+  }
+}
+
+export class SelectBoxVoxelTool implements Tool {
   isActive(): boolean {
     return false
   }

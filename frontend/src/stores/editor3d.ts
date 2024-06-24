@@ -16,6 +16,7 @@ type Editor3DSettings = {
   floodFillX: boolean
   floodFillY: boolean
   floodFillZ: boolean
+  showCursor: boolean
 }
 
 export const editor3DSettings = writable<Editor3DSettings>({
@@ -34,4 +35,5 @@ export const editor3DSettings = writable<Editor3DSettings>({
   floodFillX: true,
   floodFillY: true,
   floodFillZ: true,
+  showCursor: true,
 })

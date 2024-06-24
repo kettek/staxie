@@ -13,7 +13,8 @@
   import { OrbitControls as ThreeOrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
   import { editor2DSettings } from "../../stores/editor2d"
   
-  import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker, toolFill } from "../../stores/tool"
+  import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker, toolFill, toolVoxelCursor } from "../../stores/tool"
+  import Cursor from "./Cursor.svelte"
   
   export let file: LoadedFile
   export let palette: Palette|undefined
@@ -22,6 +23,7 @@
   let showTarget = false
   export let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
   export let hover: { x: number, y: number, z: number }|null = null
+  export let cursor: [number, number, number] = [2*Math.round(file.frameWidth/2), 0, 2*Math.round(file.frameHeight/2)]
   
   let orbitControls: ThreeOrbitControls
   let center: CurrentWritable<[number, number, number]> = currentWritable([0, 0, 0])
@@ -132,6 +134,45 @@
       if (p !== -1) $brushSettings.primaryIndex = p
     }
   }
+
+  function onCursorHover(e: CustomEvent & {detail: VoxelEvent}) {
+    target = {
+      x: e.detail.position.x + e.detail.face.x,
+      y: e.detail.position.y + e.detail.face.y,
+      z: e.detail.position.z + e.detail.face.z,
+    }
+    hover = {
+      x: e.detail.position.x,
+      y: e.detail.position.y,
+      z: e.detail.position.z,
+    }
+    showTarget = true
+  }
+  function onCursorMove(e: CustomEvent & {detail: VoxelEvent}) {
+    target = {
+      x: e.detail.position.x + e.detail.face.x,
+      y: e.detail.position.y + e.detail.face.y,
+      z: e.detail.position.z + e.detail.face.z,
+    }
+    hover = {
+      x: e.detail.position.x,
+      y: e.detail.position.y,
+      z: e.detail.position.z,
+    }
+    showTarget = true
+  }
+  function onCursorLeave(e: CustomEvent & {detail: VoxelEvent}) {
+    hover = null
+    showTarget = false
+  }
+  function onCursorClick(e: CustomEvent & {detail: VoxelClickEvent}) {
+    if ($toolSettings.current === toolVoxelPlace) {
+      placePixelAt(target, $brushSettings.primaryIndex)
+    } else if ($toolSettings.current === toolVoxelReplace) {
+      if (!hover) return
+      placePixelAt(hover, $brushSettings.primaryIndex)
+    }
+  }
   
   function getGridXY(e: any): [number, number] {
     let x = Math.floor(e.point.x + file.frameWidth/2)
@@ -153,8 +194,10 @@
   }
   function onGridClick(e: any) {
     if (e.nativeEvent.button !== 0) return
-    let [x, z] = getGridXY(e)
-    placePixelAt({ x, y: 0, z }, $brushSettings.primaryIndex)
+    if ($toolSettings.current === toolVoxelPlace) {
+      let [x, z] = getGridXY(e)
+      placePixelAt({ x, y: 0, z }, $brushSettings.primaryIndex)
+    }
   }
   
   interactivity()
@@ -296,6 +339,28 @@
     side={THREE.DoubleSide}
   />
 </T.Mesh>
+
+{#if $toolSettings.current === toolVoxelCursor}
+  <Cursor
+    bind:position={cursor}
+    offset={[-$file.frameWidth/2+0.5, 0, -$file.frameHeight/2+0.5]}
+  />
+{/if}
+{#if $editor3DSettings.showCursor}
+  <Voxel
+    position={cursor}
+    offset={[-$file.frameWidth/2, 0, -$file.frameHeight/2]}
+    color={0x44ff00ff}
+    baseScale={1.1}
+    ignoreEvents={$toolSettings.current !== toolVoxelPlace && $toolSettings.current !== toolVoxelReplace}
+    on:hover={onCursorHover}
+    on:move={onCursorMove}
+    on:leave={onCursorLeave}
+    on:click={onCursorClick}
+    alwaysOnTop
+    wireframe
+  />
+{/if}
 
 <Gizmo
   center={$center}

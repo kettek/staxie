@@ -1,6 +1,7 @@
 <script lang='ts'>
   import { T } from '@threlte/core'
-  import { createEventDispatcher } from 'svelte';
+  import { Outlines } from '@threlte/extras'
+  import { createEventDispatcher } from 'svelte'
   import { spring } from 'svelte/motion'
   
   const dispatch = createEventDispatcher()
@@ -15,6 +16,8 @@
   
   let realColor: number = 0xff00ff // RGB
   let opacity = 1
+  export let alwaysOnTop: boolean = false
+  export let wireframe: boolean = false
   
   $: {
     let r = (color) & 0xff
@@ -26,7 +29,8 @@
     opacity = a / 0xff
   }
   
-  const scale = spring(1)
+  export let baseScale: number = 1
+  const scale = spring(baseScale)
   let hovered = false
   
   let hidden = false
@@ -37,8 +41,10 @@
   function hover(e: any) {
     if (ignoreEvents || hidden) return
     e.stopPropagation()
-    $scale = 1.15
-    hovered = true
+    if (!wireframe) {
+      $scale = baseScale+.15
+      hovered = true
+    }
     dispatch('hover', {
       position: {
         x: position[0],
@@ -72,8 +78,10 @@
   }
   function leave(e: any) {
     if (ignoreEvents || hidden) return
-    $scale = 1.0
-    hovered = false
+    if (!wireframe) {
+      $scale = baseScale
+      hovered = false
+    }
     if (suppressLeaveDueToLinuxBug) return
     e.stopPropagation()
     dispatch('leave', {
@@ -150,7 +158,11 @@
   <T.BoxGeometry />
   <T.MeshStandardMaterial
     transparent={opacity < 1}
-    opacity={hovered?1:opacity}
+    opacity={wireframe?0.2:hovered?1:opacity}
     color={hovered?(0xffffff-realColor)|0xff0000:realColor}
+    depthTest={!alwaysOnTop}
   />
+  {#if wireframe}
+    <Outlines color={0x000000}/>
+  {/if}
 </T.Mesh>

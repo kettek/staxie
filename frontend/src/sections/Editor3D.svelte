@@ -12,6 +12,7 @@
   
   let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
   let hover: { x: number, y: number, z: number }|null = null
+  let cursor: [number, number, number] = [0, 0, 0]
 
 </script>
 
@@ -21,6 +22,7 @@
     <Scene
       bind:target
       bind:hover
+      bind:cursor
       file={file}
       palette={palette}
       orthographic={orthographic}
@@ -28,8 +30,9 @@
   </Canvas>
   <menu>
     <section class='cursor'>
-    <span>hover: </span><span>{hover?.x??'-'}</span><span>{hover?.y??'-'}</span><span>{hover?.z??'-'}</span>
-    <span>target: </span><span>{target.x??'-'}</span><span>{target.y??'-'}</span><span>{target.z??'-'}</span>
+      <span>hover: </span><span>{hover?.x??'-'}</span><span>{hover?.y??'-'}</span><span>{hover?.z??'-'}</span>
+      <span>target: </span><span>{target.x??'-'}</span><span>{target.y??'-'}</span><span>{target.z??'-'}</span>
+      <span>cursor: </span><span>{cursor[0]}</span><span>{cursor[1]}</span><span>{cursor[2]}</span>
     </section>
   </menu>
 </main>
@@ -53,7 +56,7 @@
   }
   .cursor {
     display: grid;
-    grid-template-columns: auto auto auto auto auto auto auto auto auto auto;
+    grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto auto;
     grid-template-rows: auto;
     font-size: 0.75rem;
     text-align: left;
