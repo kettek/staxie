@@ -31,6 +31,9 @@
   export function enableShortcuts() {
     disabled = false
   }
+  export function isKeyActive(key: string): boolean {
+    return keys.has(key)
+  }
   
   function normalizeKey(event: KeyboardEvent): string {
     let key = event.key

@@ -16,6 +16,7 @@
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
   import { toolCanvas, toolSettings } from '../stores/tool'
   import { rlog } from '../globals/log'
+  import { isKeyActive } from '../components/Shortcuts.svelte'
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -349,12 +350,28 @@
       if (zoom > 1) {
         ctx.rect(offsetX*zoom+mousePixelX*zoom, offsetY*zoom+mousePixelY*zoom, 1*zoom, 1*zoom)
       }
-      // Draw  pixel square where mouse is.
+      // Draw pixel square where mouse is.
       if (zoom <= 1 || zoom > 4) {
         ctx.rect(mouseX, mouseY, 1, 1)
       }
       ctx.stroke()
     }
+
+    if ($toolSettings.current instanceof BrushTool && isKeyActive('shift')) {
+      ctx.beginPath()
+      ctx.strokeStyle = '#cc3388'
+      ctx.lineWidth = 1
+
+      let x = offsetX - Math.floor(view.x) + Math.floor($toolSettings.current.lastX)
+      let y = offsetY - view.y + Math.floor(Math.floor($toolSettings.current.lastY))
+      let x2 = (Math.floor(mouseX / zoom) + 0.5) * zoom
+      let y2 = (Math.floor(mouseY / zoom) + 0.5) * zoom
+
+      ctx.moveTo((x+0.5)*zoom, (y+0.5)*zoom)
+      ctx.lineTo(x2, y2)
+      ctx.stroke()
+    }
+
     ctx.restore()
   }
 
