@@ -360,7 +360,7 @@
     if ($toolSettings.current instanceof BrushTool && isKeyActive('shift')) {
       ctx.beginPath()
       ctx.strokeStyle = '#cc3388'
-      ctx.lineWidth = 1
+      ctx.lineWidth = zoom
 
       let x = offsetX - Math.floor(view.x) + Math.floor($toolSettings.current.lastX)
       let y = offsetY - view.y + Math.floor(Math.floor($toolSettings.current.lastY))
