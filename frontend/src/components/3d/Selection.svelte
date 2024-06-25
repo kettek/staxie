@@ -1,6 +1,6 @@
 <script lang='ts'>
   import { T } from "@threlte/core"
-  import { Outlines } from "@threlte/extras"
+  import { BoxGeometry, EdgesGeometry, LineBasicMaterial, LineSegments } from "three"
 
   export let offset: [number, number, number] = [0, 0, 0]
   export let selection: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]]
@@ -17,16 +17,13 @@
   $: position[2] = Math.min(selection[0][2], selection[1][2]) + depth/2
 </script>
 
-<T.Mesh
+<T.LineSegments
   position={[position[0] + offset[0], position[1] + offset[1], position[2] + offset[2]]}
+  geometry={new EdgesGeometry(new BoxGeometry(width, height, depth))}
 >
-  <T.BoxGeometry
-    args={[width, height, depth]}
+  <T.EdgesGeometry
+    args={[new BoxGeometry(width, height, depth)]}
   />
-  <T.MeshBasicMaterial
-    color={0x0000ff}
-    transparent={true}
-    opacity={0.5}
-  />
-  <Outlines opacity={0.25} transparent={true} color={0xff00ff}/>
-</T.Mesh>
+  <T.LineBasicMaterial
+   />
+</T.LineSegments>
