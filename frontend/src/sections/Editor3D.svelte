@@ -13,8 +13,6 @@
   let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
   let hover: { x: number, y: number, z: number }|null = null
   let cursor: [number, number, number] = [0, 0, 0]
-  let selection: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]]
-
 </script>
 
 <main style={`background: ${$editor2DSettings.backgroundColor}`}>
@@ -24,7 +22,6 @@
       bind:target
       bind:hover
       bind:cursor
-      bind:selection
       file={file}
       palette={palette}
       orthographic={orthographic}

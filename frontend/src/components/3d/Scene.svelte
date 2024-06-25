@@ -35,8 +35,7 @@
     cursor = cursor
   }
   let showSelection: boolean = false
-  export let selection: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]]
-  $: showSelection = selection[0][0] !== selection[1][0] || selection[0][1] !== selection[1][1] || selection[0][2] !== selection[1][2]
+  $: showSelection = $file.threeDSelection[0][0] !== $file.threeDSelection[1][0] || $file.threeDSelection[0][1] !== $file.threeDSelection[1][1] || $file.threeDSelection[0][2] !== $file.threeDSelection[1][2]
   
   let orbitControls: ThreeOrbitControls
   let center: CurrentWritable<[number, number, number]> = currentWritable([0, 0, 0])
@@ -356,15 +355,15 @@
 {#if $toolSettings.current === toolVoxelCursor || $toolSettings.current === toolVoxelBoxSelection}
   <Cursor
     bind:position={cursor}
-    bind:selection={selection}
+    bind:selection={$file.threeDSelection}
     offset={[-$file.frameWidth/2+0.5, 0, -$file.frameHeight/2+0.5]}
     boxMode={$toolSettings.current === toolVoxelBoxSelection}
   />
 {/if}
 {#if $toolSettings.current === toolVoxelBoxSelection && showSelection}
   <Cursor
-    position={selection[1]}
-    bind:selection={selection}
+    position={$file.threeDSelection[1]}
+    bind:selection={$file.threeDSelection}
     offset={[-$file.frameWidth/2+0.5, 0, -$file.frameHeight/2+0.5]}
     alt
   />
@@ -387,7 +386,7 @@
 
 {#if showSelection}
   <Selection
-    selection={selection}
+    selection={$file.threeDSelection}
     offset={[-$file.frameWidth/2, 0, -$file.frameHeight/2]}
   />
 {/if}
