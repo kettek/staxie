@@ -73,21 +73,21 @@
         fakePalette = $palettesStore[selectedPaletteID-1]
       }
     }
-    focusedFile?.canvas.setFakePalette(fakePalette?.swatches)
-    focusedFile?.canvas.refreshImageData()
-    focusedFile?.canvas.refreshCanvas()
+    $fileStates.focused?.canvas.setFakePalette(fakePalette?.swatches)
+    $fileStates.focused?.canvas.refreshImageData()
+    $fileStates.focused?.canvas.refreshCanvas()
   }
 
   // Oh no, what are you doing, step palette~
   function stepPalette(step: number, primary: boolean) {
     if (primary) {
       $brushSettings.primaryIndex += step
-      if ($brushSettings.primaryIndex < 0) $brushSettings.primaryIndex = focusedFile?.canvas.palette.length-1
-      if ($brushSettings.primaryIndex >= focusedFile?.canvas.palette.length) $brushSettings.primaryIndex = 0
+      if ($brushSettings.primaryIndex < 0) $brushSettings.primaryIndex = $fileStates.focused?.canvas.palette.length-1
+      if ($brushSettings.primaryIndex >= $fileStates.focused?.canvas.palette.length) $brushSettings.primaryIndex = 0
     } else {
       $brushSettings.secondaryIndex += step
-      if ($brushSettings.secondaryIndex < 0) $brushSettings.secondaryIndex = focusedFile?.canvas.palette.length-1
-      if ($brushSettings.secondaryIndex >= focusedFile?.canvas.palette.length) $brushSettings.secondaryIndex = 0
+      if ($brushSettings.secondaryIndex < 0) $brushSettings.secondaryIndex = $fileStates.focused?.canvas.palette.length-1
+      if ($brushSettings.secondaryIndex >= $fileStates.focused?.canvas.palette.length) $brushSettings.secondaryIndex = 0
     }
   }
   
@@ -122,17 +122,14 @@
   
   let orthographicCamera: boolean = false
 
-  let focusedFileIndex: number = -1
-  let focusedFile: LoadedFile|null = null
-  
   function selectFile(file: LoadedFile, index: number, id: number) {
     if (index < 0 || index >= fileStates.length()) return
     
-    if (focusedFile !== file) {
+    if ($fileStates.focused !== file) {
       exportPath = file.filepath
     }
-    focusedFileIndex = index
-    focusedFile = file
+    $fileStates.focusedIndex = index
+    $fileStates.focused = file
   }
   
   function toggle3D(e: InputEvent) {
@@ -193,12 +190,12 @@
   }
   
   async function engageSave() {
-    if (!focusedFile) return
+    if (!$fileStates.focused) return
     try {
-      let data = await focusedFile.canvas.toPNG(focusedFile)
-      SaveFileBytes(focusedFile.filepath, [...data])
-      focusedFile.markSaved()
-      focusedFile.refresh()
+      let data = await $fileStates.focused.canvas.toPNG($fileStates.focused)
+      SaveFileBytes($fileStates.focused.filepath, [...data])
+      $fileStates.focused.markSaved()
+      $fileStates.focused.refresh()
       fileStates.refresh()
     } catch(e) {
       alert(e)
@@ -206,15 +203,15 @@
   }
   
   async function engageSaveAs() {
-    if (!focusedFile) return
+    if (!$fileStates.focused) return
      try {
-      let data = await focusedFile.canvas.toPNG(focusedFile)
-      let path = await SaveFilePath(focusedFile.filepath)
+      let data = await $fileStates.focused.canvas.toPNG($fileStates.focused)
+      let path = await SaveFilePath($fileStates.focused.filepath)
       if (path === "") return
       SaveFileBytes(path, [...data])
-      focusedFile.filepath = path
-      focusedFile.title = /[^/\\]*$/.exec(path)[0]
-      focusedFile.markSaved()
+      $fileStates.focused.filepath = path
+      $fileStates.focused.title = /[^/\\]*$/.exec(path)[0]
+      $fileStates.focused.markSaved()
       fileStates.refresh()
     } catch(e) {
       alert(e)
@@ -236,32 +233,32 @@
   }
   
   function engageCopy() {
-    if (!focusedFile) return
-    CopyPaste.toLocal(focusedFile.canvas, focusedFile.selection)
+    if (!$fileStates.focused) return
+    CopyPaste.toLocal($fileStates.focused.canvas, $fileStates.focused.selection)
   }
   function engageDelete(cut: boolean) {
-    if (!focusedFile) return
-    focusedFile.capture()
+    if (!$fileStates.focused) return
+    $fileStates.focused.capture()
     if (cut) {
-      CopyPaste.toLocal(focusedFile.canvas, focusedFile.selection)
+      CopyPaste.toLocal($fileStates.focused.canvas, $fileStates.focused.selection)
     }
     let pixels: PixelPosition[] = []
-    for (let y = 0; y < focusedFile.canvas.height; y++) {
-      for (let x = 0; x < focusedFile.canvas.width; x++) {
-        if (focusedFile.selection.isPixelMarked(x, y)) {
+    for (let y = 0; y < $fileStates.focused.canvas.height; y++) {
+      for (let x = 0; x < $fileStates.focused.canvas.width; x++) {
+        if ($fileStates.focused.selection.isPixelMarked(x, y)) {
           pixels.push({x, y, index: 0})
         }
       }
     }
-    focusedFile.push(new SelectionClearUndoable())
-    focusedFile.push(new PixelsPlaceUndoable(pixels))
-    focusedFile.release()
+    $fileStates.focused.push(new SelectionClearUndoable())
+    $fileStates.focused.push(new PixelsPlaceUndoable(pixels))
+    $fileStates.focused.release()
   }
   function engagePaste() {
-    if (!focusedFile) return
+    if (!$fileStates.focused) return
     let cp = CopyPaste.fromLocal()
-    let paletteDiff = cp.getPaletteLengthDifference(focusedFile.canvas.palette)
-    let missingColors = cp.getMissingPaletteColors(focusedFile.canvas.palette)
+    let paletteDiff = cp.getPaletteLengthDifference($fileStates.focused.canvas.palette)
+    let missingColors = cp.getMissingPaletteColors($fileStates.focused.canvas.palette)
     
     // TODO: We need to do the following:
     // 1. If the copying palette has more colors, we need to ask if we want to:
@@ -273,15 +270,15 @@
   }
 
   function engageColorMode() {
-    if (!focusedFile) return
-    focusedFile.push(new ChangeColorModeUndoable(newColorMode))
+    if (!$fileStates.focused) return
+    $fileStates.focused.push(new ChangeColorModeUndoable(newColorMode))
     showColorMode = false
   }
 
   function closeFile(index: number) {
     fileStates.removeFile(index)
     let nextIndex = index
-    if (focusedFileIndex === index) {
+    if ($fileStates.focusedIndex === index) {
       if (nextIndex >= fileStates.length()) nextIndex--
       if (nextIndex < 0) nextIndex = 0
     }
@@ -289,8 +286,8 @@
     if (file) {
       selectFile(file, nextIndex, file.id)
     } else {
-      focusedFileIndex = -1
-      focusedFile = null
+      $fileStates.focusedIndex = -1
+      $fileStates.focused = null
     }
     fileStates.refresh()
   }
@@ -304,8 +301,8 @@
       if (index < 0 || index >= fakePalette.swatches.length) return
       entry = fakePalette.swatches[index]
     } else {
-      if (index < 0 || index >= focusedFile.canvas.palette.length) return
-      entry = focusedFile.canvas.palette[index]
+      if (index < 0 || index >= $fileStates.focused.canvas.palette.length) return
+      entry = $fileStates.focused.canvas.palette[index]
     }
     red = entry & 0xFF
     green = (entry >> 8) & 0xFF
@@ -335,13 +332,13 @@
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Edit</div>
-      <OverflowMenuItem on:click={() => focusedFile?.undo()} disabled={!focusedFile?.canUndo()}>
+      <OverflowMenuItem on:click={() => $fileStates.focused?.undo()} disabled={!$fileStates.focused?.canUndo()}>
         Undo &nbsp; <Undo/>
       </OverflowMenuItem>
-      <OverflowMenuItem on:click={() => focusedFile?.redo()} disabled={!focusedFile?.canRedo()}>
+      <OverflowMenuItem on:click={() => $fileStates.focused?.redo()} disabled={!$fileStates.focused?.canRedo()}>
         Redo &nbsp; <Redo/>
       </OverflowMenuItem>
-      <OverflowMenuItem hasDivider on:click={() => focusedFile?.repeat()} disabled={!focusedFile}>
+      <OverflowMenuItem hasDivider on:click={() => $fileStates.focused?.repeat()} disabled={!$fileStates.focused}>
         Repeat Last
       </OverflowMenuItem>
     </OverflowMenu>
@@ -448,12 +445,12 @@
         ].concat($palettesStore.map((p, i) => ({id: i+1, text: p.name})))}
       />
       <section class='palette'>
-        <PaletteOptionsToolbar palette={fakePalette} file={focusedFile}/>
+        <PaletteOptionsToolbar palette={fakePalette} file={$fileStates.focused}/>
       </section>
-      <PaletteSection refresh={refreshPalette} file={focusedFile} fakePalette={fakePalette} on:select={handlePaletteSelect} />
+      <PaletteSection refresh={refreshPalette} file={$fileStates.focused} fakePalette={fakePalette} on:select={handlePaletteSelect} />
       <article>
         <ColorSelector bind:red bind:green bind:blue bind:alpha />
-        <ColorIndex bind:red bind:green bind:blue bind:alpha file={focusedFile} palette={fakePalette} on:refresh={()=>refreshPalette={}} />
+        <ColorIndex bind:red bind:green bind:blue bind:alpha file={$fileStates.focused} palette={fakePalette} on:refresh={()=>refreshPalette={}} />
       </article>
     </section>
     <menu class='toolbar'>
@@ -475,6 +472,7 @@
           <Shortcut global cmd='placeToPicker' keys={['alt']} on:trigger={()=>($toolSettings.current===toolVoxelPlace||$toolSettings.current===toolVoxelReplace||$toolSettings.current===toolFill)?toolSettings.swapTool(toolPicker):null} on:release={()=>($toolSettings.previous===toolVoxelPlace||$toolSettings.previous===toolVoxelReplace||$toolSettings.previous===toolFill)&&$toolSettings.current===toolPicker?toolSettings.swapTool($toolSettings.previous):null} />
           <Shortcut global cmd='cursor' keys={['c']} on:trigger={()=>toolSettings.swapTool(toolVoxelCursor)} />
           <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolVoxelBoxSelection)} />
+          <Shortcut global cmd='clear selection' keys={['escape']} />
         </Shortcuts>
       {:else}
         <Button isSelected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}></Button>
@@ -490,14 +488,14 @@
         <Button isSelected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
         <Button isSelected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
         <Shortcuts group='editor2D'>
-          <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>focusedFile?.push(new SelectionClearUndoable())} />
+          <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>$fileStates.focused?.push(new SelectionClearUndoable())} />
           <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolRectangularSelection)} />
           <Shortcut global cmd='magic selection' keys={['shift+s']} on:trigger={()=>toolSettings.swapTool(toolMagicWand)} />
           <Shortcut global cmd='move' keys={['m']} on:trigger={()=>toolSettings.swapTool(toolMove)} />
-          <Shortcut global cmd='move left' keys={['arrowleft']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: -1, y: 0, id: 0})} />
-          <Shortcut global cmd='move right' keys={['arrowright']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 1, y: 0, id: 0})} />
-          <Shortcut global cmd='move up' keys={['arrowup']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 0, y: -1, id: 0})} />
-          <Shortcut global cmd='move down' keys={['arrowdown']} on:trigger={()=>toolMove.shift({file: focusedFile}, {x: 0, y: 1, id: 0})} />
+          <Shortcut global cmd='move left' keys={['arrowleft']} on:trigger={()=>toolMove.shift({file: $fileStates.focused}, {x: -1, y: 0, id: 0})} />
+          <Shortcut global cmd='move right' keys={['arrowright']} on:trigger={()=>toolMove.shift({file: $fileStates.focused}, {x: 1, y: 0, id: 0})} />
+          <Shortcut global cmd='move up' keys={['arrowup']} on:trigger={()=>toolMove.shift({file: $fileStates.focused}, {x: 0, y: -1, id: 0})} />
+          <Shortcut global cmd='move down' keys={['arrowdown']} on:trigger={()=>toolMove.shift({file: $fileStates.focused}, {x: 0, y: 1, id: 0})} />
           <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>toolSettings.swapTool(toolBrush)} />
           <Shortcut global cmd='brushToPicker' keys={['alt']} on:trigger={()=>($toolSettings.current===toolBrush||$toolSettings.current===toolSpray||$toolSettings.current===toolFill)?toolSettings.swapTool(toolPicker):null} on:release={()=>($toolSettings.previous===toolBrush||$toolSettings.previous===toolSpray||$toolSettings.previous===toolFill)&&$toolSettings.current===toolPicker?toolSettings.swapTool($toolSettings.previous):null} />
           <Shortcut global cmd='previousPrimaryPaletteEntry' keys={['alt+wheelup']} on:trigger={()=>stepPalette(-1, true)}/>
@@ -529,17 +527,17 @@
           density:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.sprayDensity}/>
         {/if}
       </menu>
-      <Tabs bind:selected={focusedFileIndex}>
-        {#each $fileStates as file, index}
+      <Tabs bind:selected={$fileStates.focusedIndex}>
+        {#each $fileStates.files as file, index}
           <Tab on:click={()=>selectFile(file, index, file.id)} title={file.filepath}>
             <TabTitle file={file} on:close={()=>closeFile(index)}/>
           </Tab>
         {/each}
         <svelte:fragment slot="content">
-          {#each $fileStates as file, index}
+          {#each $fileStates.files as file, index}
             <TabContent>
               {#if is3D}
-                <Shortcuts group='editor3D' active={focusedFile===file}>
+                <Shortcuts group='editor3D' active={$fileStates.focused===file}>
                   <Shortcut cmd='save' keys={['ctrl+s']} on:trigger={engageSave} />
                   <Shortcut cmd='saveAs' keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
                   <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
@@ -552,7 +550,7 @@
                   orthographic={orthographicCamera}
                 />
               {:else}
-                <Shortcuts group='editor2D' active={focusedFile===file}>
+                <Shortcuts group='editor2D' active={$fileStates.focused===file}>
                   <Shortcut cmd='save' keys={['ctrl+s']} on:trigger={engageSave} />
                   <Shortcut cmd='saveAs' keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
                   <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
@@ -569,9 +567,9 @@
       </Tabs>
     </section>
     <section class='right'>
-      {#if focusedFile}
-        <Frames file={focusedFile} />
-        <Stacks file={focusedFile} />
+      {#if $fileStates.focused}
+        <Frames file={$fileStates.focused} />
+        <Stacks file={$fileStates.focused} />
       {/if}
     </section>
     {#if showPreview}
@@ -637,11 +635,11 @@
   </ComposedModal>
 {/if}
 
-{#if showColorMode && focusedFile}
+{#if showColorMode && $fileStates.focused}
   <ComposedModal bind:open={showColorMode} size="sm" preventCloseOnClickOutside on:click:button--primary={engageColorMode}>
     <ColorMode
       bind:open={showColorMode}
-      bind:file={focusedFile}
+      bind:file={$fileStates.focused}
       bind:indexed={newColorMode}
     />
   </ComposedModal>
