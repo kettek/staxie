@@ -1,6 +1,6 @@
 <script lang='ts'>
   import { LoadedFile } from "../../types/file"
-  import { PixelPlaceUndoable, PixelsPlaceUndoable } from "../../types/file/undoables"
+  import { PixelPlaceUndoable, PixelsPlaceUndoable, ThreeDSelectionBoxSetUndoable } from "../../types/file/undoables"
   import { interactivity } from "@threlte/extras"
   import { T, type CurrentWritable, currentWritable } from '@threlte/core'
   import * as THREE from 'three'
@@ -20,23 +20,38 @@
   export let file: LoadedFile
   export let palette: Palette|undefined
   export let orthographic: boolean = false
+  let xOffset: number = 0
+  let yOffset: number = 0
+  let widthOdd: boolean = false
+  let heightOdd: boolean = false
+  $: widthOdd = $file.frameWidth % 2 === 1
+  $: heightOdd = $file.frameHeight % 2 === 1
+  $: xOffset = widthOdd ? 0.5 : 0
+  $: yOffset = heightOdd ? 0.5 : 0
   
   let showTarget = false
   export let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
   export let hover: { x: number, y: number, z: number }|null = null
   export let cursor: [number, number, number] = [2*Math.round(file.frameWidth/2), 0, 2*Math.round(file.frameHeight/2)]
-  $: {
-    if (cursor[0] < 0) cursor[0] = 0
-    if (cursor[0] >= file.frameWidth) cursor[0] = file.frameWidth-1
-    if (cursor[2] < 0) cursor[2] = 0
-    if (cursor[2] >= file.frameHeight) cursor[2] = file.frameHeight-1
-    if (cursor[1] < 0) cursor[1] = 0
-    if (cursor[1] >= file.frame?.slices.length) cursor[1] = file.frame?.slices.length-1
-    cursor = cursor
+  export let cursor2: [number, number, number] = [2*Math.round(file.frameWidth/2), 0, 2*Math.round(file.frameHeight/2)]
+  function constrainCursor(c: [number, number, number]): [number, number, number] {
+    return [
+      Math.min(Math.max(c[0], 0), file.frameWidth-1),
+      Math.min(Math.max(c[1], 0), file.frame?.slices.length-1),
+      Math.min(Math.max(c[2], 0), file.frameHeight-1),
+    ]
+  }
+  $: cursor = constrainCursor(cursor)
+  $: cursor2 = constrainCursor(cursor2)
+  $: cursor = $file.threeDCursor1
+  $: cursor2 = $file.threeDCursor2
+  function isSelectionSame(a: [number, number, number], b: [number, number, number]): boolean {
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]
   }
   let showSelection: boolean = false
-  $: showSelection = $file.threeDSelection[0][0] !== $file.threeDSelection[1][0] || $file.threeDSelection[0][1] !== $file.threeDSelection[1][1] || $file.threeDSelection[0][2] !== $file.threeDSelection[1][2]
-  
+  $: showSelection = !isSelectionSame(cursor, cursor2)
+  let cursorFirstMove = true
+
   let orbitControls: ThreeOrbitControls
   let center: CurrentWritable<[number, number, number]> = currentWritable([0, 0, 0])
   
@@ -185,6 +200,45 @@
       placePixelAt(hover, $brushSettings.primaryIndex)
     }
   }
+
+  function onCursorChange(e: CustomEvent & {detail: [number, number, number]}) {
+    const detail: [number, number, number] = e.detail
+    if ($toolSettings.current === toolVoxelCursor) {
+      cursor = [...detail]
+      cursor2 = [...detail]
+    } else if ($toolSettings.current === toolVoxelBoxSelection) {
+      if (isSelectionSame(cursor, cursor2)) {
+        cursorFirstMove = true
+      }
+      if (cursorFirstMove) {
+        cursor2 = [...detail]
+      } else {
+        cursor = [...detail]
+      }
+    }
+  }
+  function onCursorRelease(e: CustomEvent) {
+    if ($toolSettings.current === toolVoxelBoxSelection) {
+      cursorFirstMove = false
+      file.push(new ThreeDSelectionBoxSetUndoable(
+        [...cursor],
+        [...cursor2],
+      ))
+    }
+  }
+  function onCursor2Change(e: CustomEvent & {detail: [number, number, number]}) {
+    const detail: [number, number, number] = e.detail
+    cursor2 = [...detail]
+  }
+  function onCursor2Release(e: CustomEvent) {
+    if ($toolSettings.current === toolVoxelBoxSelection) {
+      file.push(new ThreeDSelectionBoxSetUndoable(
+        [...cursor],
+        [...cursor2],
+      ))
+    }
+  }
+
   
   function getGridXY(e: any): [number, number] {
     let x = Math.floor(e.point.x + file.frameWidth/2)
@@ -355,17 +409,17 @@
 {#if $toolSettings.current === toolVoxelCursor || $toolSettings.current === toolVoxelBoxSelection}
   <Cursor
     bind:position={cursor}
-    bind:selection={$file.threeDSelection}
-    offset={[-$file.frameWidth/2+0.5, 0, -$file.frameHeight/2+0.5]}
-    boxMode={$toolSettings.current === toolVoxelBoxSelection}
+    on:move={onCursorChange}
+    on:release={onCursorRelease}
+    offset={[-$file.frameWidth/2+xOffset, 0, -$file.frameHeight/2+yOffset]}
   />
 {/if}
 {#if $toolSettings.current === toolVoxelBoxSelection && showSelection}
   <Cursor
-    position={$file.threeDSelection[1]}
-    bind:selection={$file.threeDSelection}
-    offset={[-$file.frameWidth/2+0.5, 0, -$file.frameHeight/2+0.5]}
-    alt
+    position={cursor2}
+    on:move={onCursor2Change}
+    on:release={onCursor2Release}
+    offset={[-$file.frameWidth/2+xOffset, 0, -$file.frameHeight/2+yOffset]}
   />
 {/if}
 {#if $editor3DSettings.showCursor}
@@ -386,7 +440,7 @@
 
 {#if showSelection}
   <Selection
-    selection={$file.threeDSelection}
+    selection={[cursor, cursor2]}
     offset={[-$file.frameWidth/2, 0, -$file.frameHeight/2]}
   />
 {/if}

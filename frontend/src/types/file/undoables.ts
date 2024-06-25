@@ -1339,3 +1339,45 @@ export class ClearAnimationFrameUndoable implements Undoable<LoadedFile> {
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
+
+export class ThreeDSelectionBoxClearUndoable implements Undoable<LoadedFile> {
+  //private selection: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]]
+  private cursor1: [number, number, number] = [0, 0, 0]
+  private cursor2: [number, number, number] = [0, 0, 0]
+  constructor() {
+  }
+  apply(file: LoadedFile) {
+    this.cursor1 = [...file.threeDCursor1]
+    this.cursor2 = [...file.threeDCursor2]
+
+    file.threeDCursor1 = [...file.threeDCursor1]
+    file.threeDCursor2 = [...file.threeDCursor1]
+  }
+  unapply(file: LoadedFile) {
+    file.threeDCursor1 = [...this.cursor1]
+    file.threeDCursor2 = [...this.cursor2]
+  }
+}
+
+export class ThreeDSelectionBoxSetUndoable implements Undoable<LoadedFile> {
+  private cursor1: [number, number, number] = [0, 0, 0]
+  private cursor1Previous: [number, number, number] = [0, 0, 0]
+  private cursor2: [number, number, number] = [0, 0, 0]
+  private cursor2Previous: [number, number, number] = [0, 0, 0]
+
+  constructor(cursor1: [number, number, number], cursor2: [number, number, number], ) {
+    this.cursor1 = cursor1
+    this.cursor2 = cursor2
+  }
+  apply(file: LoadedFile) {
+    this.cursor1Previous = [...file.threeDCursor1]
+    this.cursor2Previous = [...file.threeDCursor2]
+
+    file.threeDCursor1 = [...this.cursor1]
+    file.threeDCursor2 = [...this.cursor2]
+  }
+  unapply(file: LoadedFile) {
+    file.threeDCursor1 = [...this.cursor1Previous]
+    file.threeDCursor2 = [...this.cursor2Previous]
+  }
+}

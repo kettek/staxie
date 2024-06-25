@@ -14,7 +14,7 @@
   import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
-  import { ChangeColorModeUndoable, PixelsPlaceUndoable, SelectionClearUndoable } from './types/file/undoables'
+  import { ChangeColorModeUndoable, PixelsPlaceUndoable, SelectionClearUndoable, ThreeDSelectionBoxClearUndoable } from './types/file/undoables'
 
   import "carbon-components-svelte/css/all.css"
   import { Tabs, Tab, TabContent, Theme, Button, NumberInput, Dropdown, Checkbox } from "carbon-components-svelte"
@@ -472,7 +472,7 @@
           <Shortcut global cmd='placeToPicker' keys={['alt']} on:trigger={()=>($toolSettings.current===toolVoxelPlace||$toolSettings.current===toolVoxelReplace||$toolSettings.current===toolFill)?toolSettings.swapTool(toolPicker):null} on:release={()=>($toolSettings.previous===toolVoxelPlace||$toolSettings.previous===toolVoxelReplace||$toolSettings.previous===toolFill)&&$toolSettings.current===toolPicker?toolSettings.swapTool($toolSettings.previous):null} />
           <Shortcut global cmd='cursor' keys={['c']} on:trigger={()=>toolSettings.swapTool(toolVoxelCursor)} />
           <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolVoxelBoxSelection)} />
-          <Shortcut global cmd='clear selection' keys={['escape']} />
+          <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxClearUndoable())} />
         </Shortcuts>
       {:else}
         <Button isSelected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}></Button>

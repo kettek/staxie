@@ -26,7 +26,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   title: string
   canvas: Canvas
   selection: SelectionArea
-  threeDSelection: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]]
+  threeDCursor1: [number, number, number] = [0, 0, 0]
+  threeDCursor2: [number, number, number] = [0, 0, 0]
   preview: Preview
   data?: IndexedPNG
   //
