@@ -24,6 +24,15 @@
   export let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
   export let hover: { x: number, y: number, z: number }|null = null
   export let cursor: [number, number, number] = [2*Math.round(file.frameWidth/2), 0, 2*Math.round(file.frameHeight/2)]
+  $: {
+    if (cursor[0] < 0) cursor[0] = 0
+    if (cursor[0] >= file.frameWidth) cursor[0] = file.frameWidth-1
+    if (cursor[2] < 0) cursor[2] = 0
+    if (cursor[2] >= file.frameHeight) cursor[2] = file.frameHeight-1
+    if (cursor[1] < 0) cursor[1] = 0
+    if (cursor[1] >= file.frame?.slices.length) cursor[1] = file.frame?.slices.length-1
+    cursor = cursor
+  }
   
   let orbitControls: ThreeOrbitControls
   let center: CurrentWritable<[number, number, number]> = currentWritable([0, 0, 0])
