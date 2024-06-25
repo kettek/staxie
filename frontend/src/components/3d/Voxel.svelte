@@ -161,6 +161,7 @@
     opacity={wireframe?0.2:hovered?1:opacity}
     color={hovered?(0xffffff-realColor)|0xff0000:realColor}
     depthTest={!alwaysOnTop}
+    depthWrite={!alwaysOnTop}
   />
   {#if wireframe}
     <Outlines color={0x000000}/>
