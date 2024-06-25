@@ -1,6 +1,9 @@
 <script context='module' lang='ts'>
+  import { handlers } from './ShortcutHandlers.svelte'
   import { setContext, onDestroy } from 'svelte'
   import { get, writable } from 'svelte/store'
+  import { fileStates } from '../stores/file'
+
   export const SHORTCUTS = {}
   export type ShortcutsType = {
     registerShortcut: (opts: {cmd: string, group: string, global: boolean, keys: string[], trigger: () => void, release: () => void}) => void,
@@ -55,13 +58,24 @@
     keys.add(key.toLowerCase())
     keystring = keysToString([...keys])
     
+    let cmds = new Set()
     let cur = get(currentShortcuts)
     for (let shortcut of get(shortcuts)) {
       if (shortcut.group !== cur.group) continue
       if (!shortcut.global && shortcut.id !== cur.id) continue
       if (shortcut.keys.includes(keystring)) {
+        cmds.add(shortcut.cmd)
         triggered.add(keystring)
         shortcut.trigger()
+      }
+    }
+
+    for (let cmd of cmds) {
+      for (let handler of get(handlers)) {
+        if (handler.fileId !== undefined && handler.fileId !== get(fileStates).focused?.id) continue
+        if (handler.group === cur.group && handler.cmd === cmd) {
+          handler.trigger()
+        }
       }
     }
   })
@@ -69,13 +83,25 @@
     if (disabled) return
     keystring = keysToString([...keys])
 
+    let cur = get(currentShortcuts)
     if (triggered.has(keystring)) {
       triggered.delete(keystring)
+      let cmds = new Set()
       for (let shortcut of get(shortcuts)) {
-        if (shortcut.group !== get(currentShortcuts).group) continue
-        if (!shortcut.global && shortcut.id !== get(currentShortcuts).id) continue
+        if (shortcut.group !== cur.group) continue
+        if (!shortcut.global && shortcut.id !== cur.id) continue
         if (shortcut.keys.includes(keystring)) {
           shortcut.release()
+          cmds.add(shortcut.cmd)
+        }
+      }
+
+      for (let cmd of cmds) {
+        for (let handler of get(handlers)) {
+          if (handler.fileId !== undefined && handler.fileId !== get(fileStates).focused?.id) continue
+          if (handler.group === cur.group && handler.cmd === cmd) {
+            handler.release()
+          }
         }
       }
     }
@@ -95,12 +121,23 @@
 
     keystring = keysToString([...keys])
     
+    let cmds = new Set()
     let cur = get(currentShortcuts)
     for (let shortcut of get(shortcuts)) {
       if (shortcut.group !== cur.group) continue
       if (!shortcut.global && shortcut.id !== cur.id) continue
       if (shortcut.keys.includes(keystring)) {
+        cmds.add(shortcut.cmd)
         shortcut.trigger()
+      }
+    }
+
+    for (let cmd of cmds) {
+      for (let handler of get(handlers)) {
+        if (handler.fileId !== undefined && handler.fileId !== get(fileStates).focused?.id) continue
+        if (handler.group === cur.group && handler.cmd === cmd) {
+          handler.trigger()
+        }
       }
     }
 
