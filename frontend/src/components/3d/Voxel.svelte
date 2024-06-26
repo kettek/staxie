@@ -18,6 +18,7 @@
   let opacity = 1
   export let alwaysOnTop: boolean = false
   export let wireframe: boolean = false
+  export let forceTransparent: boolean = false
   
   $: {
     let r = (color) & 0xff
@@ -27,6 +28,9 @@
     if (ignoreAlpha) a = 0xff
     realColor = (r << 16) | (g << 8) | b
     opacity = a / 0xff
+    if (forceTransparent && a > 0) {
+      opacity = 0.5
+    }
   }
   
   export let baseScale: number = 1

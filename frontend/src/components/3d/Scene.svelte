@@ -16,6 +16,9 @@
   import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker, toolFill, toolVoxelCursor, toolVoxelBoxSelection } from "../../stores/tool"
   import Cursor from "./Cursor.svelte"
   import Selection from "./Selection.svelte"
+  import ShortcutHandlers from "../ShortcutHandlers.svelte"
+  import ShortcutHandler from "../ShortcutHandler.svelte"
+  import { ThreeDCopyPaste } from "../../types/copypaste"
   
   export let file: LoadedFile
   export let palette: Palette|undefined
@@ -28,6 +31,8 @@
   $: heightOdd = $file.frameHeight % 2 === 1
   $: xOffset = widthOdd ? 0.5 : 0
   $: yOffset = heightOdd ? 0.5 : 0
+
+  let pasting: { x: number, y: number, z: number, index: number }[] = []
   
   let showTarget = false
   export let target: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 }
@@ -265,9 +270,44 @@
       placePixelAt({ x, y: 0, z }, $brushSettings.primaryIndex)
     }
   }
-  
+
+  function doPaste() {
+    pasting = ThreeDCopyPaste.getCopy()
+  }
+  function clearPaste() {
+    pasting = []
+  }
+  function doApplyPaste() {
+    if (pasting === null) return
+    let pixels: { x: number, y: number, index: number }[] = []
+    for (let {x, y, z, index } of pasting) {
+      x += cursor[0]
+      y += cursor[1]
+      z += cursor[2]
+      if (x < 0 || x >= file.frameWidth) continue
+      if (z < 0 || z >= file.frameHeight) continue
+      if (y < 0 || y >= file.frame?.slices.length) continue
+
+      let slice = file.frame?.slices[y]
+      if (!slice) continue
+      pixels.push({
+        x: slice.x + x,
+        y: slice.y + z,
+        index,
+      })
+    }
+    file.push(new PixelsPlaceUndoable(pixels))
+    clearPaste()
+  }
+
   interactivity()
 </script>
+
+<ShortcutHandlers>
+  <ShortcutHandler fileId={$file.id} group='editor3D' cmd='clear paste' on:trigger={clearPaste}/>
+  <ShortcutHandler fileId={$file.id} group='editor3D' cmd='paste' on:trigger={doPaste}/>
+  <ShortcutHandler fileId={$file.id} group='editor3D' cmd='apply paste' on:trigger={doApplyPaste}/>
+</ShortcutHandlers>
 
 {#if orthographic}
   <T.OrthographicCamera
@@ -331,6 +371,18 @@
       {/each}
     {/each}
   </T.Group>
+{/if}
+
+{#if pasting.length > 0}
+  {#each pasting as { x, y, z, index }}
+    <Voxel
+      position={[x+cursor[0], y+cursor[1], z+cursor[2]]}
+      offset={[-$file.frameWidth/2, 0, -$file.frameHeight/2]}
+      color={$palette?$palette.swatches[index]:$file.canvas.getPaletteColor(index)}
+      forceTransparent
+      ignoreEvents
+    />
+  {/each}
 {/if}
 
 <Voxel
@@ -406,7 +458,7 @@
   />
 </T.Mesh>
 
-{#if $toolSettings.current === toolVoxelCursor || $toolSettings.current === toolVoxelBoxSelection}
+{#if $toolSettings.current === toolVoxelCursor || $toolSettings.current === toolVoxelBoxSelection || pasting.length > 0}
   <Cursor
     bind:position={cursor}
     on:move={onCursorChange}

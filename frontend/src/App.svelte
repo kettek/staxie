@@ -28,7 +28,7 @@
   import BrushSize from './components/BrushSize.svelte'
   import Shortcut from './components/Shortcut.svelte'
   import Shortcuts from './components/Shortcuts.svelte'
-  import { CopyPaste } from './types/copypaste'
+  import { CopyPaste, ThreeDCopyPaste } from './types/copypaste'
   import type { PixelPosition } from './types/shapes.js';
   import ColorSelector from './components/ColorSelector.svelte';
   import ColorIndex from './components/ColorIndex.svelte';
@@ -234,6 +234,10 @@
   
   function engageCopy() {
     if (!$fileStates.focused) return
+    if (is3D) {
+      ThreeDCopyPaste.copy($fileStates.focused)
+      return
+    }
     CopyPaste.toLocal($fileStates.focused.canvas, $fileStates.focused.selection)
   }
   function engageDelete(cut: boolean) {
@@ -256,6 +260,7 @@
   }
   function engagePaste() {
     if (!$fileStates.focused) return
+    if (is3D) return
     let cp = CopyPaste.fromLocal()
     let paletteDiff = cp.getPaletteLengthDifference($fileStates.focused.canvas.palette)
     let missingColors = cp.getMissingPaletteColors($fileStates.focused.canvas.palette)
@@ -473,7 +478,11 @@
           <Shortcut global cmd='cursor' keys={['c']} on:trigger={()=>toolSettings.swapTool(toolVoxelCursor)} />
           <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolVoxelBoxSelection)} />
           <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxClearUndoable())} />
+          <Shortcut global cmd='clear paste' keys={['escape']} on:trigger={()=>{}} />
+          <Shortcut global cmd='copy' keys={['ctrl+c']} on:trigger={()=>engageCopy()} />
           <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxSetVoxelsUndoable($fileStates.focused?.stackName, $fileStates.focused?.animationName, $fileStates.focused?.frameIndex, $fileStates.focused.threeDCursor1, $fileStates.focused.threeDCursor2, 0))} />
+          <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>{}} />
+          <Shortcut global cmd='apply paste' keys={['enter']} on:trigger={()=>{}} />
         </Shortcuts>
       {:else}
         <Button isSelected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}></Button>

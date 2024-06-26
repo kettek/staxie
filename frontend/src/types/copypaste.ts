@@ -1,4 +1,5 @@
 import { Canvas } from "./canvas"
+import type { LoadedFile } from "./file"
 import { SelectionArea } from "./selection"
 
 let currentCanvas: Canvas
@@ -78,5 +79,50 @@ export class CopyPaste {
       pixels: currentSelection.pixelMaskCanvasPixels.data
     })
     return new CopyPaste(canvas, selection)
+  }
+}
+
+export class ThreeDCopyPaste {
+  static pixels: { x: number, y: number, z: number, index: number }[] = []
+
+  constructor() {
+  }
+
+  static copy(file: LoadedFile) {
+    if (file.threeDCursor1[0] === file.threeDCursor2[0] && file.threeDCursor1[1] === file.threeDCursor2[1] && file.threeDCursor1[2] === file.threeDCursor2[2]) {
+      throw new Error('cursors at same position')
+    }
+    let minX = Math.min(file.threeDCursor1[0], file.threeDCursor2[0])
+    let minY = Math.min(file.threeDCursor1[1], file.threeDCursor2[1])
+    let minZ = Math.min(file.threeDCursor1[2], file.threeDCursor2[2])
+    let maxX = Math.max(file.threeDCursor1[0], file.threeDCursor2[0])
+    let maxY = Math.max(file.threeDCursor1[1], file.threeDCursor2[1])
+    let maxZ = Math.max(file.threeDCursor1[2], file.threeDCursor2[2])
+
+    let f = file.frame
+    if (!f) throw new Error('no frame selection')
+
+    this.pixels = []
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
+        let slice = f.slices[y]
+        if (!slice) continue
+        for (let z = minZ; z <= maxZ; z++) {
+          let index = file.canvas.getPixel(slice.x + x, slice.y + z)
+          if (index === 0) continue // FIXME: 0 is not _necessarily_ empty!
+
+          this.pixels.push({
+            x: x-minX,
+            y: y-minY,
+            z: z-minZ,
+            index: index,
+          })
+        }
+      }
+    }
+  }
+
+  static getCopy(): { x: number, y: number, z: number, index: number }[] {
+    return this.pixels
   }
 }

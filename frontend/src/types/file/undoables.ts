@@ -1411,9 +1411,9 @@ export class ThreeDSelectionBoxSetVoxelsUndoable implements Undoable<LoadedFile>
     let pixels: {x: number, y: number, index: number}[] = []
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
+        let slice = f.slices[y]
+        if (!slice) continue
         for (let z = minZ; z <= maxZ; z++) {
-          let slice = f.slices[y]
-          if (!slice) continue
           pixels.push({
             x: slice.x + x,
             y: slice.y + z,
