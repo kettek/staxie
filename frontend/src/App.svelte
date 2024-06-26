@@ -14,7 +14,7 @@
   import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
-  import { ChangeColorModeUndoable, PixelsPlaceUndoable, SelectionClearUndoable, ThreeDSelectionBoxClearUndoable } from './types/file/undoables'
+  import { ChangeColorModeUndoable, PixelsPlaceUndoable, SelectionClearUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
 
   import "carbon-components-svelte/css/all.css"
   import { Tabs, Tab, TabContent, Theme, Button, NumberInput, Dropdown, Checkbox } from "carbon-components-svelte"
@@ -473,6 +473,7 @@
           <Shortcut global cmd='cursor' keys={['c']} on:trigger={()=>toolSettings.swapTool(toolVoxelCursor)} />
           <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolVoxelBoxSelection)} />
           <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxClearUndoable())} />
+          <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxSetVoxelsUndoable($fileStates.focused?.stackName, $fileStates.focused?.animationName, $fileStates.focused?.frameIndex, $fileStates.focused.threeDCursor1, $fileStates.focused.threeDCursor2, 0))} />
         </Shortcuts>
       {:else}
         <Button isSelected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} iconDescription="move" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}></Button>

@@ -1381,3 +1381,68 @@ export class ThreeDSelectionBoxSetUndoable implements Undoable<LoadedFile> {
     file.threeDCursor2 = [...this.cursor2Previous]
   }
 }
+
+export class ThreeDSelectionBoxSetVoxelsUndoable implements Undoable<LoadedFile> {
+  private stackName: string
+  private animationName: string
+  private frameIndex: number
+  private cursor1: [number, number, number]
+  private cursor2: [number, number, number]
+  private index: number
+  private placeUndoable: PixelsPlaceUndoable
+  constructor(stackName: string, animationName: string, frameIndex: number, cursor1: [number, number, number], cursor2: [number, number, number], index: number) {
+    this.stackName = stackName
+    this.animationName = animationName
+    this.frameIndex = frameIndex
+    this.cursor1 = cursor1
+    this.cursor2 = cursor2
+    this.index = index
+    this.placeUndoable = new PixelsPlaceUndoable([])
+  }
+  apply(file: LoadedFile) {
+    let f = _getFrame(file, this.stackName, this.animationName, this.frameIndex)
+    let minX = Math.min(this.cursor1[0], this.cursor2[0])
+    let minY = Math.min(this.cursor1[1], this.cursor2[1])
+    let minZ = Math.min(this.cursor1[2], this.cursor2[2])
+    let maxX = Math.max(this.cursor1[0], this.cursor2[0])
+    let maxY = Math.max(this.cursor1[1], this.cursor2[1])
+    let maxZ = Math.max(this.cursor1[2], this.cursor2[2])
+
+    let pixels: {x: number, y: number, index: number}[] = []
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
+        for (let z = minZ; z <= maxZ; z++) {
+          let slice = f.slices[y]
+          if (!slice) continue
+          pixels.push({
+            x: slice.x + x,
+            y: slice.y + z,
+            index: this.index,
+          })
+        }
+      }
+    }
+    this.placeUndoable = new PixelsPlaceUndoable(pixels)
+    this.placeUndoable.apply(file)
+  }
+  unapply(file: LoadedFile) {
+    this.placeUndoable.unapply(file)
+  }
+}
+
+// FIXME: Move/rename this...
+function _getFrame(file: LoadedFile, stackName: string, animationName: string, frameIndex: number): StaxFrame {
+  let s = file.stacks.find(v=>v.name === stackName)
+  if (!s) {
+    throw new Error('stack not found')
+  }
+  let a = s.animations.find(v=>v.name === animationName)
+  if (!a) {
+    throw new Error('animation not found')
+  }
+  let f = a.frames[frameIndex]
+  if (!f) {
+    throw new Error('frame not found')
+  }
+  return f
+}
