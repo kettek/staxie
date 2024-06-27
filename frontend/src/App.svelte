@@ -52,6 +52,7 @@
   import { toolRectangularSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolEllipse, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle, toolEllipseSelection, toolVoxelCursor, toolVoxelBoxSelection } from './stores/tool'
   import ColorMode from './sections/ColorMode.svelte'
   import TabTitle from './components/TabTitle.svelte'
+  import VioUpdater from './sections/VioUpdater.svelte'
 
   let is3D: boolean = false
   
@@ -117,6 +118,8 @@
   let showCheckerboardSettings: boolean = false
   let showThemeSettings: boolean = false
   let showBackgroundSettings: boolean = false
+
+  let showUpdater: boolean = false
 
   let previewUseMini: boolean = false
   
@@ -333,6 +336,7 @@
       <OverflowMenuItem text="Import..." on:click={()=>showImport = true}/>
       <OverflowMenuItem text="Save" on:click={engageSave}/>
       <OverflowMenuItem text="Save As..." on:click={engageSaveAs}/>
+      <OverflowMenuItem disabled={!$fileStates.focused} text="Update..." on:click={()=>showUpdater = true}/>
       <OverflowMenuItem hasDivider danger text="Quit" on:click={engageQuit}/>
     </OverflowMenu>
     <OverflowMenu size="sm">
@@ -653,6 +657,9 @@
       bind:indexed={newColorMode}
     />
   </ComposedModal>
+{/if}
+{#if showUpdater && $fileStates.focused}
+  <VioUpdater bind:open={showUpdater} file={$fileStates.focused} />
 {/if}
 
 <ComposedModal bind:open={showAbout} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
