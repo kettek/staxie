@@ -21,6 +21,29 @@ export type VioImportResults = {
   parsed: any
 }
 
+export type ImportSlice = {
+  x: number
+  y: number
+  pixels?: Uint8Array
+  origSubset: any
+}
+export type ImportFrame = ImportSlice[]
+export type ImportAnimation = {
+  name: string
+  frames: ImportFrame[]
+  frameTime: number
+}
+export type ImportStack = {
+  name: string
+  animations: ImportAnimation[]
+  sliceCount: number
+}
+export type ImportStaxie = {
+  frameWidth: number
+  frameHeight: number
+  stacks: ImportStack[]
+}
+
 export async function Read(filepath: string): Promise<VioImportResults> {
   let filePath: string = filepath
   let spritePath: string = ''
@@ -51,22 +74,6 @@ export async function Read(filepath: string): Promise<VioImportResults> {
   canvas = new Canvas(png)
 
   // Let's collect our imports.
-  type ImportSlice = {
-    x: number
-    y: number
-    pixels: Uint8Array
-    origSubset: any
-  }
-  type ImportFrame = ImportSlice[]
-  type ImportAnimation = {
-    name: string
-    frames: ImportFrame[]
-  }
-  type ImportStack = {
-    name: string
-    animations: ImportAnimation[]
-    sliceCount: number
-  }
   let maxWidth = 0
   let maxHeight = 0
   let frameSizeCounts: Record<string, number> = {}
@@ -187,7 +194,7 @@ export async function Read(filepath: string): Promise<VioImportResults> {
 
 export async function Import(results: VioImportResults, updateSource: boolean = false, updatePNG: boolean = false): Promise<LoadedFile> {
   let { png, canvas, title, filePath, spritePath, parsed } = results
-  let file = new LoadedFile({filepath: filePath, title: title, canvas: canvas, data: png})
+  let file = new LoadedFile({filepath: spritePath, title: title, canvas: canvas, data: png})
   if (updateSource) {
     let newYaml = YAML.stringify(parsed)
     await SaveFileBytes(filePath, btoa(newYaml) as any)
