@@ -25,10 +25,10 @@
   $: {
     if (open) {
       png = new IndexedPNG()
-      png.width = width
-      png.height = height
-      png.frameWidth = width
-      png.frameHeight = height
+      png.width = width || 1
+      png.height = height || 1
+      png.frameWidth = width || 1
+      png.frameHeight = height || 1
       
       png.stacks = [{
         name: 'stack',
@@ -41,7 +41,7 @@
           }]
         }]
       }]
-      canvas = new Canvas(width, height)
+      canvas = new Canvas(png.width, png.height)
       canvas.addNewPaletteColor(0, 0, 0, 0)
       canvas.isIndexed = indexed
     }
