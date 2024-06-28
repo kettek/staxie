@@ -39,7 +39,7 @@
   
   let filePositions: Record<number, {x: number, y: number, z: number}> = {}
   $: {
-    for (let file of $fileStates) {
+    for (let file of $fileStates.files) {
       if (visibleFiles[file.id] && !filePositions[file.id]) {
         filePositions[file.id] = {x: 0, y: 0, z: 0}
       }
@@ -89,7 +89,7 @@
     
     let x = canvas.width/2
     let y = canvas.height/2
-    let sortedFiles = $fileStates.filter(file => visibleFiles[file.id]).sort((a, b) => filePositions[a.id].z - filePositions[b.id].z)
+    let sortedFiles = $fileStates.files.filter(file => visibleFiles[file.id]).sort((a, b) => filePositions[a.id].z - filePositions[b.id].z)
     for (let file of sortedFiles) {
       if (visibleFiles[file.id]?.visible) {
         let sortedStacks = visibleFiles[file.id].stacks ? file.stacks.filter(stack => visibleFiles[file.id].stacks[stack.name]?.visible).sort((a, b) => visibleFiles[file.id].stacks[a.name].orderIndex - visibleFiles[file.id].stacks[b.name].orderIndex) : []
@@ -156,7 +156,7 @@
     y /= zoom
     x -= canvas.width/2
     y -= canvas.height/2
-    for (let file of $fileStates) {
+    for (let file of $fileStates.files) {
       if (!visibleFiles[file.id]?.visible) continue
       let x1 = filePositions[file.id].x - (file.frameWidth/2*zoom)
       let x2 = filePositions[file.id].x + (file.frameWidth/2*zoom)
@@ -243,7 +243,7 @@
   <Row narrow condensed>
     {#if !shronked}
       <Column sm>
-        {#each $fileStates as file, i}
+        {#each $fileStates.files as file, i}
           <Checkbox on:change={(e)=>toggleFile(file, i, e)} checked={visibleFiles[file.id]?.visible} indeterminate={isFileIndeterminate(file)} labelText={file.title.length>20?'…'+file.title.substring(file.title.length-20):file.title}></Checkbox>
           {#each file.stacks as stack, stackIndex}
             <div class='subcheck'>
