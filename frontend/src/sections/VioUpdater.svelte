@@ -10,33 +10,58 @@
   export let open: boolean = false
 
   type VioSprite = {
-    animations: { [key: string]: 
-      {
-        sets: { [key: string]:
-          {
-            subsets: { [key: string]:
-              {
-                frames: {
-                  x: number,
-                  y: number,
-                  width: number,
-                  height: number,
-                  time: number
-                }[]
-              }
-            }
-          }
-        }
-      }
-    }
+    animations: { [key: string]: VioSpriteAnimation }
+  }
+  type VioSpriteAnimation = {
+    sets: { [key: string]: VioSpriteSet }
+  }
+  type VioSpriteSet = {
+    subsets: { [key:string]: VioSpriteSubset }
+  }
+  type VioSpriteSubset = {
+    frames: VioSpriteFrame[]
+  }
+  type VioSpriteFrame = {
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    time: number
   }
 
   let path: string
   let parsed: VioSprite
-  let staxie: ImportStaxie = {
+  let vioImport: ImportStaxie = {
     stacks: [],
     frameWidth: 0,
     frameHeight: 0,
+  }
+
+  type Mapping = {
+    vio: boolean,
+    staxie: boolean,
+    update?: boolean,
+    remove?: boolean,
+  }
+  let mappings: Record<string, Mapping> = {}
+  $: {
+    for (let stack of vioImport.stacks) {
+      if (!mappings[stack.name]) {
+        mappings[stack.name] = {vio: true, staxie: false}
+      } else {
+        mappings[stack.name].vio = true
+      }
+    }
+    for (let stack of $file.stacks) {
+      if (!mappings[stack.name]) {
+        mappings[stack.name] = {vio: false, staxie: true}
+      } else {
+        mappings[stack.name].staxie = true
+        if (mappings[stack.name].vio) {
+          mappings[stack.name].update = true
+        }
+      }
+    }
   }
 
   async function openFile() {
@@ -48,8 +73,15 @@
     }
   }
 
-  function update() {
-    console.log('updating', path)
+  async function update() {
+    applyChanges()
+    let newYaml = YAML.stringify(parsed)
+    try {
+      await SaveFileBytes(path, btoa(newYaml) as any)
+    } catch(e) {
+      alert(e)
+    }
+    open = false
   }
 
   async function tryOpen(p: string): Promise<VioSprite> {
@@ -59,7 +91,7 @@
   }
 
   function updateMappings() {
-    staxie = {
+    vioImport = {
       stacks: [],
       frameWidth: 0,
       frameHeight: 0,
@@ -72,6 +104,7 @@
         name: staxieStackName,
         animations: [],
         sliceCount: 0,
+        origAnim: anim,
       }
 
       for (let [setName, set] of Object.entries(anim.sets)) {
@@ -83,6 +116,7 @@
             name: staxieAnimationName,
             frames: [],
             frameTime: 0,
+            origSet: set,
           }
           stack.animations.push(animation)
         }
@@ -108,14 +142,109 @@
           }
         }
       }
-      staxie.stacks.push(stack)
+      vioImport.stacks.push(stack)
     }
     let bestFrameSize = Object.keys(frameSizeCounts).sort((a, b) => frameSizeCounts[b] - frameSizeCounts[a])[0]
 
-    staxie.frameWidth = parseInt(bestFrameSize.split('x')[0])
-    staxie.frameHeight = parseInt(bestFrameSize.split('x')[1])
+    vioImport.frameWidth = parseInt(bestFrameSize.split('x')[0])
+    vioImport.frameHeight = parseInt(bestFrameSize.split('x')[1])
+  }
 
-    console.log('alright, we got the following', staxie)
+  function fileToVio(): VioSprite {
+    let vio: VioSprite = {
+      animations: {}
+    }
+    for (let stack of $file.stacks) {
+      let vioAnim: VioSpriteAnimation = {
+        sets: {},
+      }
+
+      for (let anim of stack.animations) {
+        for (let [frameIndex, frame] of anim.frames.entries()) {
+          let vioSet: VioSpriteSet = {
+            subsets: {},
+          }
+          for (let [sliceIndex, slice] of frame.slices.entries()) {
+            let vioSubset: VioSpriteSubset = {
+              frames: [],
+            }
+
+            let vioFrame: VioSpriteFrame = {
+              x: slice.x,
+              y: slice.y,
+              width: vioImport.frameWidth,
+              height: vioImport.frameHeight,
+              time: anim.frameTime,
+            }
+
+            vioSubset.frames.push(vioFrame)
+            vioSet.subsets[sliceIndex] = vioSubset
+          }
+
+          vioAnim.sets[`${anim.name}_${frameIndex<10?'0'+frameIndex:frameIndex}`] = vioSet
+        }
+      }
+
+      vio.animations[stack.name] = vioAnim
+    }
+    return vio
+  }
+
+  function applyChanges() {
+    let vioSprite = fileToVio()
+
+    for (let [name, mapping] of Object.entries(mappings)) {
+      if (mapping.remove) {
+        delete parsed.animations[name]
+      } else if (mapping.update) {
+        if (parsed.animations[name]) {
+          for (let [setName, set] of Object.entries(vioSprite.animations[name].sets)) {
+            if (parsed.animations[name].sets[setName]) {
+              for (let [subsetName, subset] of Object.entries(set.subsets)) {
+                if (parsed.animations[name].sets[setName].subsets[subsetName]) {
+                  for (let frameIndex = 0; frameIndex < subset.frames.length; frameIndex++) {
+                    if (parsed.animations[name].sets[setName].subsets[subsetName].frames[frameIndex]) {
+                      parsed.animations[name].sets[setName].subsets[subsetName].frames[frameIndex] = {
+                        ...parsed.animations[name].sets[setName].subsets[subsetName].frames[frameIndex],
+                        ...subset.frames[frameIndex]
+                      }
+                    } else {
+                      parsed.animations[name].sets[setName].subsets[subsetName].frames[frameIndex] = subset.frames[frameIndex]
+                    }
+                  }
+                  if (parsed.animations[name].sets[setName].subsets[subsetName].frames.length > subset.frames.length) {
+                    parsed.animations[name].sets[setName].subsets[subsetName].frames = parsed.animations[name].sets[setName].subsets[subsetName].frames.slice(0, subset.frames.length)
+                  }
+                } else {
+                  parsed.animations[name].sets[setName].subsets[subsetName] = subset
+                }
+              }
+              // Remove any extra subsets
+              if (Object.keys(parsed.animations[name].sets[setName].subsets).length > Object.keys(vioSprite.animations[name].sets[setName].subsets).length) {
+                for (let subsetName of Object.keys(parsed.animations[name].sets[setName].subsets)) {
+                  if (!vioSprite.animations[name].sets[setName].subsets[subsetName]) {
+                    delete parsed.animations[name].sets[setName].subsets[subsetName]
+                  }
+                }
+              }
+            } else {
+              parsed.animations[name].sets[setName] = set
+            }
+          }
+          // Remove any extra sets
+          if (Object.keys(parsed.animations[name].sets).length > Object.keys(vioSprite.animations[name].sets).length) {
+            for (let setName of Object.keys(parsed.animations[name].sets)) {
+              if (!vioSprite.animations[name].sets[setName]) {
+                delete parsed.animations[name].sets[setName]
+              }
+            }
+          }
+        } else {
+          // Add
+          parsed.animations[name] = vioSprite.animations[name]
+        }
+      }
+    }
   }
 
   onMount(async () => {
@@ -145,18 +274,28 @@
         <StructuredList condensed>
           <StructuredListHead>
             <StructuredListRow head>
-              <StructuredListCell>Update Set↔Stack</StructuredListCell>
-              <StructuredListCell>Info</StructuredListCell>
+              <StructuredListCell>Set/Stack</StructuredListCell>
+              <StructuredListCell>Vio</StructuredListCell>
+              <StructuredListCell>Staxie</StructuredListCell>
+              <StructuredListCell>Add/Merge</StructuredListCell>
+              <StructuredListCell>Remove</StructuredListCell>
             </StructuredListRow>
           </StructuredListHead>
           <StructuredListBody>
-            {#each staxie.stacks as stack, i}
+            {#each Object.entries(mappings) as [name, mapping]}
               <StructuredListRow>
+                <StructuredListCell>{name}</StructuredListCell>
                 <StructuredListCell>
-                  <Checkbox labelText={stack.name} />
+                  <input type="checkbox" disabled checked={mapping.vio} />
                 </StructuredListCell>
                 <StructuredListCell>
-                  {stack.sliceCount} slices {stack.animations.length} animations
+                  <input type="checkbox" disabled checked={mapping.staxie} />
+                </StructuredListCell>
+                <StructuredListCell>
+                  <input type="checkbox" disabled={!mapping.staxie} bind:checked={mapping.update} />
+                </StructuredListCell>
+                <StructuredListCell>
+                  <input type="checkbox" disabled={mapping.staxie} bind:checked={mapping.remove} />
                 </StructuredListCell>
               </StructuredListRow>
             {/each}

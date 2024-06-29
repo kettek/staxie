@@ -25,18 +25,20 @@ export type ImportSlice = {
   x: number
   y: number
   pixels?: Uint8Array
-  origSubset: any
+  origSubset?: any
 }
 export type ImportFrame = ImportSlice[]
 export type ImportAnimation = {
   name: string
   frames: ImportFrame[]
   frameTime: number
+  origSet?: any
 }
 export type ImportStack = {
   name: string
   animations: ImportAnimation[]
   sliceCount: number
+  origAnim?: any
 }
 export type ImportStaxie = {
   frameWidth: number
