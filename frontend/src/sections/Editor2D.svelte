@@ -99,6 +99,15 @@
   let overlayDirty: boolean = true
   let canvasDirty: boolean = true
   
+  function setZoom(z: number) {
+    if (z < 1) {
+      z = 1
+    }
+    zoom = z
+    capOffset()
+    canvasDirty = true
+    overlayDirty = true
+  }
   function zoomIn() {
     if (zoom < 1) {
       zoom *=2
@@ -618,7 +627,7 @@
         step={1}
         value={zoom}
         width={5}
-        on:change={(e)=>zoom=e.detail}
+        on:change={(e)=>setZoom(e.detail)}
       />
       <Button
         on:click={zoomIn}
