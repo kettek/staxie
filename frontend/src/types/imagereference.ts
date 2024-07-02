@@ -12,6 +12,8 @@ export type ImageReference = {
 
   zoom: number
   opacity: number
+  
+  overtop: boolean
 }
 
 export function createImageReference(src: string, b64: string, x: number, y: number): ImageReference {
@@ -28,6 +30,7 @@ export function createImageReference(src: string, b64: string, x: number, y: num
     rotation: 0,
     zoom: 1,
     opacity: 0.75,
+    overtop: false
   }
 }
 

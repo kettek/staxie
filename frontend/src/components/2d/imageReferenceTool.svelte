@@ -52,6 +52,12 @@
       imageReferences.replace(ref)
     }
   }
+  function handleOvertop(e: CustomEvent<boolean>) {
+    if (ref) {
+      ref.overtop = e.detail
+      imageReferences.replace(ref)
+    }
+  }
 </script>
 
 <Dropdown size="sm" hideLabel selectedId={$file.selectedImageReference} items={items} on:select={handleSelect}/>
@@ -70,6 +76,9 @@
     <Input type='number' width={4} size='small' step={0.05} value={ref.opacity} on:change={handleOpacity} on:input={handleOpacity}>
       <svelte:fragment slot='label'>opacity:</svelte:fragment>
     </Input>
+    <Input type='checkbox' size='small' checked={ref.overtop} on:change={handleOvertop} on:input={handleOvertop}>
+      <svelte:fragment slot='label'>overtop:</svelte:fragment>
+    </Input>
   </aside>
 {/if}
 
@@ -79,7 +88,7 @@
   }
   aside {
     display: grid;
-    grid-template-columns: auto auto auto auto;
+    grid-template-columns: auto auto auto auto auto;
     grid-template-rows: minmax(0, 1fr);
   }
 </style>

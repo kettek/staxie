@@ -167,10 +167,10 @@
     ctx.clearRect(0, 0, rootCanvas.width, rootCanvas.height)
     ctx.drawImage(canvas, 0, 0)
 
-    // Draw any reference underneath.
+    // Draw reference underneath.
     if ($file.selectedImageReference) {
       let ref = $editor2DSettings.imageReferences.list().find(v=>v.src===$file.selectedImageReference)
-      if (ref && ref.image) {
+      if (ref && !ref.overtop && ref.image) {
         ctx.save()
         ctx.imageSmoothingEnabled = false
         ctx.imageSmoothingQuality = 'low'
@@ -185,6 +185,19 @@
     ctx.imageSmoothingEnabled = false
     ctx.drawImage(file.canvas.canvas, view.x, view.y, view.width, view.height, offsetX, offsetY, view.width*zoom, view.height*zoom)
     ctx.restore()
+
+    // Draw reference overtop.
+    if ($file.selectedImageReference) {
+      let ref = $editor2DSettings.imageReferences.list().find(v=>v.src===$file.selectedImageReference)
+      if (ref && ref.overtop && ref.image) {
+        ctx.save()
+        ctx.imageSmoothingEnabled = false
+        ctx.imageSmoothingQuality = 'low'
+        ctx.globalAlpha = ref.opacity
+        ctx.drawImage(ref.image, 0, 0, ref.image.naturalWidth, ref.image.naturalHeight, offsetX+ref.x*(zoom*ref.zoom), offsetY+ref.y*(zoom*ref.zoom), ref.image.naturalWidth*zoom*ref.zoom, ref.image.naturalHeight*zoom*ref.zoom)
+        ctx.restore()
+      }
+    }
 
     // FIXME: Reorganize overlay drawing to have two types: regular composition, such as this pixel brush preview, and difference composition for cursors and bounding boxes.
     // Draw brush preview.
