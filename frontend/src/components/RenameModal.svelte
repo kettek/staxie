@@ -18,6 +18,7 @@
 </script>
 
 <Modal
+  preventCloseOnClickOutside
   bind:open
   modalHeading={heading}
   primaryButtonText="Apply"

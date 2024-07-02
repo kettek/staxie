@@ -19,6 +19,7 @@
 </script>
 
 <Modal
+  preventCloseOnClickOutside
   hasScrollingContent
   bind:open
   modalHeading="Delete Palette Swatch"
