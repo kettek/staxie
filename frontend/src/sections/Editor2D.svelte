@@ -174,9 +174,8 @@
         ctx.save()
         ctx.imageSmoothingEnabled = false
         ctx.imageSmoothingQuality = 'low'
-        ctx.scale(zoom*ref.zoom, zoom*ref.zoom)
         ctx.globalAlpha = ref.opacity
-        ctx.drawImage(ref.image, offsetX+ref.x, offsetY+ref.y)
+        ctx.drawImage(ref.image, 0, 0, ref.image.naturalWidth, ref.image.naturalHeight, offsetX+ref.x*(zoom*ref.zoom), offsetY+ref.y*(zoom*ref.zoom), ref.image.naturalWidth*zoom*ref.zoom, ref.image.naturalHeight*zoom*ref.zoom)
         ctx.restore()
       }
     }
@@ -184,9 +183,7 @@
     // Draw the actual canvas image.
     ctx.save()
     ctx.imageSmoothingEnabled = false
-    ctx.scale(zoom, zoom)
-    //ctx.drawImage(file.canvas.canvas, offsetX, offsetY)
-    ctx.drawImage(file.canvas.canvas, view.x, view.y, view.width, view.height, offsetX, offsetY, view.width, view.height)
+    ctx.drawImage(file.canvas.canvas, view.x, view.y, view.width, view.height, offsetX, offsetY, view.width*zoom, view.height*zoom)
     ctx.restore()
 
     // FIXME: Reorganize overlay drawing to have two types: regular composition, such as this pixel brush preview, and difference composition for cursors and bounding boxes.
@@ -206,21 +203,19 @@
       let {r, g, b, a } = file.canvas.getPaletteAsRGBA($brushSettings.primaryIndex)
       ctx.fillStyle = `rgba(${r},${g},${b},${a})`
       for (let i = 0; i < shape.length; i++) {
-        ctx.fillRect(offsetX*zoom+(mousePixelX+shape[i].x)*zoom, offsetY*zoom+(mousePixelY+shape[i].y)*zoom, zoom, zoom)
+        ctx.fillRect(offsetX+(mousePixelX+shape[i].x)*zoom, offsetY+(mousePixelY+shape[i].y)*zoom, zoom, zoom)
       }
     } else if ($toolSettings.current instanceof MoveTool && $toolSettings.current.isActive()) {
       ctx.save()
       ctx.imageSmoothingEnabled = false
-      ctx.scale(zoom, zoom)
       let {x, y} = $toolSettings.current.previewPosition()
       x -= view.x
       y -= view.y
-      ctx.drawImage($toolSettings.current.preview.canvas, offsetX+x, offsetY+y)
+      ctx.drawImage($toolSettings.current.preview.canvas, 0, 0, $toolSettings.current.preview.canvas.width, $toolSettings.current.preview.canvas.height, offsetX+x*zoom, offsetY+y*zoom, $toolSettings.current.preview.canvas.width*zoom, $toolSettings.current.preview.canvas.height*zoom)
       ctx.restore()
     } else if ($toolSettings.current instanceof RectangleTool && $toolSettings.current.isActive()) {
       ctx.save()
       ctx.imageSmoothingEnabled = false
-      ctx.scale(zoom, zoom)
       
       toolCanvas.width = Math.abs($toolSettings.current.x1 - $toolSettings.current.x2) + 1
       toolCanvas.height = Math.abs($toolSettings.current.y1 - $toolSettings.current.y2) + 1
@@ -230,7 +225,7 @@
         let {shape, minX, minY} = NormalizeShape(RectangleShape($toolSettings.current.x1, $toolSettings.current.y1, $toolSettings.current.x2, $toolSettings.current.y2, $toolSettings.current.fill, $brushSettings.primaryIndex))
         let imageData = ShapeToImageData(shape, tctx, [r, g, b, a])
         tctx.putImageData(imageData, 0, 0)
-        ctx.drawImage(toolCanvas, offsetX+minX, offsetY+minY)
+        ctx.drawImage(toolCanvas, 0, 0, toolCanvas.width, toolCanvas.height, offsetX+minX*zoom, offsetY+minY*zoom, toolCanvas.width*zoom, toolCanvas.height*zoom)
       }
       ctx.restore()
     } else if ($toolSettings.current instanceof EllipseTool && $toolSettings.current.isActive()) {
@@ -261,12 +256,12 @@
       ctx.lineWidth = 0.5
       ctx.beginPath()
       for (let x = $editor2DSettings.gridMinorSize; x < view.width; x += $editor2DSettings.gridMinorSize) {
-        ctx.moveTo(offsetX*zoom+x*zoom, offsetY*zoom)
-        ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+view.height*zoom)
+        ctx.moveTo(offsetX+x*zoom, offsetY)
+        ctx.lineTo(offsetX+x*zoom, offsetY+view.height*zoom)
       }
       for (let y = $editor2DSettings.gridMinorSize; y < view.height; y += $editor2DSettings.gridMinorSize) {
-        ctx.moveTo(offsetX*zoom, offsetY*zoom+y*zoom)
-        ctx.lineTo(offsetX*zoom+view.width*zoom, offsetY*zoom+y*zoom)
+        ctx.moveTo(offsetX, offsetY+y*zoom)
+        ctx.lineTo(offsetX+view.width*zoom, offsetY+y*zoom)
       }
       ctx.stroke()
       // Major grid lines.
@@ -274,12 +269,12 @@
       ctx.lineWidth = 0.5
       ctx.beginPath()
       for (let x = $editor2DSettings.gridMajorSize; x < view.width; x += $editor2DSettings.gridMajorSize) {
-        ctx.moveTo(offsetX*zoom+x*zoom, offsetY*zoom)
-        ctx.lineTo(offsetX*zoom+x*zoom, offsetY*zoom+view.height*zoom)
+        ctx.moveTo(offsetX+x*zoom, offsetY)
+        ctx.lineTo(offsetX+x*zoom, offsetY+view.height*zoom)
       }
       for (let y = $editor2DSettings.gridMajorSize; y < view.height; y += $editor2DSettings.gridMajorSize) {
-        ctx.moveTo(offsetX*zoom, offsetY*zoom+y*zoom)
-        ctx.lineTo(offsetX*zoom+view.width*zoom, offsetY*zoom+y*zoom)
+        ctx.moveTo(offsetX, offsetY+y*zoom)
+        ctx.lineTo(offsetX+view.width*zoom, offsetY+y*zoom)
       }
       ctx.stroke()
     }
@@ -287,7 +282,7 @@
     // Draw our selection overlay.
     if (file.selection.active) {
       ctx.imageSmoothingEnabled = false
-      ctx.drawImage(file.selection.marchingCanvas, (offsetX-view.x)*zoom, (offsetY-view.y)*zoom)
+      ctx.drawImage(file.selection.marchingCanvas, offsetX-view.x*zoom, offsetY-view.y*zoom)
     }
 
     // Draw our overlay with difference composition so visibility is better.
@@ -307,11 +302,10 @@
     // Draw checkboard.
     ctx.save()
     ctx.imageSmoothingEnabled = false
-    ctx.scale(zoom, zoom)
     if ($editor2DSettings.showCheckerboard) {
       ctx.beginPath()
       ctx.fillStyle = $editor2DSettings.checkerboardColor1
-      ctx.rect(offsetX, offsetY, view.width, view.height)
+      ctx.rect(offsetX, offsetY, view.width*zoom, view.height*zoom)
       ctx.fill()
 
       let rows = view.height / $editor2DSettings.checkerboardSize
@@ -321,17 +315,17 @@
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           if (r % 2 === 0 && c % 2 === 1 || r % 2 === 1 && c % 2 === 0) {
-            let x = offsetX+c * $editor2DSettings.checkerboardSize
-            let y = offsetY+r * $editor2DSettings.checkerboardSize
+            let x = c * $editor2DSettings.checkerboardSize
+            let y = r * $editor2DSettings.checkerboardSize
             let w = $editor2DSettings.checkerboardSize
             let h = $editor2DSettings.checkerboardSize
-            if (x+w > offsetX+view.width) {
-              w = offsetX+view.width - x
+            if (x+w > view.width) {
+              w = view.width - x
             }
-            if (y+h > offsetY+view.height) {
-              h = offsetY+view.height - y
+            if (y+h > view.height) {
+              h = view.height - y
             }
-            ctx.rect(x, y, w, h)
+            ctx.rect(offsetX+x*zoom, offsetY+y*zoom, w*zoom, h*zoom)
           }
         }
       }
@@ -359,11 +353,11 @@
         let {x, y, width, height} = $toolSettings.current.getArea()
         x -= view.x
         y -= view.y
-        ctx.strokeRect(offsetX*zoom+x*zoom, offsetY*zoom+y*zoom, width*zoom, height*zoom)
+        ctx.strokeRect(offsetX+x*zoom, offsetY+y*zoom, width*zoom, height*zoom)
       }
       // Draw zoomed pixel-sized square where mouse is.
       if (zoom > 1) {
-        ctx.rect(offsetX*zoom+mousePixelX*zoom, offsetY*zoom+mousePixelY*zoom, 1*zoom, 1*zoom)
+        ctx.rect(offsetX+mousePixelX*zoom, offsetY+mousePixelY*zoom, 1*zoom, 1*zoom)
       }
       // Draw pixel square where mouse is.
       if (zoom <= 1 || zoom > 4) {
@@ -377,14 +371,14 @@
       ctx.strokeStyle = '#cc3388'
       ctx.lineWidth = zoom
 
-      let x = offsetX - Math.floor(view.x) + Math.floor($toolSettings.current.lastX)
-      let y = offsetY - view.y + Math.floor(Math.floor($toolSettings.current.lastY))
+      let x = Math.floor(view.x) + Math.floor($toolSettings.current.lastX)
+      let y = view.y + Math.floor(Math.floor($toolSettings.current.lastY))
 
-      let x2 = offsetX*zoom+mousePixelX*zoom+zoom/2
-      let y2 = offsetY*zoom+mousePixelY*zoom+zoom/2
+      let x2 = mousePixelX*zoom+zoom/2
+      let y2 = mousePixelY*zoom+zoom/2
 
-      ctx.moveTo((x+0.5)*zoom, (y+0.5)*zoom)
-      ctx.lineTo(x2, y2)
+      ctx.moveTo(offsetX+(x+0.5)*zoom, offsetY+(y+0.5)*zoom)
+      ctx.lineTo(offsetX+x2, offsetY+y2)
       ctx.stroke()
     }
 
@@ -483,10 +477,10 @@
       // Get mouse position relative to canvas.
       {
         let rect = canvas.getBoundingClientRect()
-        mouseX = e.offsetX - rect.left
-        mouseY = e.offsetY - rect.top
-        mousePixelX = Math.floor(mouseX / zoom - offsetX)
-        mousePixelY = Math.floor(mouseY / zoom - offsetY)
+        mouseX = (e.offsetX - rect.left)
+        mouseY = (e.offsetY - rect.top)
+        mousePixelX = Math.floor((mouseX-offsetX) / zoom)
+        mousePixelY = Math.floor((mouseY-offsetY) / zoom)
         viewPixelX = mousePixelX + view.x
         viewPixelY = mousePixelY + view.y
         overlayDirty = true
@@ -518,8 +512,8 @@
         }
       }
       if (buttons.has(1)) {
-        offsetX += dx / zoom
-        offsetY += dy / zoom
+        offsetX += dx
+        offsetY += dy
         capOffset()
         canvasDirty = true
         overlayDirty = true
@@ -542,6 +536,13 @@
 
     })
   }
+  
+  function coordToMousePixel(x: number, y: number): [number, number] {
+    let rect = canvas.getBoundingClientRect()
+    let mouseX = (x - rect.left)
+    let mouseY = (y - rect.top)
+    return [Math.floor((mouseX-offsetX) / zoom), Math.floor((mouseY-offsetY) / zoom)]
+  }
 
   function viewDrop(node) {
     node.ondragover = "return false"
@@ -560,8 +561,10 @@
         for (let f of e.dataTransfer.files) {
           if (f.type.startsWith('image/')) {
             let reader = new FileReader()
+            let [mousePixelX, mousePixelY] = coordToMousePixel(e.offsetX, e.offsetY)
+
             reader.onload = (e) => {
-              $editor2DSettings.imageReferences.add(createImageReference(f.name, e.target?.result as string, mouseX, mouseY))
+              $editor2DSettings.imageReferences.add(createImageReference(f.name, e.target?.result as string, mousePixelX, mousePixelY))
               $file.selectedImageReference = f.name
             }
             reader.readAsDataURL(f)
