@@ -559,13 +559,14 @@
       e.preventDefault()
       e.stopPropagation()
       if (e.dataTransfer && e.dataTransfer.files.length) {
-        for (let file of e.dataTransfer.files) {
-          if (file.type.startsWith('image/')) {
+        for (let f of e.dataTransfer.files) {
+          if (f.type.startsWith('image/')) {
             let reader = new FileReader()
             reader.onload = (e) => {
-              $editor2DSettings.imageReferences.add(createImageReference(file.name, e.target?.result as string, mouseX, mouseY))
+              $editor2DSettings.imageReferences.add(createImageReference(f.name, e.target?.result as string, mouseX, mouseY))
+              $file.selectedImageReference = f.name
             }
-            reader.readAsDataURL(file)
+            reader.readAsDataURL(f)
           }
         }
       }
