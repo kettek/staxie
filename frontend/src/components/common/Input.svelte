@@ -5,14 +5,19 @@
 
   export let size: 'small' | 'medium' | 'large' = 'medium'
   export let width: number = 6
-  export let type: 'text' | 'number' | 'color' | 'file' = 'text'
+  export let type: 'text' | 'number' | 'color' | 'file' | 'checkbox' = 'text'
   export let value: string | number = ''
+  export let checked: boolean = false
 
   function onChange(e: Event) {
     const target = e.target as HTMLInputElement
     value = target.value
     if (type === 'number') {
       value = parseFloat(value)
+    } else if (type === 'checkbox') {
+      checked = target.checked
+      dispatch('change', checked)
+      return
     }
     dispatch('change', value)
   }
@@ -21,6 +26,10 @@
     value = target.value
     if (type === 'number') {
       value = parseFloat(value)
+    } else if (type === 'checkbox') {
+      checked = target.checked
+      dispatch('change', checked)
+      return
     }
     dispatch('input', value)
   }
@@ -38,6 +47,8 @@
     <input type="color" {...$$restProps} bind:value on:change={onChange} on:input={onInput}/>
   {:else if type === 'file'}
     <input type="file" {...$$restProps} bind:value on:change={onChange} on:input={onInput}/>
+  {:else if type === 'checkbox'}
+    <input type="checkbox" {...$$restProps} bind:checked on:change={onChange}/>
   {/if}
 </label>
 
