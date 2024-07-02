@@ -4,6 +4,7 @@ import { Preview } from "./preview"
 import type { Pointer } from "./pointer"
 import { EllipseShape, FilledCircle, FilledSquare, RandomSpray, RectangleShape, type PixelPosition } from "./shapes"
 import type { CanvasView } from "./canvasview"
+import type { ImageReference } from "./imagereference"
 
 export interface ToolContext {
   file: LoadedFile
@@ -675,19 +676,38 @@ export class MoveTool implements Tool {
   }
 }
 
+export interface ReferenceToolContext {
+ imageReference: ImageReference | undefined
+}
+
 export class ReferenceTool implements Tool {
   active: boolean = false
+  ref: ImageReference | undefined
+  lastX: number = -1
+  lastY: number = -1
 
   isActive(): boolean {
     return this.active
   }
-  pointerDown(ctx: ToolContext, ptr: Pointer): void {
+  pointerDown(ctx: ToolContext & ReferenceToolContext, ptr: Pointer): void {
+    if (ctx.imageReference === undefined) {
+      return
+    }
+    this.lastX = ptr.x
+    this.lastY = ptr.y
+    this.ref = ctx.imageReference
     this.active = true
   }
   pointerUp(ctx: ToolContext, ptr: Pointer): void {
     this.active = false
+    this.ref = undefined
   }
   pointerMove(ctx: ToolContext, ptr: Pointer): void {
+    if (!this.active || !this.ref) return
+    this.ref.x -= this.lastX - ptr.x
+    this.ref.y -= this.lastY - ptr.y
+    this.lastX = ptr.x
+    this.lastY = ptr.y
   }
 }
 
