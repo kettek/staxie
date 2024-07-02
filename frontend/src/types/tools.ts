@@ -675,6 +675,22 @@ export class MoveTool implements Tool {
   }
 }
 
+export class ReferenceTool implements Tool {
+  active: boolean = false
+
+  isActive(): boolean {
+    return this.active
+  }
+  pointerDown(ctx: ToolContext, ptr: Pointer): void {
+    this.active = true
+  }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {
+    this.active = false
+  }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {
+  }
+}
+
 /* BEGIN VOXEL TOOLS */
 
 export class PlaceVoxelTool implements Tool {

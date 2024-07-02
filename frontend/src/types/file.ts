@@ -47,6 +47,8 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   selectedFrameIndices: number[] = []
   frameWidth: number
   frameHeight: number
+  //
+  selectedImageReference: string = ''
 
   subscribe: (this: void, run: Subscriber<LoadedFile>) => Unsubscriber
   set: (this: void, value: LoadedFile) => void

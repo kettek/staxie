@@ -22,7 +22,7 @@
   
   import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte"
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor, SquareOutline, CircleOutline, CircleDash, Chart_3D, WatsonHealth3DMprToggle } from "carbon-icons-svelte"
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor, SquareOutline, CircleOutline, CircleDash, Chart_3D, WatsonHealth3DMprToggle, ImageReference } from "carbon-icons-svelte"
   import StackPreview from './sections/StackPreview.svelte'
   import { Canvas } from './types/canvas'
   import BrushSize from './components/BrushSize.svelte'
@@ -49,10 +49,11 @@
   import Editor3D from './sections/Editor3D.svelte'
   import Frames from './sections/Frames.svelte'
   
-  import { toolRectangularSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolEllipse, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle, toolEllipseSelection, toolVoxelCursor, toolVoxelBoxSelection } from './stores/tool'
+  import { toolRectangularSelection, toolMagicWand, toolFill, toolErase, toolBrush, toolEllipse, toolSpray, toolPicker, toolMove, toolSettings, toolVoxelPlace, toolVoxelReplace, toolRectangle, toolEllipseSelection, toolVoxelCursor, toolVoxelBoxSelection, toolReference } from './stores/tool'
   import ColorMode from './sections/ColorMode.svelte'
   import TabTitle from './components/TabTitle.svelte'
   import VioUpdater from './sections/VioUpdater.svelte'
+  import ImageReferenceTool from './components/2d/imageReferenceTool.svelte'
 
   let is3D: boolean = false
   
@@ -501,6 +502,8 @@
         <Button isSelected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} iconDescription="pick" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}></Button>
         <Button isSelected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} iconDescription="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
         <Button isSelected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} iconDescription="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
+        <hr />
+        <Button isSelected={$toolSettings.current === toolReference} kind="ghost" size="small" icon={ImageReference} iconDescription="reference" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolReference)}></Button>
         <Shortcuts group='editor2D'>
           <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>$fileStates.focused?.push(new SelectionClearUndoable())} />
           <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolRectangularSelection)} />
@@ -539,6 +542,8 @@
         {:else if $toolSettings.current === toolSpray}
           radius:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.sprayRadius}/>
           density:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.sprayDensity}/>
+        {:else if $toolSettings.current === toolReference && $fileStates.focused}
+          <ImageReferenceTool file={$fileStates.focused} imageReferences={$editor2DSettings.imageReferences} />
         {/if}
       </menu>
       <Tabs bind:selected={$fileStates.focusedIndex}>

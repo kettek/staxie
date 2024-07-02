@@ -1,3 +1,4 @@
+import { createImageReferenceStore, type ImageReferenceStore } from '../types/imagereference'
 import { writable } from 'svelte/store'
 
 type Editor2DSettings = {
@@ -16,6 +17,8 @@ type Editor2DSettings = {
   gridMinorSize: number
   // View mode
   viewMode: 'slice' | 'frame' | 'animation' | 'stack' | 'sheet'
+  // References
+  imageReferences: ImageReferenceStore
 }
 
 export const editor2DSettings = writable<Editor2DSettings>({
@@ -33,4 +36,6 @@ export const editor2DSettings = writable<Editor2DSettings>({
   gridMinorColor: '#006666',
   // View
   viewMode: 'slice',
+  // References
+  imageReferences: createImageReferenceStore(),
 })

@@ -17,6 +17,7 @@
   import { toolCanvas, toolSettings } from '../stores/tool'
   import { rlog } from '../globals/log'
   import { isKeyActive } from '../components/Shortcuts.svelte'
+  import { createImageReference } from '../types/imagereference'
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -165,6 +166,24 @@
     if (!ctx) return
     ctx.clearRect(0, 0, rootCanvas.width, rootCanvas.height)
     ctx.drawImage(canvas, 0, 0)
+
+    // Draw any reference underneath.
+    if ($file.selectedImageReference) {
+      let ref = $editor2DSettings.imageReferences.list().find(v=>v.src===$file.selectedImageReference)
+      if (ref && ref.image) {
+        ctx.save()
+        ctx.imageSmoothingEnabled = false
+        ctx.imageSmoothingQuality = 'low'
+        if (ref.matchZoom) {
+          ctx.scale(zoom, zoom)
+        } else {
+          ctx.scale(ref.zoom, ref.zoom)
+        }
+        ctx.globalAlpha = ref.opacity
+        ctx.drawImage(ref.image, offsetX+ref.x, offsetY+ref.y)
+        ctx.restore()
+      }
+    }
 
     // Draw the actual canvas image.
     ctx.save()
@@ -525,6 +544,33 @@
 
     })
   }
+
+  function viewDrop(node) {
+    node.ondragover = "return false"
+    node.addEventListener('dragenter', (e: DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+    })
+    node.addEventListener('dragover', (e: DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+    })
+    node.addEventListener('drop', (e: DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (e.dataTransfer && e.dataTransfer.files.length) {
+        for (let file of e.dataTransfer.files) {
+          if (file.type.startsWith('image/')) {
+            let reader = new FileReader()
+            reader.onload = (e) => {
+              $editor2DSettings.imageReferences.add(createImageReference(file.name, e.target?.result as string, mouseX, mouseY))
+            }
+            reader.readAsDataURL(file)
+          }
+        }
+      }
+    })
+  }
   
   onMount(() => {
     let frameID: number = 0
@@ -540,7 +586,7 @@
 </script>
 
 <main>
-  <section class='view'>
+  <section class='view' use:viewDrop>
     <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>
   </section>
   <menu>
