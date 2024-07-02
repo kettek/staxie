@@ -174,11 +174,7 @@
         ctx.save()
         ctx.imageSmoothingEnabled = false
         ctx.imageSmoothingQuality = 'low'
-        if (ref.matchZoom) {
-          ctx.scale(zoom, zoom)
-        } else {
-          ctx.scale(ref.zoom, ref.zoom)
-        }
+        ctx.scale(zoom*ref.zoom, zoom*ref.zoom)
         ctx.globalAlpha = ref.opacity
         ctx.drawImage(ref.image, offsetX+ref.x, offsetY+ref.y)
         ctx.restore()

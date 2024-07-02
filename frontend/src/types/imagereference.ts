@@ -10,7 +10,6 @@ export type ImageReference = {
   flipY: boolean
   rotation: number
 
-  matchZoom: boolean
   zoom: number
   opacity: number
 }
@@ -27,7 +26,6 @@ export function createImageReference(src: string, b64: string, x: number, y: num
     flipX: false,
     flipY: false,
     rotation: 0,
-    matchZoom: true,
     zoom: 1,
     opacity: 0.75,
   }
