@@ -12,12 +12,13 @@
   import { type LoadedFile } from '../types/file'
   import { EllipseShape, FilledCircle, FilledSquare, NormalizeShape, RectangleShape, ShapeToImageData, type PixelPosition } from '../types/shapes'
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionRectangularTool, SprayTool, RectangleTool, EllipseTool, SelectionEllipseTool, ReferenceTool } from '../types/tools'
-  import { Button, NumberInput } from 'carbon-components-svelte';
+  import { Button } from 'carbon-components-svelte';
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
   import { toolCanvas, toolSettings } from '../stores/tool'
   import { rlog } from '../globals/log'
   import { isKeyActive } from '../components/Shortcuts.svelte'
   import { createImageReference } from '../types/imagereference'
+  import Input from '../components/common/Input.svelte'
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -610,13 +611,14 @@
       <span>{view.width}</span><span>{view.height}</span>
     </section>
     <section class='controls'>
-      <NumberInput
+      <Input
+        type="number"
         min={0}
         max={10}
         step={1}
-        bind:value={zoom}
-        size="sm"
-        hideSteppers
+        value={zoom}
+        width={5}
+        on:change={(e)=>zoom=e.detail}
       />
       <Button
         on:click={zoomIn}
