@@ -8,9 +8,14 @@
 
   let lastFocusedFile: LoadedFile | null
   $: if (lastFocusedFile != $fileStates.focused) syncFile($fileStates.focused)
+  $: is3D ? refresh() : refresh()
 
   async function syncFile(file: LoadedFile | null) {
     lastFocusedFile = file
+    await refresh()
+  }
+
+  async function refresh() {
     if (lastFocusedFile) {
       await SetRichPresenceState(`Editing in ${is3D? '3D' : '2D'}`)
       await SetRichPresenceDetails(lastFocusedFile.filepath?lastFocusedFile.filepath.split('/').pop():'something special')
