@@ -55,6 +55,7 @@
   import VioUpdater from './sections/VioUpdater.svelte'
   import ImageReferenceTool from './components/2d/imageReferenceTool.svelte'
   import RichPresence from './sections/RichPresence.svelte'
+  import Split from './components/common/Split.svelte'
 
   let useRichPresence: boolean = false
   let is3D: boolean = false
@@ -361,6 +362,24 @@
     <OverflowMenu size="sm">
       <div slot="menu">View</div>
       <OverflowMenuItem>
+        <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
+          <span>2D</span>
+          <input type='radio' name='view-mode' value='2d' bind:group={$editor2DSettings.editorMode} />
+        </label>
+      </OverflowMenuItem>
+      <OverflowMenuItem>
+        <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
+          <span>3D</span>
+          <input type='radio' name='view-mode' value='3d' bind:group={$editor2DSettings.editorMode} />
+        </label>
+      </OverflowMenuItem>
+      <OverflowMenuItem>
+        <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
+          <span>2D & 3D</span>
+          <input type='radio' name='view-mode' value='both' bind:group={$editor2DSettings.editorMode} />
+        </label>
+      </OverflowMenuItem>
+      <OverflowMenuItem hasDivider>
         <Checkbox on:click={(e)=>e.stopPropagation()} checked={is3D} on:change={toggle3D} labelText="3D" />
       </OverflowMenuItem>
       <OverflowMenuItem>
@@ -563,31 +582,38 @@
         <svelte:fragment slot="content">
           {#each $fileStates.files as file, index}
             <TabContent>
-              {#if is3D}
-                <Shortcuts group='editor3D' active={$fileStates.focused===file}>
-                  <Shortcut cmd='save' keys={['ctrl+s']} on:trigger={engageSave} />
-                  <Shortcut cmd='saveAs' keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
-                  <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
-                  <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
-                  <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index, file.id)} />
-                </Shortcuts>
-                <Editor3D
-                  bind:file={file}
-                  bind:palette={fakePalette}
-                  orthographic={orthographicCamera}
-                />
-              {:else}
-                <Shortcuts group='editor2D' active={$fileStates.focused===file}>
-                  <Shortcut cmd='save' keys={['ctrl+s']} on:trigger={engageSave} />
-                  <Shortcut cmd='saveAs' keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
-                  <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
-                  <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
-                  <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index, file.id)} />
-                </Shortcuts>
-                <Editor2D
-                  bind:file={file}
-                />
-              {/if}
+              <Split bind:rightFocused={is3D} hideLeft={$editor2DSettings.editorMode !== '2d' && $editor2DSettings.editorMode !== 'both'} hideRight={$editor2DSettings.editorMode !== '3d' && $editor2DSettings.editorMode !== 'both'}>
+                <svelte:fragment slot="left">
+                  {#if !is3D}
+                    <Shortcuts group='editor2D' active={$fileStates.focused===file}>
+                      <Shortcut cmd='save' keys={['ctrl+s']} on:trigger={engageSave} />
+                      <Shortcut cmd='saveAs' keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
+                      <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
+                      <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
+                      <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index, file.id)} />
+                    </Shortcuts>
+                  {/if}
+                  <Editor2D
+                    bind:file={file}
+                  />
+                </svelte:fragment>
+                <svelte:fragment slot="right">
+                  {#if is3D}
+                    <Shortcuts group='editor3D' active={$fileStates.focused===file}>
+                      <Shortcut cmd='save' keys={['ctrl+s']} on:trigger={engageSave} />
+                      <Shortcut cmd='saveAs' keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
+                      <Shortcut cmd='undo' keys={['ctrl+z']} on:trigger={()=>file.undo()} />
+                      <Shortcut cmd='redo' keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={()=>file.redo()} />
+                      <Shortcut global cmd={'swapFile'+index} keys={['F'+(index+1)]} on:trigger={()=>selectFile(file, index, file.id)} />
+                    </Shortcuts>
+                  {/if}
+                  <Editor3D
+                    bind:file={file}
+                    bind:palette={fakePalette}
+                    orthographic={orthographicCamera}
+                  />
+                </svelte:fragment>
+              </Split>
             </TabContent>
           {/each}
         </svelte:fragment>

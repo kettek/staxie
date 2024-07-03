@@ -15,6 +15,8 @@ type Editor2DSettings = {
   gridMinorColor: string
   gridMajorSize: number
   gridMinorSize: number
+  // Editor mode
+  editorMode: '2d' | '3d' | 'both'
   // View mode
   viewMode: 'slice' | 'frame' | 'animation' | 'stack' | 'sheet'
   // References
@@ -34,6 +36,8 @@ export const editor2DSettings = writable<Editor2DSettings>({
   gridMinorSize: 8,
   gridMajorColor: '#0000ff',
   gridMinorColor: '#006666',
+  // Editor mode
+  editorMode: '2d',
   // View
   viewMode: 'slice',
   // References
