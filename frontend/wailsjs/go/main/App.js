@@ -42,12 +42,32 @@ export function SaveFilePath(arg1) {
   return window['go']['main']['App']['SaveFilePath'](arg1);
 }
 
+export function SetRichPresenceDetails(arg1) {
+  return window['go']['main']['App']['SetRichPresenceDetails'](arg1);
+}
+
+export function SetRichPresenceState(arg1) {
+  return window['go']['main']['App']['SetRichPresenceState'](arg1);
+}
+
 export function SetSetting(arg1, arg2) {
   return window['go']['main']['App']['SetSetting'](arg1, arg2);
 }
 
+export function StartRichPresence() {
+  return window['go']['main']['App']['StartRichPresence']();
+}
+
+export function StopRichPresence() {
+  return window['go']['main']['App']['StopRichPresence']();
+}
+
 export function ToggleFullscreen() {
   return window['go']['main']['App']['ToggleFullscreen']();
+}
+
+export function UpdateRichPresence() {
+  return window['go']['main']['App']['UpdateRichPresence']();
 }
 
 export function Version() {

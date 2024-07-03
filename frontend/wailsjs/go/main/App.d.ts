@@ -21,8 +21,18 @@ export function SaveFileBytes(arg1:string,arg2:Array<number>):Promise<void>;
 
 export function SaveFilePath(arg1:string):Promise<string>;
 
+export function SetRichPresenceDetails(arg1:string):Promise<void>;
+
+export function SetRichPresenceState(arg1:string):Promise<void>;
+
 export function SetSetting(arg1:string,arg2:string):Promise<void>;
 
+export function StartRichPresence():Promise<void>;
+
+export function StopRichPresence():Promise<void>;
+
 export function ToggleFullscreen():Promise<void>;
+
+export function UpdateRichPresence():Promise<void>;
 
 export function Version():Promise<string>;

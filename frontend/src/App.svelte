@@ -54,7 +54,9 @@
   import TabTitle from './components/TabTitle.svelte'
   import VioUpdater from './sections/VioUpdater.svelte'
   import ImageReferenceTool from './components/2d/imageReferenceTool.svelte'
+  import RichPresence from './sections/RichPresence.svelte'
 
+  let useRichPresence: boolean = false
   let is3D: boolean = false
   
   let theme: 'white'|'g10'|'g80'|'g90'|'g100' = 'g90'
@@ -438,6 +440,12 @@
       <OverflowMenuItem text="Preview Settings..." on:click={() => showPreviewSettings = true}/>
     </OverflowMenu>
     <OverflowMenu size="sm">
+      <div slot="menu">Other</div>
+      <OverflowMenuItem>
+        <Checkbox on:click={(e)=>e.stopPropagation()} bind:checked={useRichPresence} labelText="Rich Presence" />
+      </OverflowMenuItem>
+    </OverflowMenu>
+    <OverflowMenu size="sm">
       <div slot="menu">Help</div>
       <OverflowMenuItem text="About" on:click={() => showAbout = true}/>
       <OverflowMenuItem>
@@ -670,6 +678,10 @@
 <ComposedModal bind:open={showAbout} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
   <About bind:open={showAbout} />
 </ComposedModal>
+
+{#if useRichPresence}
+  <RichPresence is3D={is3D}/>
+{/if}
 
 <style>
   main {

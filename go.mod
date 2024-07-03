@@ -4,7 +4,10 @@ go 1.21
 
 toolchain go1.21.6
 
-require github.com/wailsapp/wails/v2 v2.9.1
+require (
+	github.com/hugolgst/rich-go v0.0.0-20230917173849-4a4fb1d3c362
+	github.com/wailsapp/wails/v2 v2.9.1
+)
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect
@@ -34,6 +37,7 @@ require (
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
+	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.7.1 => C:\Users\kts\go\pkg\mod

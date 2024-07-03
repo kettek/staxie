@@ -17,6 +17,7 @@ import (
 type App struct {
 	ctx           context.Context
 	versionString string
+	RichPresence
 }
 
 // NewApp creates a new App application struct
@@ -45,7 +46,6 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	log.Println("startup called")
 }
 
 func (a *App) AppDirectory(p string) string {
