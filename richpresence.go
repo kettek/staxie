@@ -42,6 +42,14 @@ func (r *RichPresence) UpdateRichPresence() error {
 		Timestamps: &client.Timestamps{
 			Start: &r.start,
 		},
+		LargeImage: "staxie-border",
+		LargeText:  "Open Source 2D/3D sprite stack editor",
+		Buttons: []*client.Button{
+			{
+				Label: "GitHub",
+				Url:   "https://github.com/kettek/staxie",
+			},
+		},
 	})
 	if err != nil {
 		return err
