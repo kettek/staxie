@@ -14,8 +14,10 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
 )
 
+//go:embed build/appicon.png
 //go:embed all:frontend/dist
 var assets embed.FS
 
@@ -56,6 +58,12 @@ func main() {
 		}
 	}
 
+	// Read in sprite's bytes.
+	spriteBytes, err := assets.ReadFile("build/appicon.png")
+	if err != nil {
+		log.Println("Error reading sprite:", err)
+	}
+
 	log.Println("Starting Staxie...")
 
 	// Load settings.
@@ -81,7 +89,7 @@ func main() {
 
 	// Create application with options
 	log.Println("Running Wails...")
-	err := wails.Run(&options.App{
+	if err := wails.Run(&options.App{
 		Title:  "Staxie",
 		Width:  *windowSettings.Width,
 		Height: *windowSettings.Height,
@@ -94,9 +102,10 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
-	})
-
-	if err != nil {
+		Linux: &linux.Options{
+			Icon: spriteBytes,
+		},
+	}); err != nil {
 		log.Println(err)
 	}
 }
