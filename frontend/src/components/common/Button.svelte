@@ -87,9 +87,9 @@
   }
 
   aside {
-    background-color: #000;
+    background-color: var(--cds-hover-tertiary);
+    color: var(--cds-inverse-01);
     border-radius: 0.25rem;
-    color: #fff;
     font-size: 0.75rem;
     left: 50%;
     opacity: 0;
@@ -107,14 +107,14 @@
     position: absolute;
     border-width: 0.25rem;
     border-style: solid;
-    border-color: transparent transparent #000 transparent;
+    border-color: transparent transparent var(--cds-hover-tertiary) transparent;
     pointer-events: none;
   }
   aside.-top::after {
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    border-color: #000 transparent transparent transparent;
+    border-color: var(--cds-hover-tertiary) transparent transparent transparent;
   }
   aside.-top {
     bottom: 130%;
@@ -124,7 +124,7 @@
     top: 50%;
     right: 100%;
     transform: translateY(-50%);
-    border-color: transparent #000 transparent transparent;
+    border-color: transparent var(--cds-hover-tertiary) transparent transparent;
   }
   aside.-right {
     left: 130%;
@@ -143,7 +143,7 @@
     top: 50%;
     left: 100%;
     transform: translateY(-50%);
-    border-color: transparent transparent transparent #000;
+    border-color: transparent transparent transparent var(--cds-hover-tertiary);
   }
   aside.-left {
     top: 50%;
