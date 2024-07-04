@@ -1,7 +1,8 @@
 <script lang='ts'>
   import { LoadedFile } from "../types/file"
   import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateAnimationFrameUndoable, DuplicateSliceUndoable, RemoveAnimationFrameUndoable } from "../types/file/undoables"
-  import { Button, ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
+  import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
+  import Button from '../components/common/Button.svelte'
   import { fileStates } from '../stores/file'
   import { AddAlt } from 'carbon-icons-svelte'
 
@@ -103,7 +104,7 @@
       kind="ghost"
       size="small"
       icon={AddAlt}
-      iconDescription="Add Frame"
+      tooltip="Add Frame"
       tooltipPosition="top"
       tooltipAlignment="end"
       disabled={!file || !file.animation}

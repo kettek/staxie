@@ -12,7 +12,7 @@
   import { type LoadedFile } from '../types/file'
   import { EllipseShape, FilledCircle, FilledSquare, NormalizeShape, RectangleShape, ShapeToImageData, type PixelPosition } from '../types/shapes'
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionRectangularTool, SprayTool, RectangleTool, EllipseTool, SelectionEllipseTool, ReferenceTool } from '../types/tools'
-  import { Button } from 'carbon-components-svelte';
+  import Button from '../components/common/Button.svelte'
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
   import { toolCanvas, toolSettings } from '../stores/tool'
   import { rlog } from '../globals/log'
@@ -634,7 +634,7 @@
         kind="ghost"
         size="small"
         icon={ZoomIn}
-        iconDescription="Zoom In"
+        tooltip="Zoom In"
         tooltipPosition="top"
         tooltipAlignment="end"
       />
@@ -643,7 +643,7 @@
         kind="ghost"
         size="small"
         icon={ZoomOut}
-        iconDescription="Zoom Out"
+        tooltip="Zoom Out"
         tooltipPosition="top"
         tooltipAlignment="end"
       />

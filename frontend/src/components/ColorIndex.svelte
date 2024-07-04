@@ -4,7 +4,7 @@
   This component shows a given color swatch/index and provides controls for adding and replacing swatches within the palette.
 -->
 <script lang='ts'>
-  import { Button } from "carbon-components-svelte"
+  import Button from "../components/common/Button.svelte"
   import { AddLarge, ColorSwitch, WarningAltFilled } from "carbon-icons-svelte"
   import { type LoadedFile } from "../types/file"
   import { ReplaceSwatchUndoable, AddSwatchUndoable } from "../types/file/undoables"
@@ -114,8 +114,8 @@
       {/if}
     </div>
   </div>
-  <Button kind="ghost" size="small" iconDescription="replace swatch" tooltipPosition="top" icon={ColorSwitch} on:click={replaceSwatch}></Button>
-  <Button kind="ghost" size="small" iconDescription="add swatch" tooltipPosition="top" icon={AddLarge} on:click={addSwatch}></Button>
+  <Button kind="ghost" size="small" tooltip="replace swatch" tooltipPosition="top" icon={ColorSwitch} on:click={replaceSwatch}></Button>
+  <Button kind="ghost" size="small" tooltip="add swatch" tooltipPosition="top" icon={AddLarge} on:click={addSwatch}></Button>
 </main>
 
 <style>

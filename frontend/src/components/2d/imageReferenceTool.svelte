@@ -1,5 +1,6 @@
 <script lang='ts'>
-  import { Button, Dropdown, NumberInput } from "carbon-components-svelte"
+  import { Dropdown, NumberInput } from "carbon-components-svelte"
+  import Button from "../common/Button.svelte"
   import { type ImageReference, type ImageReferenceStore } from "../../types/imagereference"
   import { editor2DSettings } from "../../stores/editor2d"
   import { fileStates } from "../../stores/file"

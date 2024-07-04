@@ -2,7 +2,8 @@
   import { FaceAdd, FolderAdd } from "carbon-icons-svelte";
   import { type LoadedFile } from "../types/file"
   import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable, RenameAnimationUndoable, RenameStackUndoable, DuplicateStackUndoable, DuplicateAnimationUndoable } from "../types/file/undoables"
-  import { Button, ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
+  import { ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
+  import Button from "../components/common/Button.svelte"
   import { fileStates } from "../stores/file"
   import RenameModal from "../components/RenameModal.svelte"
 
@@ -135,7 +136,7 @@
       kind="ghost"
       size="small"
       icon={FolderAdd}
-      iconDescription="Add Stack"
+      tooltip="Add Stack"
       tooltipPosition="bottom"
       tooltipAlignment="end"
       disabled={!file}
@@ -146,7 +147,7 @@
       kind="ghost"
       size="small"
       icon={FaceAdd}
-      iconDescription="Add Animation"
+      tooltip="Add Animation"
       tooltipPosition="bottom"
       tooltipAlignment="end"
       disabled={!file || !file.stack}

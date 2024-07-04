@@ -1,7 +1,8 @@
 <script lang='ts'>
   import { Palette } from '../types/palette'
   import { PaletteRenameUndoable } from '../types/palette/undoables'
-  import { Button, TextInput } from "carbon-components-svelte"
+  import { TextInput } from "carbon-components-svelte"
+  import Button from './common/Button.svelte'
   import { Undo, Redo, DocumentImport, DocumentExport, DocumentAdd, TrashCan } from "carbon-icons-svelte"
   
   import { palettesStore } from '../stores/palettes'
@@ -72,12 +73,12 @@
 <menu>
   <Button kind="ghost" size="small" icon={Undo} on:click={undo} disabled={!palette||!$palette.canUndo()}/>
   <Button kind="ghost" size="small" icon={Redo} on:click={redo} disabled={!palette||!$palette.canRedo()}/>
-  <Button kind="ghost" size="small" iconDescription="new palette" icon={DocumentAdd} on:click={newPalette}/>
-  <Button kind="ghost" size="small" iconDescription="import PAL" icon={DocumentImport} on:click={importPalette}/>
-  <Button kind="ghost" size="small" iconDescription="export PAL" icon={DocumentExport} on:click={exportPalette}/>
+  <Button kind="ghost" size="small" tooltip="new palette" tooltipPosition='bottom' icon={DocumentAdd} on:click={newPalette}/>
+  <Button kind="ghost" size="small" tooltip="import PAL" tooltipPosition='bottom' icon={DocumentImport} on:click={importPalette}/>
+  <Button kind="ghost" size="small" tooltip="export PAL" tooltipPosition='bottom' icon={DocumentExport} on:click={exportPalette}/>
   <aside></aside>
   {#if palette}
-    <Button kind="ghost" size="small" iconDescription="delete palette" icon={TrashCan} on:click={()=>{palettesStore.removePalette(palette)}}/>
+    <Button kind="ghost" size="small" tooltip="delete palette" icon={TrashCan} on:click={()=>{palettesStore.removePalette(palette)}}/>
   {/if}
 </menu>
 <span>
