@@ -45,5 +45,5 @@
     <RadioButton labelText="Swap With" value="swap" />
   </RadioButtonGroup>
   <NumberInput label="Index" min={0} step={1} bind:value={swapIndex} />
-  <Checkbox labelText="Update pixels" bind:checked={updatePixels} />
+  <Checkbox labelText="Keep current image colors" bind:checked={updatePixels} />
 </Modal>
