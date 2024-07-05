@@ -34,7 +34,6 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   data?: IndexedPNG
   //
   lastSaveIndex: number = 0
-  lastUndoable: Undoable<LoadedFile>|null = null
   lastUndoableView: CanvasView|undefined
   //
   stacks: StaxStack[] = []
@@ -332,7 +331,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     this.set(this)
   }
   repeat() {
-    if (!this.lastUndoable) return
+    if (!this.lastEntry) return
     // FIXME: This is _not_ the right place for this! It should probably be stored on the file itself!
     let view = new CanvasView(this.canvas)
     switch (get(editor2DSettings).viewMode) {
@@ -382,28 +381,21 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     flog.debug('repeat')
 
     // Clone the undoable if possible and thereafter apply a position morph to it. This allows us to repeat undoables relative to the editor's view.
-    let undoable = this.lastUndoable as Undoable<LoadedFile> & { clone?: any }
+    let undoable = this.lastEntry as Undoable<LoadedFile> & { clone?: any }
     if (undoable.clone) {
-      let clone = (this.lastUndoable as Undoable<LoadedFile> & { clone?: any }).clone()
+      let clone = (this.lastEntry as Undoable<LoadedFile> & { clone?: any }).clone()
       if (view.x !== this.lastUndoableView?.x || view.y !== this.lastUndoableView?.y || view.width !== this.lastUndoableView?.width || view.height !== this.lastUndoableView?.height) {
         view.morphUndoable(clone, this.lastUndoableView)
       }
       this.push(clone, view)
     } else {
-      this.push(this.lastUndoable, view)
+      this.push(this.lastEntry, view)
     }
   }
   push(item: Undoable<LoadedFile>, view?: CanvasView) {
     flog.debug('push', item.constructor.name)
     if (this.lastSaveIndex > this.entriesIndex) {
       this.lastSaveIndex = -1
-    }
-    this.lastUndoable = item
-    if (view) {
-      // Clone the view so changes to the source aren't reflected in the future.
-      this.lastUndoableView = new CanvasView(view)
-    } else {
-      this.lastUndoableView = undefined
     }
 
     if (view) {
@@ -456,6 +448,13 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       super.push(group)
     } else {
       super.push(item)
+    }
+
+    if (view) {
+      // Clone the view so changes to the source aren't reflected in the future.
+      this.lastUndoableView = new CanvasView(view)
+    } else {
+      this.lastUndoableView = undefined
     }
 
     this.sanityCheck()

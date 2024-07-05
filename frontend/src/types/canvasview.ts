@@ -1,7 +1,7 @@
 import type { Canvas } from "./canvas"
 import { type LoadedFile } from "./file"
 import { PixelPlaceUndoable, PixelsPlaceUndoable, SelectionMoveUndoable, SelectionSetUndoable } from "./file/undoables"
-import type { Undoable } from "./undo"
+import { UndoableGroup, type Undoable } from "./undo"
 
 export class CanvasView {
   private canvas: Canvas
@@ -59,6 +59,8 @@ export class CanvasView {
         pixel.y += y
         return pixel
       })
+    } else if (item instanceof UndoableGroup) {
+      item = new UndoableGroup(item.getItems().map(item => this.morphUndoable(item, otherView)))
     } else if (item instanceof SelectionSetUndoable) {
       item.pixels = item.pixels.map(pixel => {
         pixel.x += x

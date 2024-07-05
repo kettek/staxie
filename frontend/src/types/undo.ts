@@ -1,6 +1,7 @@
 // UndoableStack provides an undo/redo system.
 export class UndoableStack<T> {
   private target: T;
+  public lastEntry: Undoable<T>|undefined = undefined;
   protected entries: Undoable<T>[] = [];
   protected entriesIndex: number = 0;
   
@@ -22,6 +23,7 @@ export class UndoableStack<T> {
 
     this.entries.splice(this.entriesIndex, this.entries.length - this.entriesIndex, item);
     item.apply(this.target);
+    this.lastEntry = item;
     this.entriesIndex++;
     this.emit('push', item)
   }
@@ -64,6 +66,7 @@ export class UndoableStack<T> {
   public release() {
     this.capturing = false;
     this.entries.splice(this.entriesIndex, this.entries.length - this.entriesIndex, new UndoableGroup(this.captureStack));
+    this.lastEntry = this.entries[this.entriesIndex];
     this.entriesIndex++;
     this.captureStack = [];
   }
@@ -109,6 +112,10 @@ export class UndoableGroup<T> {
   constructor(items: Undoable<T>[]) {
     this.items = items;
   }
+
+  getItems(): Undoable<T>[] {
+    return this.items;
+  }
   
   add(item: Undoable<T>) {
     this.items.push(item);
@@ -124,5 +131,15 @@ export class UndoableGroup<T> {
     for (let i = this.items.length - 1; i >= 0; i--) {
       this.items[i].unapply(t);
     }
+  }
+
+  clone(): UndoableGroup<T> {
+    return new UndoableGroup(this.items.map(item => {
+      let item2 = item as Undoable<T> & { clone: () => Undoable<T> }
+      if (item2.clone) {
+        return item2.clone()
+      }
+      return item
+    }));
   }
 }
