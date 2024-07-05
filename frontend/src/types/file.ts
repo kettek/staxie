@@ -4,9 +4,11 @@ import type { IndexedPNG, StaxAnimation, StaxFrame, StaxStack, StaxSlice } from 
 import { Preview } from './preview'
 import { SelectionArea } from './selection'
 import { UndoableStack, type Undoable, UndoableGroup } from './undo'
-import type { CanvasView } from './canvasview'
+import { CanvasView } from './canvasview'
 import { flog } from '../globals/log'
 import { PixelPlaceUndoable, PixelsPlaceUndoable } from './file/undoables'
+import { editor2DSettings } from '../stores/editor2d'
+import { get } from 'svelte/store'
 
 export interface LoadedFileOptions {
   filepath: string
@@ -331,8 +333,65 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   }
   repeat() {
     if (!this.lastUndoable) return
+    // FIXME: This is _not_ the right place for this! It should probably be stored on the file itself!
+    let view = new CanvasView(this.canvas)
+    switch (get(editor2DSettings).viewMode) {
+      case 'slice':
+        if (this.frame) {
+          let { x, y, width, height } = this.getSliceAreaFromFrame(this.frame, this.sliceIndex)
+          view.x = x
+          view.y = y
+          view.width = width
+          view.height = height
+        }
+        break
+      case 'frame':
+        if (this.frame) {
+          let { x, y, width, height } = this.getFrameAreaFromFrame(this.frame)
+          view.x = x
+          view.y = y
+          view.width = width
+          view.height = height
+        }
+        break
+      case 'animation':
+        if (this.animation) {
+          let { x, y, width, height } = this.getAnimationAreaFromAnimation(this.animation)
+          view.x = x
+          view.y = y
+          view.width = width
+          view.height = height
+        }
+        break
+      case 'stack':
+        if (this.stack) {
+          let { x, y, width, height } = this.getStackAreaFromStack(this.stack)
+          view.x = x
+          view.y = y
+          view.width = width
+          view.height = height
+        }
+        break
+      case 'sheet':
+        view.x = 0
+        view.y = 0
+        view.width = this.canvas.width
+        view.height = this.canvas.height
+        break
+    }
     flog.debug('repeat')
-    this.push(this.lastUndoable, this.lastUndoableView)
+
+    // Clone the undoable if possible and thereafter apply a position morph to it. This allows us to repeat undoables relative to the editor's view.
+    let undoable = this.lastUndoable as Undoable<LoadedFile> & { clone?: any }
+    if (undoable.clone) {
+      let clone = (this.lastUndoable as Undoable<LoadedFile> & { clone?: any }).clone()
+      if (view.x !== this.lastUndoableView?.x || view.y !== this.lastUndoableView?.y || view.width !== this.lastUndoableView?.width || view.height !== this.lastUndoableView?.height) {
+        view.morphUndoable(clone, this.lastUndoableView)
+      }
+      this.push(clone, view)
+    } else {
+      this.push(this.lastUndoable, view)
+    }
   }
   push(item: Undoable<LoadedFile>, view?: CanvasView) {
     flog.debug('push', item.constructor.name)
@@ -340,7 +399,12 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       this.lastSaveIndex = -1
     }
     this.lastUndoable = item
-    this.lastUndoableView = view
+    if (view) {
+      // Clone the view so changes to the source aren't reflected in the future.
+      this.lastUndoableView = new CanvasView(view)
+    } else {
+      this.lastUndoableView = undefined
+    }
 
     if (view) {
       flog.debug('...transforming by view')

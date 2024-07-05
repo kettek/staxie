@@ -11,10 +11,18 @@ export class CanvasView {
   public width: number = 0
   public height: number = 0
 
-  constructor(canvas: Canvas) {
-    this.canvas = canvas
-    this.width = canvas.width
-    this.height = canvas.height
+  constructor(canvas: Canvas|CanvasView) {
+    if (canvas instanceof CanvasView) {
+      this.canvas = canvas.canvas
+      this.x = canvas.x
+      this.y = canvas.y
+      this.width = canvas.width
+      this.height = canvas.height
+    } else {
+      this.canvas = canvas
+      this.width = canvas.width
+      this.height = canvas.height
+    }
   }
   
   transformUndoable(item: Undoable<LoadedFile>): Undoable<LoadedFile> {
@@ -33,6 +41,32 @@ export class CanvasView {
       console.log('WARNING: SelectionMoveUndoable not limited by CanvasView')
     }
     
+    return item
+  }
+  morphUndoable(item: Undoable<LoadedFile>, otherView?: CanvasView): Undoable<LoadedFile> {
+    let x = this.x
+    let y = this.y
+    if (otherView) {
+      x = this.x - otherView.x
+      y = this.y - otherView.y
+    }
+    if (item instanceof PixelPlaceUndoable) {
+      item.x += x
+      item.y += y
+    } else if (item instanceof PixelsPlaceUndoable) {
+      item.pixels = item.pixels.map(pixel => {
+        pixel.x += x
+        pixel.y += y
+        return pixel
+      })
+    } else if (item instanceof SelectionSetUndoable) {
+      item.pixels = item.pixels.map(pixel => {
+        pixel.x += x
+        pixel.y += y
+        return pixel
+      })
+    }
+
     return item
   }
 }
