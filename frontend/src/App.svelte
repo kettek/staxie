@@ -444,7 +444,7 @@
       <OverflowMenuItem>
         <label on:click={e=>e.stopPropagation()} on:keypress={e=>e.stopPropagation()}>
           <span>Stack</span>
-          <input type='radio' name='view-mode' value='group' bind:group={$editor2DSettings.viewMode} />
+          <input type='radio' name='view-mode' value='stack' bind:group={$editor2DSettings.viewMode} />
         </label>
       </OverflowMenuItem>
       <OverflowMenuItem>
