@@ -63,6 +63,8 @@ export class IndexedPNG {
   public frameHeight: number
   public stacks: StaxStack[]
 
+  public otherChunks: Uint8Array[]
+
   constructor(data?: Uint8Array) {
     if (data) {
       this.data = data;
@@ -70,6 +72,7 @@ export class IndexedPNG {
     }
 
     this.palette = [];
+    this.otherChunks = [];
     this.transparency = {};
     this.text = {};
 
@@ -267,8 +270,13 @@ export class IndexedPNG {
           break;
   
         default:
-          // unknown (or unimportant) section, skip it
-          this.pos += chunkSize;
+          // Store unhandled section to write later.
+          if (section.charCodeAt(3) >= 97) {
+            let ar = new Uint8Array([...section.split('').map((c) => c.charCodeAt(0)), ...this.read(chunkSize)])
+            this.otherChunks.push(ar)
+          } else {
+            this.pos += chunkSize;
+          }
       }
   
       this.pos += 4; // Skip the CRC

@@ -18,6 +18,7 @@ export class Canvas {
   palette: Uint32Array // 32-bit RGBA palette
   fakePalette: Uint32Array // 32-bit RGBA palette
   pixels: Uint8Array // 8-bit indices into the palette
+  otherChunks: Uint8Array[] = []
   public isIndexed: boolean = false
   canvas: HTMLCanvasElement
   imageData: ImageData
@@ -52,6 +53,8 @@ export class Canvas {
       } else {
         throw new Error('unsupported pixel format')
       }
+      // Store png's other chunks.
+      this.otherChunks = png.otherChunks
       this.refreshCanvas()
     }
   }
@@ -607,6 +610,18 @@ export class Canvas {
       chunkEnd = bufferOffset
       bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
       out = Buffer.concat([out, buffer])
+
+      // Write stored other chunks.
+      for (let chunk of this.otherChunks) {
+        const chunkLength = chunk.length - 4 // Chunk - type
+        buffer = Buffer.alloc(12 + chunkLength), bufferOffset = 0
+        bufferOffset = buffer.writeUInt32BE(chunkLength, bufferOffset)
+        chunkStart = bufferOffset
+        bufferOffset += Buffer.from(chunk).copy(buffer, bufferOffset)
+        chunkEnd = bufferOffset
+        bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
+        out = Buffer.concat([out, buffer])
+      }
       
       if (this.isIndexed) {
         // Write PLTE
