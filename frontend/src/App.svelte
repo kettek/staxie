@@ -57,7 +57,6 @@
   import ImageReferenceTool from './components/2d/imageReferenceTool.svelte'
   import RichPresence from './sections/RichPresence.svelte'
   import Split from './components/common/Split.svelte'
-    import ShortcutText from './components/common/ShortcutText.svelte';
 
   let useRichPresence: boolean = false
   let is3D: boolean = false
