@@ -273,10 +273,13 @@
     }
 
     // Draw our grid.
+    ctx.save()
     if ($editor2DSettings.showGrid) {
+      ctx.imageSmoothingEnabled = false
+      ctx.imageSmoothingQuality = 'low'
       // Minor grid lines.
       ctx.strokeStyle = $editor2DSettings.gridMinorColor
-      ctx.lineWidth = 0.5
+      ctx.lineWidth = 1
       ctx.beginPath()
       for (let x = $editor2DSettings.gridMinorSize; x < view.width; x += $editor2DSettings.gridMinorSize) {
         ctx.moveTo(offsetX+x*zoom, offsetY)
@@ -289,7 +292,7 @@
       ctx.stroke()
       // Major grid lines.
       ctx.strokeStyle = $editor2DSettings.gridMajorColor
-      ctx.lineWidth = 0.5
+      ctx.lineWidth = 1
       ctx.beginPath()
       for (let x = $editor2DSettings.gridMajorSize; x < view.width; x += $editor2DSettings.gridMajorSize) {
         ctx.moveTo(offsetX+x*zoom, offsetY)
@@ -301,6 +304,7 @@
       }
       ctx.stroke()
     }
+    ctx.restore()
 
     // Draw our selection overlay.
     if (file.selection.active) {
