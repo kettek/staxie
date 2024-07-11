@@ -31,7 +31,7 @@ export class Palette extends UndoableStack<Palette> implements Writable<Palette>
     for (let i = 3; i < lines.length; i++) {
       let [r, g, b, a] = lines[i].split(' ').map(x => parseInt(x))
       if (a === undefined) a = 255
-      swatches[i - 3] = (a << 24) | (b << 16) | (g << 8) | r
+      swatches[i - 3] = (r << 24) | (g << 16) | (b << 8) | a
     }
     return new Palette(name, swatches)
   }
