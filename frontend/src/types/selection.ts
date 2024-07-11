@@ -110,6 +110,7 @@ export class SelectionArea {
   }
 
   public refresh() {
+    return
     if (this.redrawPixelMask) {
       this.pixelMaskCanvas.getContext('2d').putImageData(this.pixelMaskCanvasPixels, 0, 0)
 
@@ -168,7 +169,7 @@ export class SelectionArea {
   }
 
   update() {
-    this.refresh()
+    /*this.refresh()
     if (this.marchStep % 10 === 0) {
       let ctx = this.marchingCanvas.getContext('2d')
       ctx.clearRect(0, 0, this.marchingCanvas.width, this.marchingCanvas.height)
@@ -192,7 +193,7 @@ export class SelectionArea {
         this.offsetY = 0
       }
     }
-    this.marchStep++
+    this.marchStep++*/
   }
 
   public isPixelMarked(x: number, y: number): boolean {
