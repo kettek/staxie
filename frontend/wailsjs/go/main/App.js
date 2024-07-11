@@ -18,6 +18,10 @@ export function GetFilePath(arg1, arg2) {
   return window['go']['main']['App']['GetFilePath'](arg1, arg2);
 }
 
+export function GetFileSavePath(arg1, arg2) {
+  return window['go']['main']['App']['GetFileSavePath'](arg1, arg2);
+}
+
 export function GetFilesInDir(arg1) {
   return window['go']['main']['App']['GetFilesInDir'](arg1);
 }

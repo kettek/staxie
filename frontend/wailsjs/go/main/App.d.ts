@@ -9,6 +9,8 @@ export function ClearSetting(arg1:string):Promise<void>;
 
 export function GetFilePath(arg1:Array<string>,arg2:Array<string>):Promise<string>;
 
+export function GetFileSavePath(arg1:Array<string>,arg2:Array<string>):Promise<string>;
+
 export function GetFilesInDir(arg1:string):Promise<Array<string>>;
 
 export function GetSetting(arg1:string):Promise<any>;

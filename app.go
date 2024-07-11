@@ -92,6 +92,26 @@ func (a *App) GetFilePath(names []string, patterns []string) (string, error) {
 	return file, nil
 }
 
+func (a *App) GetFileSavePath(names []string, patterns []string) (string, error) {
+	var f []runtime.FileFilter
+	for i, n := range names {
+		ff := runtime.FileFilter{
+			DisplayName: n,
+		}
+		if i < len(patterns) {
+			ff.Pattern = patterns[i]
+		}
+		f = append(f, ff)
+	}
+	file, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		Filters: f,
+	})
+	if err != nil {
+		return "", err
+	}
+	return file, nil
+}
+
 func (a *App) OpenFileBytes(p string) ([]byte, error) {
 	b, err := os.ReadFile(p)
 	if err != nil {
