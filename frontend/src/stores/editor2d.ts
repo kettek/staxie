@@ -1,5 +1,5 @@
 import { createImageReferenceStore, type ImageReferenceStore } from '../types/imagereference'
-import { writable } from 'svelte/store'
+import { makeLocalStorageStore } from './localstore'
 
 type Editor2DSettings = {
   // Background settings
@@ -23,7 +23,7 @@ type Editor2DSettings = {
   imageReferences: ImageReferenceStore
 }
 
-export const editor2DSettings = writable<Editor2DSettings>({
+export const editor2DSettings = makeLocalStorageStore<Editor2DSettings>('editor2d', {
   backgroundColor: '#111111',
   // Checkerboard
   showCheckerboard: true,

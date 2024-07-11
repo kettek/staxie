@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store'
+import { makeLocalStorageStore } from './localstore'
 
 type Editor3DSettings = {
   // Render settings
@@ -19,7 +19,7 @@ type Editor3DSettings = {
   showCursor: boolean
 }
 
-export const editor3DSettings = writable<Editor3DSettings>({
+export const editor3DSettings = makeLocalStorageStore<Editor3DSettings>('editor3d', {
   // Render
   hideTransparent: false,
   ignoreAlpha: false,

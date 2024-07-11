@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store'
+import { makeLocalStorageStore } from './localstore'
 
 type PreviewSettings = {
   background: string // Background color, may be a hex code or a file
@@ -11,7 +11,7 @@ type PreviewSettings = {
   showSizeOutline: boolean
 }
 
-export const previewSettings = writable<PreviewSettings>({
+export const previewSettings = makeLocalStorageStore<PreviewSettings>('preview', {
   background: '#111111',
   rotation: 0,
   zoom: 1,
