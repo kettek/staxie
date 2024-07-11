@@ -8,7 +8,7 @@
   import { palettesStore } from '../stores/palettes'
   import { type LoadedFile } from '../types/file'
   import { ReplacePaletteUndoable } from '../types/file/undoables'
-  import { GetFilePath, OpenFileBytes } from '../../wailsjs/go/main/App'
+  import { GetFilePath, GetFileSavePath, OpenFileBytes, SaveFileBytes } from '../../wailsjs/go/main/App'
 
   export let file: LoadedFile
   export let palette: Palette | undefined
@@ -47,7 +47,7 @@
       palettesStore.addPalette(pal)
     }
   }
-  function exportPalette() {
+  async function exportPalette() {
     let swatches: Uint32Array
     if (file && !palette) {
       swatches = file.canvas.palette
@@ -65,8 +65,8 @@
       let a = swatch & 0xFF
       out += `${r} ${g} ${b} ${a}\n`
     }
-    alert('exportPalette not yet implemented')
-    console.log('write', out)
+    const p = await GetFileSavePath(['JASC-PAL'], ['*.pal'])
+    await SaveFileBytes(p, window.btoa(out))
   }
 </script>
 
