@@ -157,8 +157,15 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
 
   setSliceIndex(index: number) {
     if (this.frame) {
+      // Wrap-around per default.
+      if (index >= this.frame.slices.length) {
+        index = 0
+      } else if (index < 0) {
+        index = this.frame.slices.length - 1
+      }
       this.sliceIndex = index
       this.slice = this.frame.slices[index]
+      this.set(this)
     }
   }
   

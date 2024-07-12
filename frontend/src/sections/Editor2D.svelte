@@ -478,7 +478,8 @@
         }
         return
       }
-      if (e.altKey) return
+      if (e.altKey || e.shiftKey) return
+      // The following is disabled for now...
       // FIXME: Do we have to invert this for Mac OS?
       if (e.deltaY > 0) {
         if (e.shiftKey) {

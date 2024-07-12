@@ -516,6 +516,8 @@
           <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxSetVoxelsUndoable($fileStates.focused?.stackName, $fileStates.focused?.animationName, $fileStates.focused?.frameIndex, $fileStates.focused.threeDCursor1, $fileStates.focused.threeDCursor2, 0))} />
           <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>{}} />
           <Shortcut global cmd='apply paste' keys={['enter']} on:trigger={()=>{}} />
+          <Shortcut global cmd='previousSlice' keys={['shift+wheelup']} on:trigger={()=>$fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex-1)} />
+          <Shortcut global cmd='nextSlice' keys={['shift+wheeldown']} on:trigger={()=>$fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex+1)} />
         </Shortcuts>
       {:else}
         <Button selected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} tooltip="move" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}></Button>
@@ -547,6 +549,8 @@
           <Shortcut global cmd='nextPrimaryPaletteEntry' keys={['alt+wheeldown']} on:trigger={()=>stepPalette(1, true)}/>
           <Shortcut global cmd='previousSecondaryPaletteEntry' keys={['alt+shift+wheelup']} on:trigger={()=>stepPalette(-1, false)}/>
           <Shortcut global cmd='nextSecondaryPaletteEntry' keys={['alt+shift+wheeldown']} on:trigger={()=>stepPalette(1, false)}/>
+          <Shortcut global cmd='previousSlice' keys={['shift+wheelup']} on:trigger={()=>$fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex-1)} />
+          <Shortcut global cmd='nextSlice' keys={['shift+wheeldown']} on:trigger={()=>$fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex+1)} />
           <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>toolSettings.swapTool(toolFill)} />
           <Shortcut global cmd='picker' keys={['i']} on:trigger={()=>toolSettings.swapTool(toolPicker)} />
           <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>toolSettings.swapTool(toolErase)} />
