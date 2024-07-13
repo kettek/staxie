@@ -827,6 +827,102 @@ export class ClearSliceUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class RemoveSliceUndoable implements Undoable<LoadedFile> {
+  private stack: string
+  private sliceIndex: number
+  private slicedPixels: Uint8Array = new Uint8Array([])
+  private storedAnimationSlices: StaxSlice[][] = []
+  constructor(stack: string, sliceIndex: number) {
+    this.stack = stack
+    this.sliceIndex = sliceIndex
+  }
+  apply(file: LoadedFile) {
+    let s = file.stacks.find(g => g.name === this.stack)
+    if (!s) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+
+    let { x, y, width, height } = file.getStackArea(this.stack)
+    x += this.sliceIndex * file.frameWidth
+    width -= this.sliceIndex * file.frameWidth
+    let sliceX = this.sliceIndex * file.frameWidth
+    let sliceWidth = file.frameWidth
+
+    // Store our slices to remove.
+    this.slicedPixels = file.canvas.getPixels(sliceX, y, sliceWidth, height)
+    
+    // Shift our pixels to the left.
+    let pixels = file.canvas.getPixels(x+file.frameWidth, y, width-file.frameWidth, height)
+    file.canvas.setPixels(x, y, width-file.frameWidth, height, pixels)
+
+    // See if we can shrink our canvas.
+    let targetWidth = (s.sliceCount - 1) * file.frameWidth
+    for (let s of file.stacks) {
+      targetWidth = Math.max(targetWidth, s.sliceCount * file.frameWidth)
+    }
+
+    if (file.canvas.width > targetWidth) {
+      file.canvas.resizeCanvas(targetWidth, file.canvas.height)
+    } else {
+      // Otherwise, clear the last to the right.
+      let { x, y, width, height } = file.getStackArea(this.stack)
+      file.canvas.clearPixels(x+width-file.frameWidth, y, file.frameWidth, height)
+    }
+
+    // Clean up our data.
+    for (let a of s.animations) {
+      let aslices: StaxSlice[] = []
+      for (let f of a.frames) {
+        aslices.push(f.slices.splice(this.sliceIndex, 1)[0])
+      }
+      this.storedAnimationSlices.push(aslices)
+    }
+    s.sliceCount--
+
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+  unapply(file: LoadedFile) {
+    let s = file.stacks.find(g => g.name === this.stack)
+    if (!s) {
+      throw new Error('stack not found: ' + this.stack)
+    }
+
+    // Regrow canvas first if we need.
+    let targetWidth = (s.sliceCount + 1) * file.frameWidth
+    for (let s of file.stacks) {
+      targetWidth = Math.max(targetWidth, s.sliceCount * file.frameWidth)
+    }
+    if (file.canvas.width < targetWidth) {
+      file.canvas.resizeCanvas(targetWidth, file.canvas.height)
+    }
+    
+    // Shift our pixels back to the right.
+    let { x, y, width, height } = file.getStackArea(this.stack)
+    x += this.sliceIndex * file.frameWidth
+    width -= this.sliceIndex * file.frameWidth
+
+    let pixels = file.canvas.getPixels(x, y, width, height)
+    file.canvas.setPixels(x+file.frameWidth, y, width, height, pixels)
+
+    // Restore old pixels.
+    file.canvas.setPixels(x, y, file.frameWidth, height, this.slicedPixels)
+
+    // Restore our data.
+    for (let ai = 0; ai < s.animations.length; ai++) {
+      let a = s.animations[ai]
+      let aslices = this.storedAnimationSlices[ai]
+      for (let fi = 0; fi < a.frames.length; fi++) {
+        let f = a.frames[fi]
+        f.slices.splice(this.sliceIndex, 0, aslices[fi])
+      }
+    }
+
+    s.sliceCount++
+    
+    file.cacheSlicePositions() // FIXME: This is kinda inefficient.
+  }
+}
+
 export class AddAnimationUndoable implements Undoable<LoadedFile> {
   private stack: string
   constructor(stack: string) {

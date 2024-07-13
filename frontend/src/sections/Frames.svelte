@@ -1,6 +1,6 @@
 <script lang='ts'>
   import { LoadedFile } from "../types/file"
-  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateAnimationFrameUndoable, DuplicateSliceUndoable, RemoveAnimationFrameUndoable } from "../types/file/undoables"
+  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateAnimationFrameUndoable, DuplicateSliceUndoable, RemoveSliceUndoable, RemoveAnimationFrameUndoable } from "../types/file/undoables"
   import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
   import Button from '../components/common/Button.svelte'
   import { fileStates } from '../stores/file'
@@ -76,6 +76,10 @@
     if (!file || !file.stack) return
     file.push(new DuplicateSliceUndoable(file.stack.name, contextSliceIndex))
   }
+  function contextSliceDelete() {
+    if (!file || !file.stack) return
+    file.push(new RemoveSliceUndoable(file.stack.name, contextSliceIndex))
+  }
 </script>
 
 <main>
@@ -128,6 +132,7 @@
   <ContextMenu bind:open={contextSliceOpen} bind:x={contextX} bind:y={contextY} target={[]}>
     <ContextMenuOption labelText="Clear Slice" on:click={contextSliceClear} />
     <ContextMenuOption labelText="Duplicate Slice" on:click={contextSliceDuplicate} />
+    <ContextMenuOption labelText='Delete Slice' kind='danger' on:click={contextSliceDelete} />
   </ContextMenu>
 </main>
 
