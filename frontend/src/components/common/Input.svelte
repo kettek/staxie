@@ -8,6 +8,7 @@
   export let type: 'text' | 'number' | 'color' | 'file' | 'checkbox' = 'text'
   export let value: string | number = ''
   export let checked: boolean = false
+  export let showSpinner: boolean = false
 
   function onChange(e: Event) {
     const target = e.target as HTMLInputElement
@@ -42,7 +43,7 @@
   {#if type === 'text'}
     <input type="text" {...$$restProps} bind:value on:change={onChange} on:input={onInput}/>
   {:else if type === 'number'}
-    <input type="number" style={`width: ${width}em`} {...$$restProps} bind:value on:change={onChange} on:input={onInput}/>
+    <input type="number" style={`width: ${width}em`} {...$$restProps} bind:value on:change={onChange} on:input={onInput} class={`${!showSpinner?'-hideSpinner':''}`}/>
   {:else if type === 'color'}
     <input type="color" {...$$restProps} bind:value on:change={onChange} on:input={onInput}/>
   {:else if type === 'file'}
@@ -71,8 +72,8 @@
     color: var(--cds-text-02, #525252);
     line-height: 1rem;
   }
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
+  input.hideSpinner::-webkit-outer-spin-button,
+  input.hideSpinner::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
