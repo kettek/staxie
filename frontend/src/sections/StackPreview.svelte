@@ -10,12 +10,15 @@
   import { previewSettings } from '../stores/preview'
   import type { LoadedFile } from "../types/file"
   import type { StaxStack } from "../types/png"
+  import Input from "../components/common/Input.svelte"
   
   type StackState = {
     visible: boolean
     animation: string
     frameIndex: number
     orderIndex: number
+    sliceStart: number
+    sliceEnd: number
   }
   type VisibleState = {
     visible: boolean
@@ -101,7 +104,9 @@
           if (animation) {
             let frameIndex = Math.floor(timeElapsed / animation.frameTime) % animation.frames.length
             let frame = animation.frames[frameIndex]
-            for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
+            let sliceStart = Math.max(visibleFiles[file.id].stacks[stack.name].sliceStart || 0, 0)
+            let sliceEnd = Math.min(visibleFiles[file.id].stacks[stack.name].sliceEnd || frame.slices.length, frame.slices.length)
+            for (let sliceIndex = sliceStart; sliceIndex < sliceEnd; sliceIndex++) {
               let slice = frame.slices[sliceIndex]
               if (sliceIndex === 0) {
                 if ($previewSettings.showBaseSizeOutline) {
@@ -227,6 +232,22 @@
     visibleFiles = {...visibleFiles}
     timeElapsed = 0 // Reset time on change
   }
+  function setStackStart(file: LoadedFile, stack: StaxStack, e: any) {
+    if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, stacks: {}}
+    visibleFiles[file.id].stacks[stack.name] = visibleFiles[file.id].stacks[stack.name] || {visible: true, animation: stack.animations[0]?.name, frameIndex: 0, orderIndex: 0}
+    if (e.detail < 0) e.detail = 0
+    if (e.detail > stack.animations[0].frames[0].slices.length) e.detail = stack.animations[0].frames[0].slices.length
+    visibleFiles[file.id].stacks[stack.name].sliceStart = e.detail
+    visibleFiles = {...visibleFiles}
+  }
+  function setStackEnd(file: LoadedFile, stack: StaxStack, e: any) {
+    if (!visibleFiles[file.id]) visibleFiles[file.id] = {visible: true, stacks: {}}
+    visibleFiles[file.id].stacks[stack.name] = visibleFiles[file.id].stacks[stack.name] || {visible: true, animation: stack.animations[0]?.name, frameIndex: 0, orderIndex: 0}
+    if (e.detail < 0) e.detail = 0
+    if (e.detail > stack.animations[0].frames[0].slices.length) e.detail = stack.animations[0].frames[0].slices.length
+    visibleFiles[file.id].stacks[stack.name].sliceEnd = e.detail
+    visibleFiles = {...visibleFiles}
+  }
   
   onMount(()=>{
     let frameID: number = 0
@@ -249,6 +270,12 @@
             <div class='subcheck'>
               <Checkbox on:change={(e)=>toggleStack(file, stack, e)} checked={visibleFiles[file.id]?.stacks[stack.name]?.visible} labelText={stack.name.length>20?'…'+stack.name.substring(stack.name.length-20):stack.name}></Checkbox>
               <Dropdown on:select={(e)=>changeStackAnimation(file, stack, e)} selectedId={visibleFiles[file.id]?.stacks[stack.name]?.animation} items={stack.animations.map(animation => ({id: animation.name, text: animation.name}))}></Dropdown>
+              <div class='spinner'>
+                <span>Slices</span>
+                <Input type='number' size='small' width={4} showSpinner on:change={(e)=>setStackStart(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceStart || 0}></Input>
+                →
+                <Input type='number' size='small' width={4} showSpinner on:change={(e)=>setStackEnd(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceEnd || stack.animations[0].frames[0].slices.length}></Input>
+              </div>
             </div>
           {/each}
         {/each}
@@ -269,5 +296,12 @@
 <style>
   .subcheck {
     margin-left: 1em;
+  }
+  .spinner {
+    display: flex;
+  }
+  .spinner span {
+    font-size: var(--cds-label-01-font-size, 0.75rem);
+    color: var(--cds-text-02, #525252);
   }
 </style>
