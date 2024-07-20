@@ -104,9 +104,11 @@ export class SelectionMoveUndoable implements Undoable<LoadedFile> {
         }
       }
     }
+    // FIXME: We _must_ store the selection as part of the undoable state!
     file.selection.move(this.dx, this.dy)
   }
   unapply(file: LoadedFile) {
+    // FIXME: We _must_ store the selection as part of the undoable state!
     file.selection.clear()
     for (let pixel of this.oldPixels) {
       file.selection.setPixel(pixel.x, pixel.y, pixel.marked)
