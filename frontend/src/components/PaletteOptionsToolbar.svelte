@@ -59,10 +59,10 @@
     // Export as JASC-PAL, but with 4 elements.
     let out = `JASC-PAL\n0100\n${swatches.length}\n`
     for (let swatch of swatches) {
-      let r = (swatch >> 24) & 0xFF
-      let g = (swatch >> 16) & 0xFF
-      let b = (swatch >> 8) & 0xFF
-      let a = swatch & 0xFF
+      let a = (swatch >> 24) & 0xFF
+      let r = (swatch >> 16) & 0xFF
+      let g = (swatch >> 8) & 0xFF
+      let b = swatch & 0xFF
       out += `${r} ${g} ${b} ${a}\n`
     }
     const p = await GetFileSavePath(['JASC-PAL'], ['*.pal'])

@@ -31,7 +31,7 @@ export class Palette extends UndoableStack<Palette> implements Writable<Palette>
     for (let i = 3; i < lines.length; i++) {
       let [r, g, b, a] = lines[i].split(' ').map(x => parseInt(x))
       if (a === undefined) a = 255
-      swatches[i - 3] = (r << 24) | (g << 16) | (b << 8) | a
+      swatches[i - 3] = (a << 24) | (r << 16) | (g << 8) | b
     }
     return new Palette(name, swatches)
   }
@@ -40,10 +40,10 @@ export class Palette extends UndoableStack<Palette> implements Writable<Palette>
   toJASCPAL(): string {
     let out = `JASC-PAL\n0100\n${this.swatches.length}\n`
     for (let swatch of this.swatches) {
-      let r = (swatch >> 24) & 0xFF
-      let g = (swatch >> 16) & 0xFF
-      let b = (swatch >> 8) & 0xFF
-      let a = swatch & 0xFF
+      let a = (swatch >> 24) & 0xFF
+      let r = (swatch >> 16) & 0xFF
+      let g = (swatch >> 8) & 0xFF
+      let b = swatch & 0xFF
       out += `${r} ${g} ${b} ${a}\n`
     }
     return out
