@@ -80,6 +80,9 @@ export class SelectionSetUndoable implements Undoable<LoadedFile> {
       file.selection.setPixel(pixel.x, pixel.y, pixel.marked)
     }
   }
+  clone(): SelectionSetUndoable {
+    return new SelectionSetUndoable(this.pixels, this.clear)
+  }
 }
 
 export class SelectionMoveUndoable implements Undoable<LoadedFile> {
@@ -109,6 +112,9 @@ export class SelectionMoveUndoable implements Undoable<LoadedFile> {
       file.selection.setPixel(pixel.x, pixel.y, pixel.marked)
     }
   }
+  clone(): SelectionMoveUndoable {
+    return new SelectionMoveUndoable(this.dx, this.dy)
+  }
 }
 
 export class SelectionClearUndoable implements Undoable<LoadedFile> {
@@ -132,6 +138,9 @@ export class SelectionClearUndoable implements Undoable<LoadedFile> {
       file.selection.setPixel(pixel.x, pixel.y, pixel.marked)
     }
     file.selection.active = this.oldActive
+  }
+  clone(): SelectionClearUndoable {
+    return new SelectionClearUndoable()
   }
 }
 
