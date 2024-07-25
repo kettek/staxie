@@ -3,7 +3,7 @@
   import { PaletteRenameUndoable } from '../types/palette/undoables'
   import { TextInput } from "carbon-components-svelte"
   import Button from './common/Button.svelte'
-  import { Undo, Redo, DocumentImport, DocumentExport, DocumentAdd, TrashCan } from "carbon-icons-svelte"
+  import { Undo, Redo, DocumentImport, DocumentExport, DocumentAdd, TrashCan, CopyFile } from "carbon-icons-svelte"
   
   import { palettesStore } from '../stores/palettes'
   import { type LoadedFile } from '../types/file'
@@ -40,11 +40,19 @@
     let name = p.split('/').pop() || 'Untitled'
     name = name.split('.').slice(0, -1).join('.')
     let pal = Palette.fromJASCPAL(name, s)
-    if (file && !palette) {
+    palettesStore.addPalette(pal)
+  }
+  async function replacePalette() {
+    // Import expecting JASC-PAL.
+    let p = await GetFilePath(["JASC-PAL"], ["*.pal"])
+    let b = (await OpenFileBytes(p)) as unknown as string
+    let s = atob(b)
+    let name = p.split('/').pop() || 'Untitled'
+    name = name.split('.').slice(0, -1).join('.')
+    let pal = Palette.fromJASCPAL(name, s)
+    if (file) {
       // Replace file's palette.
       file.push(new ReplacePaletteUndoable(pal.swatches))
-    } else {
-      palettesStore.addPalette(pal)
     }
   }
   async function exportPalette() {
@@ -74,6 +82,9 @@
   <Button kind="ghost" size="small" icon={Undo} on:click={undo} disabled={!palette||!$palette.canUndo()}/>
   <Button kind="ghost" size="small" icon={Redo} on:click={redo} disabled={!palette||!$palette.canRedo()}/>
   <Button kind="ghost" size="small" tooltip="new palette" tooltipPosition='top' icon={DocumentAdd} on:click={newPalette}/>
+  {#if !palette}
+    <Button kind="ghost" size="small" tooltip="replace with PAL" tooltipPosition='top' icon={CopyFile} on:click={replacePalette}/>
+  {/if}
   <Button kind="ghost" size="small" tooltip="import PAL" tooltipPosition='top' icon={DocumentImport} on:click={importPalette}/>
   <Button kind="ghost" size="small" tooltip="export PAL" tooltipPosition='top' icon={DocumentExport} on:click={exportPalette}/>
   <aside></aside>
