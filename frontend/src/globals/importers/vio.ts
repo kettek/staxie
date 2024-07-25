@@ -135,6 +135,26 @@ export async function Read(filepath: string): Promise<VioImportResults> {
 
   png.frameWidth = frameWidth
   png.frameHeight = frameHeight
+
+  // Get our new dimensions before applying import operations.
+  for (let stack of importStacks) {
+    for (let animation of stack.animations) {
+      for (let frameIndex = 0; frameIndex < animation.frames.length; frameIndex++) {
+        let frame = animation.frames[frameIndex]
+        let x = 0
+        for (let sliceIndex = 0; sliceIndex < frame.length; sliceIndex++) {
+          x += frameWidth
+          maxWidth = Math.max(maxWidth, x)
+        }
+        y += frameHeight
+        maxHeight = Math.max(maxHeight, y)
+      }
+    }
+  }
+  canvas.resizeCanvas(maxWidth, maxHeight)
+
+  // Let's get importing.
+  y = 0
   png.stacks = []
   for (let stack of importStacks) {
     let pngStack = {
@@ -171,17 +191,15 @@ export async function Read(filepath: string): Promise<VioImportResults> {
           slice.origSubset.frames[0].y = y
 
           x += frameWidth
-          maxWidth = Math.max(maxWidth, x)
         }
         y += frameHeight
-        maxHeight = Math.max(maxHeight, y)
         pngAnimation.frames.push(pngFrame)
       }
       pngStack.animations.push(pngAnimation)
     }
     png.stacks.push(pngStack)
   }
-  canvas.resizeCanvas(maxWidth, maxHeight)
+
   canvas.refreshCanvas()
   
   return {
