@@ -50,6 +50,17 @@
   function keysToString(keys: string[]): string {
     return [...keys].sort((a: string, b: string) => modifiers.indexOf(b) - modifiers.indexOf(a)).join('+')
   }
+
+  export function getShortcutKeys(group: string, cmd: string): string[][] {
+    let keys: string[][] = []
+    for (let shortcut of get(shortcuts)) {
+      if (shortcut.group === group && shortcut.cmd === cmd) {
+        if (keys.includes(shortcut.keys)) continue
+        keys.push(shortcut.keys.map(v=>v.replace('control', '⌃').replace('shift', '⇧').replace('alt', '⌥').replace('+', '')))
+      }
+    }
+    return keys
+  }
   
   window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (disabled) return

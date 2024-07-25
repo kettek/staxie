@@ -101,6 +101,7 @@
     visibility: hidden;
     z-index: 1;
     white-space: nowrap;
+    pointer-events: none;
   }
   aside::after {
     content: '';
