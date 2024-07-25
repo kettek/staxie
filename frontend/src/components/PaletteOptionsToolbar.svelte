@@ -73,12 +73,12 @@
 <menu>
   <Button kind="ghost" size="small" icon={Undo} on:click={undo} disabled={!palette||!$palette.canUndo()}/>
   <Button kind="ghost" size="small" icon={Redo} on:click={redo} disabled={!palette||!$palette.canRedo()}/>
-  <Button kind="ghost" size="small" tooltip="new palette" tooltipPosition='bottom' icon={DocumentAdd} on:click={newPalette}/>
-  <Button kind="ghost" size="small" tooltip="import PAL" tooltipPosition='bottom' icon={DocumentImport} on:click={importPalette}/>
-  <Button kind="ghost" size="small" tooltip="export PAL" tooltipPosition='bottom' icon={DocumentExport} on:click={exportPalette}/>
+  <Button kind="ghost" size="small" tooltip="new palette" tooltipPosition='top' icon={DocumentAdd} on:click={newPalette}/>
+  <Button kind="ghost" size="small" tooltip="import PAL" tooltipPosition='top' icon={DocumentImport} on:click={importPalette}/>
+  <Button kind="ghost" size="small" tooltip="export PAL" tooltipPosition='top' icon={DocumentExport} on:click={exportPalette}/>
   <aside></aside>
   {#if palette}
-    <Button kind="ghost" size="small" tooltip="delete palette" icon={TrashCan} on:click={()=>{palettesStore.removePalette(palette)}}/>
+    <Button kind="ghost" size="small" tooltip="delete palette" tooltipPosition='top' icon={TrashCan} on:click={()=>{palettesStore.removePalette(palette)}}/>
   {/if}
 </menu>
 <span>
