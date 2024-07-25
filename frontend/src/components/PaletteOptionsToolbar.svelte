@@ -102,7 +102,7 @@
   menu {
     display: grid;
     grid-template-rows: minmax(0, 1fr);
-    grid-template-columns: auto auto auto auto auto minmax(0, 1fr) auto;
+    grid-template-columns: auto auto auto auto auto auto minmax(0, 1fr) auto;
     justify-content: start;
   }
   span {
