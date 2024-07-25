@@ -67,7 +67,7 @@
   let red: number = 0
   let green: number = 0
   let blue: number = 0
-  let alpha: number = 0
+  let alpha: number = 255
 
   let refreshPalette = {}
   let fakePalette: Palette | undefined = undefined
