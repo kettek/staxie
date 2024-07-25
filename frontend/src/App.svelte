@@ -28,7 +28,7 @@
   import { Canvas } from './types/canvas'
   import BrushSize from './components/BrushSize.svelte'
   import Shortcut from './components/Shortcut.svelte'
-  import Shortcuts from './components/Shortcuts.svelte'
+  import Shortcuts, { getShortcutKeys } from './components/Shortcuts.svelte'
   import { CopyPaste, ThreeDCopyPaste } from './types/copypaste'
   import type { PixelPosition } from './types/shapes.js';
   import ColorSelector from './components/ColorSelector.svelte';
@@ -57,6 +57,7 @@
   import ImageReferenceTool from './components/2d/imageReferenceTool.svelte'
   import RichPresence from './sections/RichPresence.svelte'
   import Split from './components/common/Split.svelte'
+  import ShortcutTooltip from './components/ShortcutTooltip.svelte'
 
   let useRichPresence: boolean = false
   let is3D: boolean = false
@@ -493,14 +494,6 @@
     </section>
     <menu class='toolbar'>
       {#if is3D}
-        <Button selected={$toolSettings.current === toolVoxelPlace} kind="ghost" size="small" icon={WatsonHealth3DSoftware} tooltip="place" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelPlace)}></Button>
-        <Button selected={$toolSettings.current === toolVoxelReplace} kind="ghost" size="small" icon={WatsonHealth3DCursor} tooltip="replace" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelReplace)}></Button>
-        <Button selected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} tooltip="pick" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}></Button>
-        <Button selected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} tooltip="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
-        <Button selected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} tooltip="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
-        <hr />
-        <Button selected={$toolSettings.current === toolVoxelCursor} kind="ghost" size="small" icon={Chart_3D} tooltip="3D cursor" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelCursor)}></Button>
-        <Button selected={$toolSettings.current === toolVoxelBoxSelection} kind="ghost" size="small" icon={WatsonHealth3DMprToggle} tooltip="box selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelBoxSelection)}></Button>
         <Shortcuts group='editor3D'>
           <Shortcut global cmd='brush' keys={['b']} on:trigger={()=>toolSettings.swapTool(toolVoxelPlace)} />
           <Shortcut global cmd='replace' keys={['r']} on:trigger={()=>toolSettings.swapTool(toolVoxelReplace)} />
@@ -508,7 +501,6 @@
           <Shortcut global cmd='erase' keys={['e']} on:trigger={()=>toolSettings.swapTool(toolErase)} />
           <Shortcut global cmd='fill' keys={['f']} on:trigger={()=>toolSettings.swapTool(toolFill)} />
           <Shortcut global cmd='placeToPicker' keys={['alt']} on:trigger={()=>($toolSettings.current===toolVoxelPlace||$toolSettings.current===toolVoxelReplace||$toolSettings.current===toolFill)?toolSettings.swapTool(toolPicker):null} on:release={()=>($toolSettings.previous===toolVoxelPlace||$toolSettings.previous===toolVoxelReplace||$toolSettings.previous===toolFill)&&$toolSettings.current===toolPicker?toolSettings.swapTool($toolSettings.previous):null} />
-          <Shortcut global cmd='cursor' keys={['c']} on:trigger={()=>toolSettings.swapTool(toolVoxelCursor)} />
           <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolVoxelBoxSelection)} />
           <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxClearUndoable())} />
           <Shortcut global cmd='clear paste' keys={['escape']} on:trigger={()=>{}} />
@@ -518,22 +510,30 @@
           <Shortcut global cmd='apply paste' keys={['enter']} on:trigger={()=>{}} />
           <Shortcut global cmd='previousSlice' keys={['shift+wheelup']} on:trigger={()=>$fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex-1)} />
           <Shortcut global cmd='nextSlice' keys={['shift+wheeldown']} on:trigger={()=>$fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex+1)} />
+          <Shortcut global cmd='cursor' keys={['c']} on:trigger={()=>toolSettings.swapTool(toolVoxelCursor)} />
         </Shortcuts>
-      {:else}
-        <Button selected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} tooltip="move" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}></Button>
-        <Button selected={$toolSettings.current === toolRectangularSelection} kind="ghost" size="small" icon={Select_01} tooltip="rectangular selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolRectangularSelection)}></Button>
-        <Button selected={$toolSettings.current === toolEllipseSelection} kind="ghost" size="small" icon={CircleDash} tooltip="ellipse selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolEllipseSelection)}></Button>
-        <Button selected={$toolSettings.current === toolMagicWand} kind="ghost" size="small" icon={MagicWand} tooltip="magic selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMagicWand)}></Button>
-        <hr/>
-        <Button selected={$toolSettings.current === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} tooltip="paint" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolBrush)}></Button>
-        <Button selected={$toolSettings.current === toolSpray} kind="ghost" size="small" icon={SprayPaint} tooltip="spray" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolSpray)}></Button>
-        <Button selected={$toolSettings.current === toolRectangle} kind="ghost" size="small" icon={SquareOutline} tooltip="rectangle" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolRectangle)}></Button>
-        <Button selected={$toolSettings.current === toolEllipse} kind="ghost" size="small" icon={CircleOutline} tooltip="ellipse" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolEllipse)}></Button>
-        <Button selected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} tooltip="pick" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}></Button>
-        <Button selected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} tooltip="erase" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}></Button>
-        <Button selected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} tooltip="fill" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}></Button>
+
+        <Button selected={$toolSettings.current === toolVoxelPlace} kind="ghost" size="small" icon={WatsonHealth3DSoftware} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelPlace)}>
+          <ShortcutTooltip slot='tooltip' group='editor3D' cmd='brush' />
+        </Button>
+        <Button selected={$toolSettings.current === toolVoxelReplace} kind="ghost" size="small" icon={WatsonHealth3DCursor} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelReplace)}>
+          <ShortcutTooltip slot='tooltip' group='editor3D' cmd='replace' />
+        </Button>
+        <Button selected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}>
+          <ShortcutTooltip slot='tooltip' group='editor3D' cmd='picker' />
+        </Button>
+        <Button selected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}>
+          <ShortcutTooltip slot='tooltip' group='editor3D' cmd='erase' />
+        </Button>
+        <Button selected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}>
+          <ShortcutTooltip slot='tooltip' group='editor3D' cmd='fill' />
+        </Button>
         <hr />
-        <Button selected={$toolSettings.current === toolReference} kind="ghost" size="small" icon={ImageReference} tooltip="reference" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolReference)}></Button>
+        <Button selected={$toolSettings.current === toolVoxelCursor} kind="ghost" size="small" icon={Chart_3D} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelCursor)}>
+          <ShortcutTooltip slot='tooltip' group='editor3D' cmd='cursor' />
+        </Button>
+        <Button selected={$toolSettings.current === toolVoxelBoxSelection} kind="ghost" size="small" icon={WatsonHealth3DMprToggle} tooltip="box selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolVoxelBoxSelection)}></Button>
+      {:else}
         <Shortcuts group='editor2D'>
           <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>$fileStates.focused?.push(new SelectionClearUndoable())} />
           <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolRectangularSelection)} />
@@ -562,6 +562,37 @@
           <Shortcut global cmd='quit' keys={['ctrl+q']} on:trigger={()=>engageQuit()} />
           <Shortcut global cmd='fullscreen' keys={['f11']} on:trigger={()=>ToggleFullscreen()} />
         </Shortcuts>
+
+        <Button selected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMove)}>
+          <ShortcutTooltip slot='tooltip' group='editor2D' cmd='move' />
+        </Button>
+        <Button selected={$toolSettings.current === toolRectangularSelection} kind="ghost" size="small" icon={Select_01} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolRectangularSelection)}>
+          <ShortcutTooltip slot='tooltip' group='editor2D' cmd='selection' />
+        </Button>
+        <Button selected={$toolSettings.current === toolEllipseSelection} kind="ghost" size="small" icon={CircleDash} tooltip="ellipse selection" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolEllipseSelection)}></Button>
+        <Button selected={$toolSettings.current === toolMagicWand} kind="ghost" size="small" icon={MagicWand} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolMagicWand)}>
+          <ShortcutTooltip slot='tooltip' group='editor2D' cmd='magic selection' />
+        </Button>
+        <hr/>
+        <Button selected={$toolSettings.current === toolBrush} kind="ghost" size="small" icon={PaintBrushAlt} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolBrush)}>
+          <ShortcutTooltip slot='tooltip' group='editor2D' cmd='brush' />
+        </Button>
+        <Button selected={$toolSettings.current === toolSpray} kind="ghost" size="small" icon={SprayPaint} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolSpray)}>
+          <ShortcutTooltip slot='tooltip' group='editor2D' cmd='spray' />
+        </Button>
+        <Button selected={$toolSettings.current === toolRectangle} kind="ghost" size="small" icon={SquareOutline} tooltip="rectangle" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolRectangle)}></Button>
+        <Button selected={$toolSettings.current === toolEllipse} kind="ghost" size="small" icon={CircleOutline} tooltip="ellipse" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolEllipse)}></Button>
+        <Button selected={$toolSettings.current === toolPicker} kind="ghost" size="small" icon={Eyedropper} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolPicker)}>
+          <ShortcutTooltip slot='tooltip' group='editor2D' cmd='picker' />
+        </Button>
+        <Button selected={$toolSettings.current === toolErase} kind="ghost" size="small" icon={Erase} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolErase)}>
+          <ShortcutTooltip slot='tooltip' group='editor2D' cmd='erase' />
+        </Button>
+        <Button selected={$toolSettings.current === toolFill} kind="ghost" size="small" icon={RainDrop} tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolFill)}>
+          <ShortcutTooltip slot='tooltip' group='editor2D' cmd='fill' />
+        </Button>
+        <hr />
+        <Button selected={$toolSettings.current === toolReference} kind="ghost" size="small" icon={ImageReference} tooltip="reference" tooltipPosition="right" on:click={()=>toolSettings.swapTool(toolReference)}></Button>
       {/if}
     </menu>
     <section class='middle'>
