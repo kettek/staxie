@@ -88,11 +88,13 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
           this.animation = this.stack.animations[0]
           this.animationName = this.animation.name
           this.frameIndex = this.animation.frames.length - 1
+          this.selectedFrameIndices = [this.frameIndex]
           if (this.frameIndex >= 0) {
             this.frame = this.animation.frames[this.frameIndex]
             if (this.frame.slices.length > 0) {
               this.slice = this.frame.slices[0]
               this.sliceIndex = 0
+              this.selectedSliceIndices = [0]
             }
           }
         }
@@ -147,10 +149,16 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       }
       this.frameIndex = index
       this.frame = this.animation.frames[index]
+      if (!this.selectedFrameIndices.includes(index)) {
+        this.selectedFrameIndices = [index]
+      }
       if (this.sliceIndex >= this.frame.slices.length) {
         this.sliceIndex = this.frame.slices.length - 1
       } else if (!this.sliceIndex) {
         this.sliceIndex = 0
+      }
+      if (!this.selectedSliceIndices.includes(this.sliceIndex)) {
+        this.selectedSliceIndices = [this.sliceIndex]
       }
       this.slice = this.frame.slices[this.sliceIndex]
     }
@@ -180,6 +188,9 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
         index = this.frame.slices.length - 1
       }
       this.sliceIndex = index
+      if (!this.selectedSliceIndices.includes(index)) {
+        this.selectedSliceIndices = [index]
+      }
       this.slice = this.frame.slices[index]
       this.set(this)
     }
@@ -428,46 +439,52 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     
     // Transform pixel placement to work across frames. NOTE: It feels somewhat dangerous to just make modifications based upon frameIndex * frameHeight offsets, but it'll probably be fine.
     let group: UndoableGroup<LoadedFile>|null = null
-    if (this.selectedFrameIndices.length > 1 || this.selectedSliceIndices.length > 1) {
       if (item instanceof PixelPlaceUndoable) {
         let items: Undoable<LoadedFile>[] = []
         let indices = this.selectedFrameIndices.filter(i => i < this.animation.frames.length) // Filter out any OOB indices.
         for (let i of indices) {
+          let frame = this.animation.frames[i]
           let offsetY = 0
-          if (i < this.frameIndex) {
+          if (i != this.frameIndex) {
             offsetY = this.frameHeight * (i - this.frameIndex)
-          } else if (i > this.frameIndex) {
-            offsetY = i * this.frameHeight
-          } else {
-            continue
           }
-          let p = this.canvas.getPixel(item.x, item.y+offsetY)
-          let item2 = new PixelPlaceUndoable(item.x, item.y+offsetY, p, item.newIndex)
-          items.push(item2)
+
+          let sliceIndices = this.selectedSliceIndices.filter(i => i < frame.slices.length)
+          for (let j of sliceIndices) {
+            let offsetX = 0
+            if (j !== this.sliceIndex) {
+              offsetX = this.frameWidth * (j - this.sliceIndex)
+            }
+            let p = this.canvas.getPixel(item.x+offsetX, item.y+offsetY)
+            let item2 = new PixelPlaceUndoable(item.x+offsetX, item.y+offsetY, p, item.newIndex)
+            items.push(item2)
+          }
         }
         group = new UndoableGroup(items)
       } else if (item instanceof PixelsPlaceUndoable) {
         let pixels: {x: number, y: number, index: number }[] = []
         let indices = this.selectedFrameIndices.filter(i => i < this.animation.frames.length) // Filter out any OOB indices.
         for (let i of indices) {
+          let frame = this.animation.frames[i]
           let offsetY = 0
-          if (i < this.frameIndex) {
+          if (i !== this.frameIndex) {
             offsetY = this.frameHeight * (i - this.frameIndex)
-          } else if (i > this.frameIndex) {
-            offsetY = i * this.frameHeight
-          } else {
-            continue
           }
-          for (let pixel of item.pixels) {
-            pixels.push({ x: pixel.x, y: pixel.y+offsetY, index: pixel.index })
+
+          for (let j of this.selectedSliceIndices.filter(i => i < frame.slices.length)) {
+            let offsetX = 0
+            if (j !== this.sliceIndex) {
+              offsetX = this.frameWidth * (j - this.sliceIndex)
+            }
+            for (let pixel of item.pixels) {
+              pixels.push({ x: pixel.x+offsetX, y: pixel.y+offsetY, index: pixel.index })
+            }
           }
         }
         item.pixels = [...item.pixels, ...pixels]
       }
-    }
 
     if (group) {
-      group.add(item)
       super.push(group)
     } else {
       super.push(item)
