@@ -68,6 +68,23 @@
     if (!file || !file.stack || !file.animation) return
     file.push(new ClearAnimationFrameUndoable(file.stack.name, file.animation.name, contextFrameIndex))
   }
+  function onSliceClick(e: MouseEvent, sliceIndex: number) {
+    if (e.ctrlKey) {
+      if (file.isSliceSelected(sliceIndex)) {
+        file.deselectSliceIndex(sliceIndex)
+      } else {
+        file.selectSliceIndex(sliceIndex, false)
+      }
+      if (file.sliceIndex === -1) {
+        file.setSliceIndex(sliceIndex)
+      }
+    } else {
+      file.selectSliceIndex(sliceIndex, true)
+      file.setSliceIndex(sliceIndex)
+    }
+    file.refresh()
+    fileStates.refresh()
+  }
   function contextSliceClear() {
     if (!file || !file.frame) return
     file.push(new ClearSliceUndoable(file.frame, contextSliceIndex))
@@ -96,7 +113,7 @@
     <section class='slices'>
       {#if $file.frame}
         {#each $file.frame.slices as slice, sliceIndex}
-          <article class='slice{sliceIndex===$file.sliceIndex?' --focused':''}' on:click={()=>setSlice(sliceIndex)} on:contextmenu|preventDefault={(e)=>onSliceRightClick(e, sliceIndex)}>
+          <article class='slice{sliceIndex===$file.sliceIndex?' --focused':''}{$file.isSliceSelected(sliceIndex)?' --selected':''}' on:click={(e)=>onSliceClick(e, sliceIndex)} on:contextmenu|preventDefault={(e)=>onSliceRightClick(e, sliceIndex)}>
             <span class='sliceIndex'>{sliceIndex+1}</span>
           </article>
         {/each}

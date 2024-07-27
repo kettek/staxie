@@ -43,6 +43,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   animationName: string = ''
   slice?: StaxSlice
   sliceIndex: number = 0
+  selectedSliceIndices: number[] = []
   frame?: StaxFrame
   frameIndex: number = 0
   selectedFrameIndices: number[] = []
@@ -153,6 +154,21 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       }
       this.slice = this.frame.slices[this.sliceIndex]
     }
+  }
+
+  isSliceSelected(index: number): boolean {
+    return this.selectedSliceIndices.includes(index)
+  }
+  selectSliceIndex(index: number, clear: boolean) {
+    if (clear) {
+      this.selectedSliceIndices = []
+    }
+    if (!this.selectedSliceIndices.includes(index)) {
+      this.selectedSliceIndices.push(index)
+    }
+  }
+  deselectSliceIndex(index: number) {
+    this.selectedSliceIndices = this.selectedSliceIndices.filter(i => i !== index)
   }
 
   setSliceIndex(index: number) {
@@ -412,7 +428,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     
     // Transform pixel placement to work across frames. NOTE: It feels somewhat dangerous to just make modifications based upon frameIndex * frameHeight offsets, but it'll probably be fine.
     let group: UndoableGroup<LoadedFile>|null = null
-    if (this.selectedFrameIndices.length > 1) {
+    if (this.selectedFrameIndices.length > 1 || this.selectedSliceIndices.length > 1) {
       if (item instanceof PixelPlaceUndoable) {
         let items: Undoable<LoadedFile>[] = []
         let indices = this.selectedFrameIndices.filter(i => i < this.animation.frames.length) // Filter out any OOB indices.
