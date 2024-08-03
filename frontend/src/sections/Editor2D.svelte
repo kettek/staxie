@@ -655,8 +655,8 @@
     if (!paste) return
     const width = paste.canvas.width
     const pixels = [...paste.canvas.pixels].map((v,i)=>({
-      x: mousePixelX + i % width,
-      y: mousePixelY + Math.floor(i / width),
+      x: view.x + mousePixelX + i % width,
+      y: view.y + mousePixelY + Math.floor(i / width),
       index: v,
     })).filter(v=>v.index!==0) // FIXME: Make this user-configurable!
     file.push(new PixelsPlaceUndoable(pixels))
