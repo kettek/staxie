@@ -19,6 +19,10 @@
   import { isKeyActive } from '../components/Shortcuts.svelte'
   import { createImageReference } from '../types/imagereference'
   import Input from '../components/common/Input.svelte'
+  import ShortcutHandlers from '../components/ShortcutHandlers.svelte'
+  import ShortcutHandler from '../components/ShortcutHandler.svelte'
+  import { CopyPaste } from '../types/copypaste'
+  import { PixelsPlaceUndoable } from '../types/file/undoables'
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -306,6 +310,12 @@
     }
     ctx.restore()
 
+    // Draw any pasting.
+    if (paste) {
+      ctx.imageSmoothingEnabled = false
+      ctx.drawImage(paste.canvas.canvas, offsetX+mousePixelX*zoom, offsetY+mousePixelY*zoom, paste.canvas.canvas.width*zoom, paste.canvas.canvas.height*zoom)
+    }
+
     // Draw our selection overlay.
     if (file.selection.active) {
       ctx.imageSmoothingEnabled = false
@@ -470,8 +480,13 @@
       buttons.add(e.button)
       x = e.clientX
       y = e.clientY
-      
+
       if (e.button === 0) {
+        if (paste) {
+          applyPaste()
+          return
+        }
+
         if ($toolSettings.current instanceof BrushTool) {
           $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
         } else if ($toolSettings.current instanceof EraserTool) {
@@ -625,6 +640,30 @@
       }
     })
   }
+
+  let paste: CopyPaste | undefined
+  function doPaste() {
+    if (paste) {
+      applyPaste()
+    }
+    paste = CopyPaste.fromLocal()
+  }
+  function clearPaste() {
+    paste = undefined
+  }
+  function applyPaste() {
+    if (!paste) return
+    const width = paste.canvas.width
+    const pixels = [...paste.canvas.pixels].map((v,i)=>({
+      x: mousePixelX + i % width,
+      y: mousePixelY + Math.floor(i / width),
+      index: v,
+    })).filter(v=>v.index!==0) // FIXME: Make this user-configurable!
+    file.push(new PixelsPlaceUndoable(pixels))
+
+    paste = undefined
+    
+  }
   
   onMount(() => {
     let frameID: number = 0
@@ -639,6 +678,11 @@
   })
 </script>
 
+<ShortcutHandlers>
+  <ShortcutHandler fileId={$file.id} group='editor2D' cmd='clear paste' on:trigger={clearPaste}/>
+  <ShortcutHandler fileId={$file.id} group='editor2D' cmd='paste' on:trigger={doPaste}/>
+  <ShortcutHandler fileId={$file.id} group='editor2D' cmd='apply paste' on:trigger={applyPaste}/>
+</ShortcutHandlers>
 <main>
   <section class='view' use:viewDrop>
     <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>

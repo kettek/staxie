@@ -73,6 +73,7 @@ export class Canvas {
       canvas.imageData.data[i * 4 + 2] = (color >> 16) & 0xFF
       canvas.imageData.data[i * 4 + 3] = (color >> 24) & 0xFF
     }
+    canvas.refreshCanvas()
     return canvas
   }
   

@@ -273,7 +273,7 @@
     let cp = CopyPaste.fromLocal()
     let paletteDiff = cp.getPaletteLengthDifference($fileStates.focused.canvas.palette)
     let missingColors = cp.getMissingPaletteColors($fileStates.focused.canvas.palette)
-    
+
     // TODO: We need to do the following:
     // 1. If the copying palette has more colors, we need to ask if we want to:
     //    a. Add the missing colors to the current palette
@@ -503,11 +503,11 @@
           <Shortcut global cmd='placeToPicker' keys={['alt']} on:trigger={()=>($toolSettings.current===toolVoxelPlace||$toolSettings.current===toolVoxelReplace||$toolSettings.current===toolFill)?toolSettings.swapTool(toolPicker):null} on:release={()=>($toolSettings.previous===toolVoxelPlace||$toolSettings.previous===toolVoxelReplace||$toolSettings.previous===toolFill)&&$toolSettings.current===toolPicker?toolSettings.swapTool($toolSettings.previous):null} />
           <Shortcut global cmd='selection' keys={['s']} on:trigger={()=>toolSettings.swapTool(toolVoxelBoxSelection)} />
           <Shortcut global cmd='clear selection' keys={['escape']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxClearUndoable())} />
-          <Shortcut global cmd='clear paste' keys={['escape']} on:trigger={()=>{}} />
           <Shortcut global cmd='copy' keys={['ctrl+c']} on:trigger={()=>engageCopy()} />
-          <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxSetVoxelsUndoable($fileStates.focused?.stackName, $fileStates.focused?.animationName, $fileStates.focused?.frameIndex, $fileStates.focused.threeDCursor1, $fileStates.focused.threeDCursor2, 0))} />
+          <Shortcut global cmd='clear paste' keys={['escape']} on:trigger={()=>{}} />
           <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>{}} />
           <Shortcut global cmd='apply paste' keys={['enter']} on:trigger={()=>{}} />
+          <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>$fileStates.focused?.push(new ThreeDSelectionBoxSetVoxelsUndoable($fileStates.focused?.stackName, $fileStates.focused?.animationName, $fileStates.focused?.frameIndex, $fileStates.focused.threeDCursor1, $fileStates.focused.threeDCursor2, 0))} />
           <Shortcut global cmd='previousSlice' keys={['shift+wheelup']} on:trigger={()=>$fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex-1)} />
           <Shortcut global cmd='nextSlice' keys={['shift+wheeldown']} on:trigger={()=>$fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex+1)} />
           <Shortcut global cmd='cursor' keys={['c']} on:trigger={()=>toolSettings.swapTool(toolVoxelCursor)} />
@@ -557,8 +557,10 @@
           <Shortcut global cmd='spray' keys={['p']} on:trigger={()=>toolSettings.swapTool(toolSpray)} />
           <Shortcut global cmd='copy' keys={['ctrl+c']} on:trigger={()=>engageCopy()} />
           <Shortcut global cmd='cut' keys={['ctrl+x']} on:trigger={()=>engageDelete(true)} />
-          <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>engageDelete(false)} />
           <Shortcut global cmd='paste' keys={['ctrl+v']} on:trigger={()=>engagePaste()} />
+          <Shortcut global cmd='clear paste' keys={['escape']} on:trigger={()=>{}} />
+          <Shortcut global cmd='apply paste' keys={['enter']} on:trigger={()=>{}} />
+          <Shortcut global cmd='delete' keys={['delete']} on:trigger={()=>engageDelete(false)} />
           <Shortcut global cmd='quit' keys={['ctrl+q']} on:trigger={()=>engageQuit()} />
           <Shortcut global cmd='fullscreen' keys={['f11']} on:trigger={()=>ToggleFullscreen()} />
         </Shortcuts>
