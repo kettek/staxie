@@ -413,15 +413,39 @@
   }
 
   function capOffset() {
-    if (offsetX < -view.width+30) {
-      offsetX = -view.width+30
-    } else if (offsetX > canvas.width-30) {
-      offsetX = canvas.width-30
+    const boundsW = rootCanvas.width
+    const boundsH = rootCanvas.height
+    const limitW = view.width * zoom
+    const limitH = view.height * zoom
+    let minX: number = 0
+    let minY: number = 0
+    let maxX: number = 0
+    let maxY: number = 0
+
+    if (limitW > boundsW) {
+      minX = -(limitW - boundsW)
+    } else {
+      maxX = boundsW - limitW
     }
-    if (offsetY < -view.height+30) {
-      offsetY = -view.height+30
-    } else if (offsetY > canvas.height-30) {
-      offsetY = canvas.height-30
+    
+    if (limitH > boundsH) {
+      minY = -(limitH - boundsH)
+    } else {
+      maxY = boundsH - limitH
+    }
+
+    const paddingX = (boundsW)/2
+    const paddingY = (boundsH)/2
+
+    if (offsetX < minX-paddingX) {
+      offsetX = minX-paddingX
+    } else if (offsetX > maxX+paddingX) {
+      offsetX = maxX+paddingX
+    }
+    if (offsetY < minY-paddingY) {
+      offsetY = minY-paddingY
+    } else if (offsetY > maxY+paddingY) {
+      offsetY = maxY+paddingY
     }
   }
   
