@@ -1,4 +1,4 @@
-import type { PixelPosition } from "./shapes"
+import type { PixelPosition } from './shapes'
 
 // SelectionArea is basically a canvas and pixel mask that is used to represent a selection area. It provides marching ants to visualize the selection.
 export class SelectionArea {
@@ -6,7 +6,7 @@ export class SelectionArea {
   private marchStep: number = 0
   private offsetX: number = 0
   private offsetY: number = 8
-  
+
   public active: boolean
 
   private canvas: HTMLCanvasElement
@@ -42,13 +42,8 @@ export class SelectionArea {
     ctx.fillStyle = '#ffffff'
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        if (r % 2 === 0 && c % 2 === 1 || r % 2 === 1 && c % 2 === 0) {
-          ctx.rect(
-            c * 4,
-            r * 4,
-            4,
-            4,
-          )
+        if ((r % 2 === 0 && c % 2 === 1) || (r % 2 === 1 && c % 2 === 0)) {
+          ctx.rect(c * 4, r * 4, 4, 4)
         }
       }
     }
@@ -57,8 +52,8 @@ export class SelectionArea {
     this.redrawPixelMask = true
     this.refresh()
   }
-  
-  static fromData({ width, height, pixels }: { width: number, height: number, pixels: Uint8ClampedArray }): SelectionArea {
+
+  static fromData({ width, height, pixels }: { width: number; height: number; pixels: Uint8ClampedArray }): SelectionArea {
     let selection = new SelectionArea(width, height, 1)
     for (let i = 0; i < pixels.length; i++) {
       selection.pixelMaskCanvasPixels.data[i] = pixels[i]
@@ -107,6 +102,24 @@ export class SelectionArea {
     this.pixelMaskCanvasPixels = pixelMaskCanvasPixels
 
     this.redrawPixelMask = true
+  }
+
+  public minmax(): { x1: number; y1: number; x2: number; y2: number } {
+    let min = { x: this.pixelMaskCanvas.width, y: this.pixelMaskCanvas.height }
+    let max = { x: 0, y: 0 }
+
+    for (let y = 0; y < this.pixelMaskCanvas.height; y++) {
+      for (let x = 0; x < this.pixelMaskCanvas.width; x++) {
+        let i = (y * this.pixelMaskCanvas.width + x) * 4
+        if (this.pixelMaskCanvasPixels.data[i + 3] === 255) {
+          min.x = Math.min(min.x, x)
+          min.y = Math.min(min.y, y)
+          max.x = Math.max(max.x, x)
+          max.y = Math.max(max.y, y)
+        }
+      }
+    }
+    return { x1: min.x, y1: min.y, x2: max.x, y2: max.y }
   }
 
   public refresh() {
@@ -213,14 +226,14 @@ export class SelectionArea {
       this.pixelMaskCanvasPixels.data[i + 3] = 0
     }
   }
-  
+
   // getMask returns an array of PixelPositions that correspond to non-zero alpha pixels in the selection.
   getMask(): PixelPosition[] {
     let pixels: PixelPosition[] = []
     for (let y = 0; y < this.pixelMaskCanvas.height; y++) {
       for (let x = 0; x < this.pixelMaskCanvas.width; x++) {
         if (this.pixelMaskCanvasPixels.data[(y * this.pixelMaskCanvas.width + x) * 4 + 3] !== 0) {
-          pixels.push({x, y, index: 0})
+          pixels.push({ x, y, index: 0 })
         }
       }
     }

@@ -1,6 +1,8 @@
 import { LoadedFile } from '../file'
 import { type Undoable } from '../undo'
 import { type StaxFrame, type StaxStack, type StaxSlice } from '../png'
+import type { SelectionArea } from '../selection'
+import type { CanvasView } from '../canvasview'
 
 export class PixelPlaceUndoable implements Undoable<LoadedFile> {
   x: number
@@ -25,16 +27,16 @@ export class PixelPlaceUndoable implements Undoable<LoadedFile> {
 }
 
 export class PixelsPlaceUndoable implements Undoable<LoadedFile> {
-  private oldPixels: { x: number, y: number, index: number }[]
-  public pixels: { x: number, y: number, index: number }[]
-  constructor(pixels: {x: number, y: number, index: number}[]) {
+  private oldPixels: { x: number; y: number; index: number }[]
+  public pixels: { x: number; y: number; index: number }[]
+  constructor(pixels: { x: number; y: number; index: number }[]) {
     this.oldPixels = []
     this.pixels = pixels
   }
   apply(file: LoadedFile) {
     for (let pixel of this.pixels) {
       let p = file.canvas.getPixel(pixel.x, pixel.y)
-      this.oldPixels.push({x: pixel.x, y: pixel.y, index: p})
+      this.oldPixels.push({ x: pixel.x, y: pixel.y, index: p })
     }
     for (let pixel of this.pixels) {
       file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
@@ -50,12 +52,72 @@ export class PixelsPlaceUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class PixelsFlipUndoable implements Undoable<LoadedFile> {
+  private oldPixels: { x: number; y: number; index: number }[]
+  private selection: SelectionArea
+  private view: CanvasView
+  private vertical: boolean = false
+  constructor(vertical: boolean, selection: SelectionArea, view: CanvasView) {
+    this.oldPixels = []
+    this.selection = selection
+    this.view = view
+    this.vertical = vertical
+  }
+  apply(file: LoadedFile) {
+    let minX = this.view.x
+    let minY = this.view.y
+    let maxX = this.view.x + this.view.width
+    let maxY = this.view.y + this.view.height
+    if (this.selection.active) {
+      const { x1, y1, x2, y2 } = this.selection.minmax()
+      minX = x1
+      minY = y1
+      maxX = x2
+      maxY = y2
+    }
+
+    // Collect our pixels.
+    if (!this.oldPixels.length) {
+      for (let x = minX; x < maxX; x++) {
+        for (let y = minY; y < maxY; y++) {
+          this.oldPixels.push({ x, y, index: file.canvas.getPixel(x, y) })
+        }
+      }
+    }
+    //
+    const flippedPixels = []
+    for (let x = minX; x < maxX; x++) {
+      for (let y = minY; y < maxY; y++) {
+        if (!this.selection.isPixelMarked(x, y)) continue
+        let px = x
+        let py = y
+        // Flip in place.
+        if (this.vertical) {
+          py = minY + maxY - y - 1
+        } else {
+          px = minX + maxX - x - 1
+        }
+
+        flippedPixels.push({ x: px, y: py, index: file.canvas.getPixel(x, y) })
+      }
+    }
+    for (let pixel of flippedPixels) {
+      file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
+    }
+  }
+  unapply(t: LoadedFile): void {
+    for (let pixel of this.oldPixels) {
+      t.canvas.setPixel(pixel.x, pixel.y, pixel.index)
+    }
+  }
+}
+
 export class SelectionSetUndoable implements Undoable<LoadedFile> {
-  private oldPixels: { x: number, y: number, marked: boolean }[] = []
-  public pixels: { x: number, y: number, marked: boolean }[]
+  private oldPixels: { x: number; y: number; marked: boolean }[] = []
+  public pixels: { x: number; y: number; marked: boolean }[]
   private clear: boolean
 
-  constructor(pixels: {x: number, y: number, marked: boolean}[], clear: boolean) {
+  constructor(pixels: { x: number; y: number; marked: boolean }[], clear: boolean) {
     this.pixels = pixels
     this.clear = clear
   }
@@ -64,7 +126,11 @@ export class SelectionSetUndoable implements Undoable<LoadedFile> {
       this.oldPixels = []
       for (let y = 0; y < file.selection.pixelMaskCanvasPixels.height; y++) {
         for (let x = 0; x < file.selection.pixelMaskCanvasPixels.width; x++) {
-          this.oldPixels.push({x, y, marked: file.selection.pixelMaskCanvasPixels.data[(y * file.selection.pixelMaskCanvasPixels.width + x) * 4 + 3] !== 0})
+          this.oldPixels.push({
+            x,
+            y,
+            marked: file.selection.pixelMaskCanvasPixels.data[(y * file.selection.pixelMaskCanvasPixels.width + x) * 4 + 3] !== 0,
+          })
         }
       }
     }
@@ -86,7 +152,7 @@ export class SelectionSetUndoable implements Undoable<LoadedFile> {
 }
 
 export class SelectionMoveUndoable implements Undoable<LoadedFile> {
-  private oldPixels: { x: number, y: number, marked: boolean }[] = []
+  private oldPixels: { x: number; y: number; marked: boolean }[] = []
 
   private dx: number
   private dy: number
@@ -100,7 +166,11 @@ export class SelectionMoveUndoable implements Undoable<LoadedFile> {
       this.oldPixels = []
       for (let y = 0; y < file.selection.pixelMaskCanvasPixels.height; y++) {
         for (let x = 0; x < file.selection.pixelMaskCanvasPixels.width; x++) {
-          this.oldPixels.push({x, y, marked: file.selection.pixelMaskCanvasPixels.data[(y * file.selection.pixelMaskCanvasPixels.width + x) * 4 + 3] !== 0})
+          this.oldPixels.push({
+            x,
+            y,
+            marked: file.selection.pixelMaskCanvasPixels.data[(y * file.selection.pixelMaskCanvasPixels.width + x) * 4 + 3] !== 0,
+          })
         }
       }
     }
@@ -120,7 +190,7 @@ export class SelectionMoveUndoable implements Undoable<LoadedFile> {
 }
 
 export class SelectionClearUndoable implements Undoable<LoadedFile> {
-  private oldPixels: { x: number, y: number, marked: boolean }[]
+  private oldPixels: { x: number; y: number; marked: boolean }[]
   private oldActive: boolean = false
   constructor() {
     this.oldPixels = []
@@ -129,7 +199,11 @@ export class SelectionClearUndoable implements Undoable<LoadedFile> {
     this.oldActive = file.selection.active
     for (let y = 0; y < file.selection.pixelMaskCanvasPixels.height; y++) {
       for (let x = 0; x < file.selection.pixelMaskCanvasPixels.width; x++) {
-        this.oldPixels.push({x, y, marked: file.selection.pixelMaskCanvasPixels.data[(y * file.selection.pixelMaskCanvasPixels.width + x) * 4 + 3] !== 0})
+        this.oldPixels.push({
+          x,
+          y,
+          marked: file.selection.pixelMaskCanvasPixels.data[(y * file.selection.pixelMaskCanvasPixels.width + x) * 4 + 3] !== 0,
+        })
       }
     }
     file.selection.clear()
@@ -186,10 +260,10 @@ export class ReplaceSwatchUndoable implements Undoable<LoadedFile> {
     this.alpha = alpha
   }
   apply(file: LoadedFile) {
-    let r = file.canvas.palette[this.index] & 0xFF
-    let g = (file.canvas.palette[this.index] >> 8) & 0xFF
-    let b = (file.canvas.palette[this.index] >> 16) & 0xFF
-    let a = (file.canvas.palette[this.index] >> 24) & 0xFF
+    let r = file.canvas.palette[this.index] & 0xff
+    let g = (file.canvas.palette[this.index] >> 8) & 0xff
+    let b = (file.canvas.palette[this.index] >> 16) & 0xff
+    let a = (file.canvas.palette[this.index] >> 24) & 0xff
     this.oldRed = r
     this.oldGreen = g
     this.oldBlue = b
@@ -220,21 +294,21 @@ export class AddSwatchUndoable implements Undoable<LoadedFile> {
     file.canvas.addNewPaletteColor(this.red, this.green, this.blue, this.alpha)
   }
   unapply(file: LoadedFile) {
-   file.canvas.removePaletteIndex(-1)
+    file.canvas.removePaletteIndex(-1)
   }
 }
 
 export class RemoveSwatchUndoable implements Undoable<LoadedFile> {
   private index: number
-  private replaceIndex: number=  -1
+  private replaceIndex: number = -1
   private shiftPixels: boolean = false
-  
+
   private oldRed: number = 0
   private oldGreen: number = 0
   private oldBlue: number = 0
   private oldAlpha: number = 0
 
-  private oldPixels: { x: number, y: number, index: number }[]
+  private oldPixels: { x: number; y: number; index: number }[]
 
   constructor(index: number, replaceIndex?: number, shiftPixels?: boolean) {
     this.index = index
@@ -247,22 +321,22 @@ export class RemoveSwatchUndoable implements Undoable<LoadedFile> {
     this.oldPixels = []
   }
   apply(file: LoadedFile) {
-    let r = file.canvas.palette[this.index] & 0xFF
-    let g = (file.canvas.palette[this.index] >> 8) & 0xFF
-    let b = (file.canvas.palette[this.index] >> 16) & 0xFF
-    let a = (file.canvas.palette[this.index] >> 24) & 0xFF
+    let r = file.canvas.palette[this.index] & 0xff
+    let g = (file.canvas.palette[this.index] >> 8) & 0xff
+    let b = (file.canvas.palette[this.index] >> 16) & 0xff
+    let a = (file.canvas.palette[this.index] >> 24) & 0xff
     this.oldRed = r
     this.oldGreen = g
     this.oldBlue = b
     this.oldAlpha = a
-    
+
     if (this.replaceIndex >= 0) {
       // Collect our pixels as we replace them so we can undo them.
       for (let y = 0; y < file.canvas.height; y++) {
         for (let x = 0; x < file.canvas.width; x++) {
           let p = file.canvas.getPixel(x, y)
           if (p === this.index) {
-            this.oldPixels.push({x, y, index: p})
+            this.oldPixels.push({ x, y, index: p })
             file.canvas.setPixel(x, y, this.replaceIndex)
           }
         }
@@ -335,7 +409,7 @@ export class MoveSwatchUndoable implements Undoable<LoadedFile> {
   private index: number
   private newIndex: number
   private updatePixels: boolean
-  private oldPixels: { x: number, y: number, index: number }[] = []
+  private oldPixels: { x: number; y: number; index: number }[] = []
   constructor(index: number, newIndex: number, updatePixels: boolean = true) {
     this.index = index
     this.newIndex = newIndex
@@ -425,50 +499,63 @@ export class ChangeFrameTimeUndoable implements Undoable<LoadedFile> {
 
 /** BEGIN STAX-RELATED CANVAS RESIZE TYPE Undoables */
 export class AddStackUndoable implements Undoable<LoadedFile> {
-  private stack: string= ''
-  constructor() {
-  }
+  private stack: string = ''
+  constructor() {}
   apply(file: LoadedFile) {
     let name = 'stack 0'
-    for (let count = 0; file.stacks.find(g => g.name === name); name = `stack ${count++}`) {}
+    for (let count = 0; file.stacks.find((g) => g.name === name); name = `stack ${count++}`) {}
     this.stack = name
-    file.stacks.push({name: this.stack, animations: [{
-      name: 'animation',
-      frameTime: 100,
-      frames: [{slices: Array.from({length: 1}, (_=>({shading: 1, x: 0, y: 0})))}],
-    }], sliceCount: 1})
+    file.stacks.push({
+      name: this.stack,
+      animations: [
+        {
+          name: 'animation',
+          frameTime: 100,
+          frames: [
+            {
+              slices: Array.from({ length: 1 }, (_) => ({
+                shading: 1,
+                x: 0,
+                y: 0,
+              })),
+            },
+          ],
+        },
+      ],
+      sliceCount: 1,
+    })
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
 
     // Grow our canvas by 1 frameHeight
-    let {x, y, width, height} = file.getStackArea(this.stack)
+    let { x, y, width, height } = file.getStackArea(this.stack)
     let newHeight = file.canvas.height + height
     let fullWidth = Math.max(file.canvas.width, width)
-    
+
     // Grow our canvas.
     file.canvas.resizeCanvas(fullWidth, newHeight)
-    
+
     // Shift all pixels all the pixels after stack's Y down.
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
       let pixels = file.canvas.getPixels(x, y, fullWidth, followingPixelsHeight)
-      file.canvas.setPixels(x, y+height, fullWidth, followingPixelsHeight, pixels)
+      file.canvas.setPixels(x, y + height, fullWidth, followingPixelsHeight, pixels)
     }
-    
+
     // Clear our new area.
     file.canvas.clearPixels(x, y, fullWidth, height)
   }
   unapply(file: LoadedFile) {
-    let {x, y, width, height} = file.getStackArea(this.stack)
+    let { x, y, width, height } = file.getStackArea(this.stack)
     let newHeight = file.canvas.height - height
     let fullWidth = Math.max(file.canvas.width, width)
-    
+
     // Shift all our pixels back up.
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y+height, fullWidth, followingPixelsHeight)
+      let pixels = file.canvas.getPixels(x, y + height, fullWidth, followingPixelsHeight)
       file.canvas.setPixels(x, y, fullWidth, followingPixelsHeight, pixels)
     }
-    
+
     // Shrink canvas.
     file.canvas.resizeCanvas(fullWidth, newHeight)
 
@@ -498,14 +585,14 @@ export class RemoveStackUndoable implements Undoable<LoadedFile> {
     this.stackName = stackName
   }
   apply(file: LoadedFile) {
-    this.stackIndex = file.stacks.findIndex(g => g.name === this.stackName)
+    this.stackIndex = file.stacks.findIndex((g) => g.name === this.stackName)
     if (this.stackIndex === -1) {
       throw new Error('stack not found: ' + this.stackName)
     }
     this.stack = file.stacks[this.stackIndex]
     // Get our stack's total width/height, store the pixels, clear the area, then shift all pixels below this stack to its position. Shrink the canvas by height.
     // Get and clear area.
-    let {x, y, width, height } = file.getStackArea(this.stackName) // FIXME: This can be cached.
+    let { x, y, width, height } = file.getStackArea(this.stackName) // FIXME: This can be cached.
     if (width === 0 || height === 0) return // Do nothing if empty.
     let pixels = file.canvas.getPixels(x, y, width, height)
     file.canvas.clearPixels(x, y, width, height)
@@ -536,7 +623,7 @@ export class RemoveStackUndoable implements Undoable<LoadedFile> {
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + this.height)
     // Get and shift previously shifted pixels back down.
     let pixels = file.canvas.getPixels(this.x, this.y, file.canvas.width, this.fromHeight)
-    file.canvas.setPixels(this.x, this.y+this.height, file.canvas.width, this.fromHeight, pixels)
+    file.canvas.setPixels(this.x, this.y + this.height, file.canvas.width, this.fromHeight, pixels)
     // Restore old pixels.
     file.canvas.setPixels(this.x, this.y, this.width, this.height, this.pixels)
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
@@ -547,8 +634,7 @@ export class MoveStackUndoable implements Undoable<LoadedFile> {
   private stack: string
   private oldIndex: number
   private newIndex: number
-  constructor(stack: string, oldIndex: number, newIndex: number) {
-  }
+  constructor(stack: string, oldIndex: number, newIndex: number) {}
   apply(file: LoadedFile) {
     // TODO: Lazymode -- get our pixels for our stacks between our two move stacks, get our pixels for our first and second move stack, clear pixels from first through second, then paste the pixels for our from to our to position, our to to our end position -to's height, then paste the between pixels between the two.
   }
@@ -566,7 +652,7 @@ export class RenameStackUndoable implements Undoable<LoadedFile> {
     this.newName = newName
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
@@ -574,7 +660,7 @@ export class RenameStackUndoable implements Undoable<LoadedFile> {
     g.name = this.newName
   }
   unapply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.newName)
+    let g = file.stacks.find((g) => g.name === this.newName)
     if (!g) {
       throw new Error('stack not found: ' + this.newName)
     }
@@ -593,12 +679,12 @@ export class DuplicateStackUndoable implements Undoable<LoadedFile> {
     this.stack = stack
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
     let name = this.stack + ' copy'
-    for (let count = 0; file.stacks.find(g => g.name === name); name = `${this.stack} copy ${count++}`) {}
+    for (let count = 0; file.stacks.find((g) => g.name === name); name = `${this.stack} copy ${count++}`) {}
     this.name = name
 
     let { x, y, width, height } = file.getStackArea(this.stack)
@@ -617,11 +703,15 @@ export class DuplicateStackUndoable implements Undoable<LoadedFile> {
     // 4. Set pixels at stack area + stack area height to stored
     file.canvas.setPixels(x, y + height, file.canvas.width, height, stackPixels)
     // 5. Update data structure
-    file.stacks.splice(file.stacks.findIndex(g => g.name === this.stack) + 1, 0, {name, animations: JSON.parse(JSON.stringify(g.animations)), sliceCount: g.sliceCount})
+    file.stacks.splice(file.stacks.findIndex((g) => g.name === this.stack) + 1, 0, {
+      name,
+      animations: JSON.parse(JSON.stringify(g.animations)),
+      sliceCount: g.sliceCount,
+    })
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile): void {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
@@ -631,7 +721,10 @@ export class DuplicateStackUndoable implements Undoable<LoadedFile> {
     // 2. Resize canvas
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - this.stackHeight)
     // 3. Update data structure
-    file.stacks.splice(file.stacks.findIndex(g => g.name === this.name), 1)
+    file.stacks.splice(
+      file.stacks.findIndex((g) => g.name === this.name),
+      1,
+    )
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
@@ -644,11 +737,11 @@ export class GrowStackSliceUndoable implements Undoable<LoadedFile> {
     this.sliceCount = sliceCount
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    
+
     let sliceCount = g.sliceCount + this.sliceCount
     let newWidth = sliceCount * file.frameWidth
     if (file.canvas.width < newWidth) {
@@ -657,7 +750,7 @@ export class GrowStackSliceUndoable implements Undoable<LoadedFile> {
     for (let s = g.sliceCount; s < sliceCount; s++) {
       for (let a of g.animations) {
         for (let f of a.frames) {
-          f.slices.push({shading: 1, x: 0, y: 0})
+          f.slices.push({ shading: 1, x: 0, y: 0 })
         }
       }
     }
@@ -666,11 +759,11 @@ export class GrowStackSliceUndoable implements Undoable<LoadedFile> {
   }
   unapply(file: LoadedFile) {
     // Reverse of above.
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-      
+
     for (let s = g.sliceCount - 1; s >= g.sliceCount - this.sliceCount; s--) {
       for (let a of g.animations) {
         for (let f of a.frames) {
@@ -706,55 +799,58 @@ export class ShrinkStackSliceUndoable implements Undoable<LoadedFile> {
     this.sliceCount = sliceCount
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    
+
     let sliceCount = g.sliceCount - this.sliceCount
     let newWidth = sliceCount * file.frameWidth
-    
-    let {x, y, width, height} = file.getStackArea(this.stack)
-    this.pixelsX = x+newWidth
+
+    let { x, y, width, height } = file.getStackArea(this.stack)
+    this.pixelsX = x + newWidth
     this.pixelsY = y
     this.pixelsWidth = width - newWidth
     this.pixelsHeight = height
     this.pixels = file.canvas.getPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight)
-    
+
     this.slices = []
     for (let a of g.animations) {
       let fslices = []
       for (let f of a.frames) {
-        fslices.push(f.slices.splice(f.slices.length-this.sliceCount, this.sliceCount))
+        fslices.push(f.slices.splice(f.slices.length - this.sliceCount, this.sliceCount))
       }
       this.slices.push(fslices)
     }
-    
+
     g.sliceCount = sliceCount
     // Get our maximum width (each stack's slices * file.frameWidth)
     let targetWidth = newWidth
     for (let stack of file.stacks) {
       targetWidth = Math.max(targetWidth, stack.sliceCount * file.frameWidth)
     }
-    
-    if (file.canvas.width > targetWidth) { // Shrink the canvas if no stacks are wider than our changing stack.
+
+    if (file.canvas.width > targetWidth) {
+      // Shrink the canvas if no stacks are wider than our changing stack.
       // Resize the canvas.
       file.canvas.resizeCanvas(targetWidth, file.canvas.height)
-    } else { // Otherwise just clear the area where our stack's old slices were.
-      file.canvas.clearPixels(x+newWidth, y, width-newWidth, height)
+    } else {
+      // Otherwise just clear the area where our stack's old slices were.
+      file.canvas.clearPixels(x + newWidth, y, width - newWidth, height)
     }
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
     // Reverse of above.
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-      
+
     let sliceCount = g.sliceCount + this.sliceCount
     let newWidth = sliceCount * file.frameWidth
-    if (file.canvas.width < newWidth) { // Grow it again.
+    if (file.canvas.width < newWidth) {
+      // Grow it again.
       file.canvas.resizeCanvas(newWidth, file.canvas.height)
     }
     // Paste back in our pixels.
@@ -781,7 +877,7 @@ export class DuplicateSliceUndoable implements Undoable<LoadedFile> {
     this.growUndoable = new GrowStackSliceUndoable(stack, 1)
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
@@ -791,27 +887,27 @@ export class DuplicateSliceUndoable implements Undoable<LoadedFile> {
     width -= this.sliceIndex * file.frameWidth
 
     this.growUndoable.apply(file)
-    
+
     let pixels = file.canvas.getPixels(x, y, width, height)
-    file.canvas.setPixels(x+file.frameWidth, y, width, height, pixels)
+    file.canvas.setPixels(x + file.frameWidth, y, width, height, pixels)
 
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    
+
     let { x, y, width, height } = file.getStackArea(this.stack)
     x += this.sliceIndex * file.frameWidth
     width -= this.sliceIndex * file.frameWidth
-    
-    let pixels = file.canvas.getPixels(x+file.frameWidth, y, width, height)
+
+    let pixels = file.canvas.getPixels(x + file.frameWidth, y, width, height)
     file.canvas.setPixels(x, y, width, height, pixels)
 
     this.growUndoable.unapply(file)
-    
+
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
@@ -827,13 +923,13 @@ export class ClearSliceUndoable implements Undoable<LoadedFile> {
     this.sliceIndex = sliceIndex
   }
   apply(file: LoadedFile) {
-    let {x, y, width, height} = file.getSliceAreaFromFrame(this.frame, this.sliceIndex)
+    let { x, y, width, height } = file.getSliceAreaFromFrame(this.frame, this.sliceIndex)
 
     this.pixels = file.canvas.getPixels(x, y, width, height)
     file.canvas.clearPixels(x, y, width, height)
   }
   unapply(file: LoadedFile) {
-    let {x, y, width, height} = file.getSliceAreaFromFrame(this.frame, this.sliceIndex)
+    let { x, y, width, height } = file.getSliceAreaFromFrame(this.frame, this.sliceIndex)
     file.canvas.setPixels(x, y, width, height, this.pixels)
   }
 }
@@ -848,7 +944,7 @@ export class RemoveSliceUndoable implements Undoable<LoadedFile> {
     this.sliceIndex = sliceIndex
   }
   apply(file: LoadedFile) {
-    let s = file.stacks.find(g => g.name === this.stack)
+    let s = file.stacks.find((g) => g.name === this.stack)
     if (!s) {
       throw new Error('stack not found: ' + this.stack)
     }
@@ -861,10 +957,10 @@ export class RemoveSliceUndoable implements Undoable<LoadedFile> {
 
     // Store our slices to remove.
     this.slicedPixels = file.canvas.getPixels(sliceX, y, sliceWidth, height)
-    
+
     // Shift our pixels to the left.
-    let pixels = file.canvas.getPixels(x+file.frameWidth, y, width-file.frameWidth, height)
-    file.canvas.setPixels(x, y, width-file.frameWidth, height, pixels)
+    let pixels = file.canvas.getPixels(x + file.frameWidth, y, width - file.frameWidth, height)
+    file.canvas.setPixels(x, y, width - file.frameWidth, height, pixels)
 
     // See if we can shrink our canvas.
     let targetWidth = (s.sliceCount - 1) * file.frameWidth
@@ -877,7 +973,7 @@ export class RemoveSliceUndoable implements Undoable<LoadedFile> {
     } else {
       // Otherwise, clear the last to the right.
       let { x, y, width, height } = file.getStackArea(this.stack)
-      file.canvas.clearPixels(x+width-file.frameWidth, y, file.frameWidth, height)
+      file.canvas.clearPixels(x + width - file.frameWidth, y, file.frameWidth, height)
     }
 
     // Clean up our data.
@@ -893,7 +989,7 @@ export class RemoveSliceUndoable implements Undoable<LoadedFile> {
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    let s = file.stacks.find(g => g.name === this.stack)
+    let s = file.stacks.find((g) => g.name === this.stack)
     if (!s) {
       throw new Error('stack not found: ' + this.stack)
     }
@@ -906,14 +1002,14 @@ export class RemoveSliceUndoable implements Undoable<LoadedFile> {
     if (file.canvas.width < targetWidth) {
       file.canvas.resizeCanvas(targetWidth, file.canvas.height)
     }
-    
+
     // Shift our pixels back to the right.
     let { x, y, width, height } = file.getStackArea(this.stack)
     x += this.sliceIndex * file.frameWidth
     width -= this.sliceIndex * file.frameWidth
 
     let pixels = file.canvas.getPixels(x, y, width, height)
-    file.canvas.setPixels(x+file.frameWidth, y, width, height, pixels)
+    file.canvas.setPixels(x + file.frameWidth, y, width, height, pixels)
 
     // Restore old pixels.
     file.canvas.setPixels(x, y, file.frameWidth, height, this.slicedPixels)
@@ -929,7 +1025,7 @@ export class RemoveSliceUndoable implements Undoable<LoadedFile> {
     }
 
     s.sliceCount++
-    
+
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
@@ -940,12 +1036,12 @@ export class AddAnimationUndoable implements Undoable<LoadedFile> {
     this.stack = stack
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    
-    let name = "animation"
+
+    let name = 'animation'
     let count = 0
     for (let a of g.animations) {
       if (name === a.name) {
@@ -955,48 +1051,56 @@ export class AddAnimationUndoable implements Undoable<LoadedFile> {
     }
 
     // Grow our canvas by 1 frameHeight
-    let {x, y, width, height} = file.getStackArea(this.stack)
+    let { x, y, width, height } = file.getStackArea(this.stack)
     let newHeight = file.canvas.height + file.frameHeight
     let fullWidth = Math.max(file.canvas.width, width)
-    
+
     // Grow our canvas.
     file.canvas.resizeCanvas(fullWidth, newHeight)
-    
+
     // Shift all pixels after our animation area down.
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y+height, fullWidth, followingPixelsHeight)
-      file.canvas.setPixels(x, y+height+file.frameHeight, fullWidth, followingPixelsHeight, pixels)
+      let pixels = file.canvas.getPixels(x, y + height, fullWidth, followingPixelsHeight)
+      file.canvas.setPixels(x, y + height + file.frameHeight, fullWidth, followingPixelsHeight, pixels)
     }
-    
+
     // Clear our new area.
-    file.canvas.clearPixels(x, y+height, fullWidth, file.frameHeight)
+    file.canvas.clearPixels(x, y + height, fullWidth, file.frameHeight)
 
     // Add our new stax.
     let anim: StaxAnimation = {
       name,
       frameTime: 100,
-      frames: [{slices: Array.from({length: g.sliceCount}, (_=>({shading: 1, x: 0, y: 0})))}],
+      frames: [
+        {
+          slices: Array.from({ length: g.sliceCount }, (_) => ({
+            shading: 1,
+            x: 0,
+            y: 0,
+          })),
+        },
+      ],
     }
     g.animations.push(anim)
-    
+
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
 
     // Acquire our pixels after our area and potentially shift them back.
-    let {x, y, width, height} = file.getStackArea(this.stack)
+    let { x, y, width, height } = file.getStackArea(this.stack)
     let fullWidth = Math.max(file.canvas.width, width)
-    
+
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y+height, fullWidth, followingPixelsHeight)
+      let pixels = file.canvas.getPixels(x, y + height, fullWidth, followingPixelsHeight)
       // Move 'em back in place.
-      file.canvas.setPixels(x, y+height-file.frameHeight, fullWidth, followingPixelsHeight, pixels)
+      file.canvas.setPixels(x, y + height - file.frameHeight, fullWidth, followingPixelsHeight, pixels)
     }
     // Shrink our canvas by 1 frameHeight
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - file.frameHeight)
@@ -1021,16 +1125,16 @@ export class RemoveAnimationUndoable implements Undoable<LoadedFile> {
     this.animation = animation
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(v=>v.name === this.stack)
+    let g = file.stacks.find((v) => v.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    let a = g.animations.find(v=>v.name === this.animation)
+    let a = g.animations.find((v) => v.name === this.animation)
     if (!a) {
       throw new Error('animation not found: ' + this.animation)
     }
 
-    let {x, y, height} = file.getAnimationArea(this.stack, this.animation)
+    let { x, y, height } = file.getAnimationArea(this.stack, this.animation)
     const width = file.canvas.width // Let's just shift the whole width...
     if (height > 0) {
       this.pixels = file.canvas.getPixels(x, y, width, height)
@@ -1040,7 +1144,7 @@ export class RemoveAnimationUndoable implements Undoable<LoadedFile> {
       this.height = height
     }
     this.anim = a
-    
+
     for (let i = 0; i < g.animations.length; i++) {
       if (g.animations[i].name === this.animation) {
         this.animIndex = i
@@ -1051,22 +1155,22 @@ export class RemoveAnimationUndoable implements Undoable<LoadedFile> {
 
     let remainingHeight = file.canvas.height - (y + height)
     if (remainingHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y+height, width, remainingHeight)
+      let pixels = file.canvas.getPixels(x, y + height, width, remainingHeight)
       file.canvas.setPixels(x, y, width, remainingHeight, pixels)
     }
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - height)
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    let g = file.stacks.find(v=>v.name === this.stack)
+    let g = file.stacks.find((v) => v.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
 
     if (this.pixels) {
       file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + this.height)
-      let pixels = file.canvas.getPixels(this.x, this.y, this.width, file.canvas.height - (this.y+this.height))
-      file.canvas.setPixels(this.x, this.y+this.height, this.width, file.canvas.height - (this.y+this.height), pixels)
+      let pixels = file.canvas.getPixels(this.x, this.y, this.width, file.canvas.height - (this.y + this.height))
+      file.canvas.setPixels(this.x, this.y + this.height, this.width, file.canvas.height - (this.y + this.height), pixels)
       file.canvas.setPixels(this.x, this.y, this.width, this.height, this.pixels)
     }
     g.animations.splice(this.animIndex, 0, this.anim)
@@ -1079,8 +1183,7 @@ export class MoveAnimationUndoable implements Undoable<LoadedFile> {
   private animation: string
   private oldIndex: number
   private newIndex: number
-  constructor(stack: string, animation: string, oldIndex: number, newIndex: number) {
-  }
+  constructor(stack: string, animation: string, oldIndex: number, newIndex: number) {}
   apply(file: LoadedFile) {
     // TODO: See logic for MoveStackUndoable, but apply to the stack's animations.
   }
@@ -1102,16 +1205,16 @@ export class DuplicateAnimationUndoable implements Undoable<LoadedFile> {
     this.animation = animation
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    let a = g.animations.find(v=>v.name === this.animation)
+    let a = g.animations.find((v) => v.name === this.animation)
     if (!a) {
       throw new Error('animation not found: ' + this.animation)
     }
     let name = this.animation + ' copy'
-    for (let count = 0; g.animations.find(a => a.name === name); name = `${this.animation} copy ${count++}`) {}
+    for (let count = 0; g.animations.find((a) => a.name === name); name = `${this.animation} copy ${count++}`) {}
     this.name = name
 
     let { x, y, width, height } = file.getAnimationAreaFromAnimation(a)
@@ -1130,11 +1233,15 @@ export class DuplicateAnimationUndoable implements Undoable<LoadedFile> {
     // 4. Set pixels at animation area + animation area height to stored
     file.canvas.setPixels(x, y + height, width, height, areaPixels)
     // 5. Update data structure
-    g.animations.splice(g.animations.findIndex(a => a.name === this.animation) + 1, 0, {name, frameTime: a.frameTime, frames: JSON.parse(JSON.stringify(a.frames))})
+    g.animations.splice(g.animations.findIndex((a) => a.name === this.animation) + 1, 0, {
+      name,
+      frameTime: a.frameTime,
+      frames: JSON.parse(JSON.stringify(a.frames)),
+    })
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile): void {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
@@ -1144,11 +1251,13 @@ export class DuplicateAnimationUndoable implements Undoable<LoadedFile> {
     // 2. Resize canvas
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - this.areaHeight)
     // 3. Update data structure
-    g.animations.splice(g.animations.findIndex(a => a.name === this.name), 1)
+    g.animations.splice(
+      g.animations.findIndex((a) => a.name === this.name),
+      1,
+    )
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
 }
-
 
 export class RenameAnimationUndoable implements Undoable<LoadedFile> {
   private stack: string
@@ -1161,11 +1270,11 @@ export class RenameAnimationUndoable implements Undoable<LoadedFile> {
     this.newName = newName
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(v=>v.name === this.stack)
+    let g = file.stacks.find((v) => v.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    let a = g.animations.find(v=>v.name === this.animation)
+    let a = g.animations.find((v) => v.name === this.animation)
     if (!a) {
       throw new Error('animation not found: ' + this.animation)
     }
@@ -1173,11 +1282,11 @@ export class RenameAnimationUndoable implements Undoable<LoadedFile> {
     a.name = this.newName
   }
   unapply(file: LoadedFile): void {
-    let g = file.stacks.find(v=>v.name === this.stack)
+    let g = file.stacks.find((v) => v.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    let a = g.animations.find(v=>v.name === this.newName)
+    let a = g.animations.find((v) => v.name === this.newName)
     if (!a) {
       throw new Error('animation not found: ' + this.newName)
     }
@@ -1193,53 +1302,59 @@ export class AddAnimationFrameUndoable implements Undoable<LoadedFile> {
     this.animation = animation
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(v=>v.name === this.stack)
+    let g = file.stacks.find((v) => v.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    let a = g.animations.find(v=>v.name === this.animation)
+    let a = g.animations.find((v) => v.name === this.animation)
     if (!a) {
       throw new Error('animation not found: ' + this.animation)
     }
-    
+
     // Grow our canvas by 1 frameHeight
-    let {x, y, width, height} = file.getAnimationArea(this.stack, this.animation)
-    a.frames.push({slices: Array.from({length: g.sliceCount}, (_=>({shading: 1, x: 0, y: 0})))})
+    let { x, y, width, height } = file.getAnimationArea(this.stack, this.animation)
+    a.frames.push({
+      slices: Array.from({ length: g.sliceCount }, (_) => ({
+        shading: 1,
+        x: 0,
+        y: 0,
+      })),
+    })
     let newHeight = file.canvas.height + file.frameHeight
-    
+
     // Grow our canvas.
     file.canvas.resizeCanvas(width, newHeight)
-    
+
     // Shift all pixels after our animation area down.
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
-      file.canvas.setPixels(x, y+height+file.frameHeight, width, followingPixelsHeight, pixels)
+      let pixels = file.canvas.getPixels(x, y + height, width, followingPixelsHeight)
+      file.canvas.setPixels(x, y + height + file.frameHeight, width, followingPixelsHeight, pixels)
     }
-    
+
     // Clear our new area.
-    file.canvas.clearPixels(x, y+height, width, file.frameHeight)
+    file.canvas.clearPixels(x, y + height, width, file.frameHeight)
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    let g = file.stacks.find(v=>v.name === this.stack)
+    let g = file.stacks.find((v) => v.name === this.stack)
     if (!g) {
       throw new Error('stack not found')
     }
-    let a = g.animations.find(v=>v.name === this.animation)
+    let a = g.animations.find((v) => v.name === this.animation)
     if (!a) {
       throw new Error('animation not found')
     }
-    
+
     // Acquire our pixels after our area and potentially shift them back.
-    let {x, y, width, height} = file.getAnimationArea(this.stack, this.animation)
+    let { x, y, width, height } = file.getAnimationArea(this.stack, this.animation)
     a.frames.pop()
-    
+
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
+      let pixels = file.canvas.getPixels(x, y + height, width, followingPixelsHeight)
       // Move 'em back in place.
-      file.canvas.setPixels(x, y+height-file.frameHeight, width, followingPixelsHeight, pixels)
+      file.canvas.setPixels(x, y + height - file.frameHeight, width, followingPixelsHeight, pixels)
     }
     // Shrink our canvas by 1 frameHeight
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - file.frameHeight)
@@ -1261,11 +1376,11 @@ export class DuplicateAnimationFrameUndoable implements Undoable<LoadedFile> {
     this.frameIndex = frameIndex
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    let a = g.animations.find(v=>v.name === this.animation)
+    let a = g.animations.find((v) => v.name === this.animation)
     if (!a) {
       throw new Error('animation not found: ' + this.animation)
     }
@@ -1290,15 +1405,17 @@ export class DuplicateAnimationFrameUndoable implements Undoable<LoadedFile> {
     // 4. Set pixels at frame area + frame area height to stored
     file.canvas.setPixels(x, y + height, width, height, areaPixels)
     // 5. Update data structure
-    a.frames.splice(this.frameIndex, 0, {slices: JSON.parse(JSON.stringify(f.slices))})
+    a.frames.splice(this.frameIndex, 0, {
+      slices: JSON.parse(JSON.stringify(f.slices)),
+    })
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile): void {
-    let g = file.stacks.find(g => g.name === this.stack)
+    let g = file.stacks.find((g) => g.name === this.stack)
     if (!g) {
       throw new Error('stack not found: ' + this.stack)
     }
-    let a = g.animations.find(v=>v.name === this.animation)
+    let a = g.animations.find((v) => v.name === this.animation)
     if (!a) {
       throw new Error('animation not found: ' + this.animation)
     }
@@ -1311,7 +1428,6 @@ export class DuplicateAnimationFrameUndoable implements Undoable<LoadedFile> {
     a.frames.splice(this.frameIndex, 1)
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
-
 }
 
 export class RemoveAnimationFrameUndoable implements Undoable<LoadedFile> {
@@ -1330,30 +1446,30 @@ export class RemoveAnimationFrameUndoable implements Undoable<LoadedFile> {
     this.frameIndex = frameIndex
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(v=>v.name === this.stackName)
+    let g = file.stacks.find((v) => v.name === this.stackName)
     if (!g) {
       throw new Error('stack not found')
     }
-    let a = g.animations.find(v=>v.name === this.animationName)
+    let a = g.animations.find((v) => v.name === this.animationName)
     if (!a) {
       throw new Error('animation not found')
     }
     if (this.frameIndex < 0 || this.frameIndex >= a.frames.length) {
       throw new Error('frame oob')
     }
-    
-    let {x, y, height} = file.getFrameArea(this.stackName, this.animationName, this.frameIndex)
+
+    let { x, y, height } = file.getFrameArea(this.stackName, this.animationName, this.frameIndex)
     this.pixels = file.canvas.getPixels(x, y, file.canvas.width, height)
     this.pixelsX = x
     this.pixelsY = y
     this.pixelsWidth = file.canvas.width
     this.pixelsHeight = height
-    
+
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
       let pixels = file.canvas.getPixels(x, y, file.canvas.width, followingPixelsHeight)
       // Move 'em back in place.
-      file.canvas.setPixels(x, y-height, file.canvas.width, followingPixelsHeight, pixels)
+      file.canvas.setPixels(x, y - height, file.canvas.width, followingPixelsHeight, pixels)
     }
     // Shrink our canvas by frame's height
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - height)
@@ -1362,15 +1478,15 @@ export class RemoveAnimationFrameUndoable implements Undoable<LoadedFile> {
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    let g = file.stacks.find(v=>v.name === this.stackName)
+    let g = file.stacks.find((v) => v.name === this.stackName)
     if (!g) {
       throw new Error('stack not found')
     }
-    let a = g.animations.find(v=>v.name === this.animationName)
+    let a = g.animations.find((v) => v.name === this.animationName)
     if (!a) {
       throw new Error('animation not found')
     }
-    
+
     // 1. Get our pixels at pixelsY to end of canvas.
     let followingPixelsHeight = file.canvas.height - this.pixelsY
     let pixels: Uint8Array
@@ -1379,11 +1495,11 @@ export class RemoveAnimationFrameUndoable implements Undoable<LoadedFile> {
     }
 
     // 2. Increase our canvas height to += pixelsHeight
-    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height+this.pixelsHeight)
-    
+    file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + this.pixelsHeight)
+
     // 3. Shift earlier pixels if needed.
     if (pixels) {
-      file.canvas.setPixels(this.pixelsX, this.pixelsY+this.pixelsHeight, file.canvas.width, followingPixelsHeight, pixels)
+      file.canvas.setPixels(this.pixelsX, this.pixelsY + this.pixelsHeight, file.canvas.width, followingPixelsHeight, pixels)
     }
 
     // 4. Re-add stored pixels to pixelY
@@ -1409,38 +1525,38 @@ export class ClearAnimationFrameUndoable implements Undoable<LoadedFile> {
     this.frameIndex = frameIndex
   }
   apply(file: LoadedFile) {
-    let g = file.stacks.find(v=>v.name === this.stackName)
+    let g = file.stacks.find((v) => v.name === this.stackName)
     if (!g) {
       throw new Error('stack not found')
     }
-    let a = g.animations.find(v=>v.name === this.animationName)
+    let a = g.animations.find((v) => v.name === this.animationName)
     if (!a) {
       throw new Error('animation not found')
     }
     if (this.frameIndex < 0 || this.frameIndex >= a.frames.length) {
       throw new Error('frame oob')
     }
-    
-    let {x, y, width, height} = file.getFrameArea(this.stackName, this.animationName, this.frameIndex)
+
+    let { x, y, width, height } = file.getFrameArea(this.stackName, this.animationName, this.frameIndex)
     this.pixels = file.canvas.getPixels(x, y, width, height)
     this.pixelsX = x
     this.pixelsY = y
     this.pixelsWidth = width
     this.pixelsHeight = height
-    
+
     file.canvas.clearPixels(x, y, width, height)
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
   unapply(file: LoadedFile) {
-    let g = file.stacks.find(v=>v.name === this.stackName)
+    let g = file.stacks.find((v) => v.name === this.stackName)
     if (!g) {
       throw new Error('stack not found')
     }
-    let a = g.animations.find(v=>v.name === this.animationName)
+    let a = g.animations.find((v) => v.name === this.animationName)
     if (!a) {
       throw new Error('animation not found')
     }
-    
+
     file.canvas.setPixels(this.pixelsX, this.pixelsY, this.pixelsWidth, this.pixelsHeight, this.pixels)
     file.cacheSlicePositions() // FIXME: This is kinda inefficient.
   }
@@ -1450,8 +1566,7 @@ export class ThreeDSelectionBoxClearUndoable implements Undoable<LoadedFile> {
   //private selection: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]]
   private cursor1: [number, number, number] = [0, 0, 0]
   private cursor2: [number, number, number] = [0, 0, 0]
-  constructor() {
-  }
+  constructor() {}
   apply(file: LoadedFile) {
     this.cursor1 = [...file.threeDCursor1]
     this.cursor2 = [...file.threeDCursor2]
@@ -1471,7 +1586,7 @@ export class ThreeDSelectionBoxSetUndoable implements Undoable<LoadedFile> {
   private cursor2: [number, number, number] = [0, 0, 0]
   private cursor2Previous: [number, number, number] = [0, 0, 0]
 
-  constructor(cursor1: [number, number, number], cursor2: [number, number, number], ) {
+  constructor(cursor1: [number, number, number], cursor2: [number, number, number]) {
     this.cursor1 = cursor1
     this.cursor2 = cursor2
   }
@@ -1514,7 +1629,7 @@ export class ThreeDSelectionBoxSetVoxelsUndoable implements Undoable<LoadedFile>
     let maxY = Math.max(this.cursor1[1], this.cursor2[1])
     let maxZ = Math.max(this.cursor1[2], this.cursor2[2])
 
-    let pixels: {x: number, y: number, index: number}[] = []
+    let pixels: { x: number; y: number; index: number }[] = []
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
         let slice = f.slices[y]
@@ -1538,11 +1653,11 @@ export class ThreeDSelectionBoxSetVoxelsUndoable implements Undoable<LoadedFile>
 
 // FIXME: Move/rename this...
 function _getFrame(file: LoadedFile, stackName: string, animationName: string, frameIndex: number): StaxFrame {
-  let s = file.stacks.find(v=>v.name === stackName)
+  let s = file.stacks.find((v) => v.name === stackName)
   if (!s) {
     throw new Error('stack not found')
   }
-  let a = s.animations.find(v=>v.name === animationName)
+  let a = s.animations.find((v) => v.name === animationName)
   if (!a) {
     throw new Error('animation not found')
   }
