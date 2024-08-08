@@ -1,16 +1,16 @@
 <!--
   @component
-  
+
   This component is a full 2D pixel editor.
 -->
-<script lang='ts'>
+<script lang="ts">
   import { onMount } from 'svelte'
   import { brushSettings } from '../stores/brush'
   import { editor2DSettings } from '../stores/editor2d'
-  import { CanvasView } from '../types/canvasview'
 
   import { type LoadedFile } from '../types/file'
   import { EllipseShape, FilledCircle, FilledSquare, NormalizeShape, RectangleShape, ShapeToImageData, type PixelPosition } from '../types/shapes'
+
   import { BrushTool, EraserTool, FillTool, PickerTool, MoveTool, SelectionRectangularTool, SprayTool, RectangleTool, EllipseTool, SelectionEllipseTool, ReferenceTool } from '../types/tools'
   import Button from '../components/common/Button.svelte'
   import { ZoomIn, ZoomOut } from 'carbon-icons-svelte'
@@ -37,7 +37,7 @@
   let offsetY: number
   let zoom: number = 1.0
   $: file.selection.resize(file.canvas.width, file.canvas.height, zoom)
-  $: $file ? canvasDirty = true : null
+  $: $file ? (canvasDirty = true) : null
 
   let mouseX: number = 0
   let mouseY: number = 0
@@ -47,53 +47,54 @@
   // viewPixels is the absolute pixel location to the current view. This is mousePixels + view.xy.
   let viewPixelX: number = 0
   let viewPixelY: number = 0
-  
-  let view: CanvasView = new CanvasView($file.canvas)
+
   $: {
     switch ($editor2DSettings.viewMode) {
       case 'slice':
         if ($file.frame) {
           let { x, y, width, height } = $file.getSliceAreaFromFrame($file.frame, $file.sliceIndex)
-          view.x = x
-          view.y = y
-          view.width = width
-          view.height = height
+          $file.view.x = x
+          $file.view.y = y
+          $file.view.width = width
+          $file.view.height = height
         }
         break
       case 'frame':
         if ($file.frame) {
           let { x, y, width, height } = $file.getFrameAreaFromFrame($file.frame)
-          view.x = x
-          view.y = y
-          view.width = width
-          view.height = height
+          $file.view.x = x
+          $file.view.y = y
+          $file.view.width = width
+          $file.view.height = height
         }
         break
       case 'animation':
         if ($file.animation) {
           let { x, y, width, height } = $file.getAnimationAreaFromAnimation($file.animation)
-          view.x = x
-          view.y = y
-          view.width = width
-          view.height = height
+          $file.view.x = x
+          $file.view.y = y
+          $file.view.width = width
+          $file.view.height = height
         }
         break
       case 'stack':
         if ($file.stack) {
           let { x, y, width, height } = $file.getStackAreaFromStack($file.stack)
-          view.x = x
-          view.y = y
-          view.width = width
-          view.height = height
+          $file.view.x = x
+          $file.view.y = y
+          $file.view.width = width
+          $file.view.height = height
         }
         break
       case 'sheet':
-        view.x = 0
-        view.y = 0
-        view.width = $file.canvas.width
-        view.height = $file.canvas.height
+        $file.view.x = 0
+        $file.view.y = 0
+        $file.view.width = $file.canvas.width
+        $file.view.height = $file.canvas.height
         break
     }
+    $file.view = $file.view
+    if (rootCanvas) capOffset()
   }
 
   let rootCanvas: HTMLCanvasElement
@@ -102,7 +103,7 @@
 
   let overlayDirty: boolean = true
   let canvasDirty: boolean = true
-  
+
   function setZoom(z: number) {
     if (z < 1) {
       z = 1
@@ -114,7 +115,7 @@
   }
   function zoomIn() {
     if (zoom < 1) {
-      zoom *=2
+      zoom *= 2
     } else {
       zoom++
     }
@@ -127,7 +128,7 @@
     overlayDirty = true
   }
   function zoomOut() {
-    if (zoom-1 <= 0) {
+    if (zoom - 1 <= 0) {
       zoom /= 2
     } else {
       zoom--
@@ -157,8 +158,8 @@
     }
     if (offsetX === undefined || offsetY === undefined) {
       // Adjust offset to center image on first LOAD.
-      offsetX = rootCanvas.width/2 - view?.width/2??file.canvas.width/2
-      offsetY = rootCanvas.height/2 - view?.height/2??file.canvas.height/2
+      offsetX = rootCanvas.width / 2 - $file.view?.width / 2 ?? file.canvas.width / 2
+      offsetY = rootCanvas.height / 2 - $file.view?.height / 2 ?? file.canvas.height / 2
     }
   }
 
@@ -183,13 +184,13 @@
 
     // Draw reference underneath.
     if ($file.selectedImageReference) {
-      let ref = $editor2DSettings.imageReferences.list().find(v=>v.src===$file.selectedImageReference)
+      let ref = $editor2DSettings.imageReferences.list().find((v) => v.src === $file.selectedImageReference)
       if (ref && !ref.overtop && ref.image) {
         ctx.save()
         ctx.imageSmoothingEnabled = false
         ctx.imageSmoothingQuality = 'low'
         ctx.globalAlpha = ref.opacity
-        ctx.drawImage(ref.image, 0, 0, ref.image.naturalWidth, ref.image.naturalHeight, offsetX+ref.x*(zoom*ref.zoom), offsetY+ref.y*(zoom*ref.zoom), ref.image.naturalWidth*zoom*ref.zoom, ref.image.naturalHeight*zoom*ref.zoom)
+        ctx.drawImage(ref.image, 0, 0, ref.image.naturalWidth, ref.image.naturalHeight, offsetX + ref.x * (zoom * ref.zoom), offsetY + ref.y * (zoom * ref.zoom), ref.image.naturalWidth * zoom * ref.zoom, ref.image.naturalHeight * zoom * ref.zoom)
         ctx.restore()
       }
     }
@@ -197,18 +198,18 @@
     // Draw the actual canvas image.
     ctx.save()
     ctx.imageSmoothingEnabled = false
-    ctx.drawImage(file.canvas.canvas, view.x, view.y, view.width, view.height, offsetX, offsetY, view.width*zoom, view.height*zoom)
+    ctx.drawImage(file.canvas.canvas, $file.view.x, $file.view.y, $file.view.width, $file.view.height, offsetX, offsetY, $file.view.width * zoom, $file.view.height * zoom)
     ctx.restore()
 
     // Draw reference overtop.
     if ($file.selectedImageReference) {
-      let ref = $editor2DSettings.imageReferences.list().find(v=>v.src===$file.selectedImageReference)
+      let ref = $editor2DSettings.imageReferences.list().find((v) => v.src === $file.selectedImageReference)
       if (ref && ref.overtop && ref.image) {
         ctx.save()
         ctx.imageSmoothingEnabled = false
         ctx.imageSmoothingQuality = 'low'
         ctx.globalAlpha = ref.opacity
-        ctx.drawImage(ref.image, 0, 0, ref.image.naturalWidth, ref.image.naturalHeight, offsetX+ref.x*(zoom*ref.zoom), offsetY+ref.y*(zoom*ref.zoom), ref.image.naturalWidth*zoom*ref.zoom, ref.image.naturalHeight*zoom*ref.zoom)
+        ctx.drawImage(ref.image, 0, 0, ref.image.naturalWidth, ref.image.naturalHeight, offsetX + ref.x * (zoom * ref.zoom), offsetY + ref.y * (zoom * ref.zoom), ref.image.naturalWidth * zoom * ref.zoom, ref.image.naturalHeight * zoom * ref.zoom)
         ctx.restore()
       }
     }
@@ -225,34 +226,34 @@
           shape = FilledSquare(0, 0, $brushSettings.size, 1)
         }
       } else if ($brushSettings.type === 'circle') {
-        shape = FilledCircle(0, 0, $brushSettings.size-2, 1)
+        shape = FilledCircle(0, 0, $brushSettings.size - 2, 1)
       }
-      let {r, g, b, a } = file.canvas.getPaletteAsRGBA($brushSettings.primaryIndex)
+      let { r, g, b, a } = file.canvas.getPaletteAsRGBA($brushSettings.primaryIndex)
       ctx.fillStyle = `rgba(${r},${g},${b},${a})`
       for (let i = 0; i < shape.length; i++) {
-        ctx.fillRect(offsetX+(mousePixelX+shape[i].x)*zoom, offsetY+(mousePixelY+shape[i].y)*zoom, zoom, zoom)
+        ctx.fillRect(offsetX + (mousePixelX + shape[i].x) * zoom, offsetY + (mousePixelY + shape[i].y) * zoom, zoom, zoom)
       }
     } else if ($toolSettings.current instanceof MoveTool && $toolSettings.current.isActive()) {
       ctx.save()
       ctx.imageSmoothingEnabled = false
-      let {x, y} = $toolSettings.current.previewPosition()
-      x -= view.x
-      y -= view.y
-      ctx.drawImage($toolSettings.current.preview.canvas, 0, 0, $toolSettings.current.preview.canvas.width, $toolSettings.current.preview.canvas.height, offsetX+x*zoom, offsetY+y*zoom, $toolSettings.current.preview.canvas.width*zoom, $toolSettings.current.preview.canvas.height*zoom)
+      let { x, y } = $toolSettings.current.previewPosition()
+      x -= $file.view.x
+      y -= $file.view.y
+      ctx.drawImage($toolSettings.current.preview.canvas, 0, 0, $toolSettings.current.preview.canvas.width, $toolSettings.current.preview.canvas.height, offsetX + x * zoom, offsetY + y * zoom, $toolSettings.current.preview.canvas.width * zoom, $toolSettings.current.preview.canvas.height * zoom)
       ctx.restore()
     } else if ($toolSettings.current instanceof RectangleTool && $toolSettings.current.isActive()) {
       ctx.save()
       ctx.imageSmoothingEnabled = false
-      
+
       toolCanvas.width = Math.abs($toolSettings.current.x1 - $toolSettings.current.x2) + 1
       toolCanvas.height = Math.abs($toolSettings.current.y1 - $toolSettings.current.y2) + 1
       let tctx = toolCanvas.getContext('2d')
       if (tctx) {
         let { r, g, b, a } = file.canvas.getPaletteAsRGBA($toolSettings.current.colorIndex)
-        let {shape, minX, minY} = NormalizeShape(RectangleShape($toolSettings.current.x1, $toolSettings.current.y1, $toolSettings.current.x2, $toolSettings.current.y2, $toolSettings.current.fill, $brushSettings.primaryIndex))
+        let { shape, minX, minY } = NormalizeShape(RectangleShape($toolSettings.current.x1, $toolSettings.current.y1, $toolSettings.current.x2, $toolSettings.current.y2, $toolSettings.current.fill, $brushSettings.primaryIndex))
         let imageData = ShapeToImageData(shape, tctx, [r, g, b, a])
         tctx.putImageData(imageData, 0, 0)
-        ctx.drawImage(toolCanvas, 0, 0, toolCanvas.width, toolCanvas.height, offsetX+minX*zoom, offsetY+minY*zoom, toolCanvas.width*zoom, toolCanvas.height*zoom)
+        ctx.drawImage(toolCanvas, 0, 0, toolCanvas.width, toolCanvas.height, offsetX + minX * zoom, offsetY + minY * zoom, toolCanvas.width * zoom, toolCanvas.height * zoom)
       }
       ctx.restore()
     } else if ($toolSettings.current instanceof EllipseTool && $toolSettings.current.isActive()) {
@@ -261,16 +262,16 @@
         ctx.save()
         ctx.imageSmoothingEnabled = false
         ctx.scale(zoom, zoom)
-      
+
         toolCanvas.width = Math.abs($toolSettings.current.x1 - $toolSettings.current.x2) + 1
         toolCanvas.height = Math.abs($toolSettings.current.y1 - $toolSettings.current.y2) + 1
         let tctx = toolCanvas.getContext('2d')
         if (tctx) {
           let { r, g, b, a } = file.canvas.getPaletteAsRGBA($toolSettings.current.colorIndex)
-          let {shape, minX, minY} = NormalizeShape(EllipseShape($toolSettings.current.x1, $toolSettings.current.y1, $toolSettings.current.x2, $toolSettings.current.y2, $toolSettings.current.fill, $brushSettings.primaryIndex))
+          let { shape, minX, minY } = NormalizeShape(EllipseShape($toolSettings.current.x1, $toolSettings.current.y1, $toolSettings.current.x2, $toolSettings.current.y2, $toolSettings.current.fill, $brushSettings.primaryIndex))
           let imageData = ShapeToImageData(shape, tctx, [r, g, b, a])
           tctx.putImageData(imageData, 0, 0)
-          ctx.drawImage(toolCanvas, offsetX+minX, offsetY+minY)
+          ctx.drawImage(toolCanvas, offsetX + minX, offsetY + minY)
         }
         ctx.restore()
       }
@@ -285,26 +286,26 @@
       ctx.strokeStyle = $editor2DSettings.gridMinorColor
       ctx.lineWidth = 1
       ctx.beginPath()
-      for (let x = $editor2DSettings.gridMinorSize; x < view.width; x += $editor2DSettings.gridMinorSize) {
-        ctx.moveTo(offsetX+x*zoom, offsetY)
-        ctx.lineTo(offsetX+x*zoom, offsetY+view.height*zoom)
+      for (let x = $editor2DSettings.gridMinorSize; x < $file.view.width; x += $editor2DSettings.gridMinorSize) {
+        ctx.moveTo(offsetX + x * zoom, offsetY)
+        ctx.lineTo(offsetX + x * zoom, offsetY + $file.view.height * zoom)
       }
-      for (let y = $editor2DSettings.gridMinorSize; y < view.height; y += $editor2DSettings.gridMinorSize) {
-        ctx.moveTo(offsetX, offsetY+y*zoom)
-        ctx.lineTo(offsetX+view.width*zoom, offsetY+y*zoom)
+      for (let y = $editor2DSettings.gridMinorSize; y < $file.view.height; y += $editor2DSettings.gridMinorSize) {
+        ctx.moveTo(offsetX, offsetY + y * zoom)
+        ctx.lineTo(offsetX + $file.view.width * zoom, offsetY + y * zoom)
       }
       ctx.stroke()
       // Major grid lines.
       ctx.strokeStyle = $editor2DSettings.gridMajorColor
       ctx.lineWidth = 1
       ctx.beginPath()
-      for (let x = $editor2DSettings.gridMajorSize; x < view.width; x += $editor2DSettings.gridMajorSize) {
-        ctx.moveTo(offsetX+x*zoom, offsetY)
-        ctx.lineTo(offsetX+x*zoom, offsetY+view.height*zoom)
+      for (let x = $editor2DSettings.gridMajorSize; x < $file.view.width; x += $editor2DSettings.gridMajorSize) {
+        ctx.moveTo(offsetX + x * zoom, offsetY)
+        ctx.lineTo(offsetX + x * zoom, offsetY + $file.view.height * zoom)
       }
-      for (let y = $editor2DSettings.gridMajorSize; y < view.height; y += $editor2DSettings.gridMajorSize) {
-        ctx.moveTo(offsetX, offsetY+y*zoom)
-        ctx.lineTo(offsetX+view.width*zoom, offsetY+y*zoom)
+      for (let y = $editor2DSettings.gridMajorSize; y < $file.view.height; y += $editor2DSettings.gridMajorSize) {
+        ctx.moveTo(offsetX, offsetY + y * zoom)
+        ctx.lineTo(offsetX + $file.view.width * zoom, offsetY + y * zoom)
       }
       ctx.stroke()
     }
@@ -313,13 +314,13 @@
     // Draw any pasting.
     if (paste) {
       ctx.imageSmoothingEnabled = false
-      ctx.drawImage(paste.canvas.canvas, offsetX+mousePixelX*zoom, offsetY+mousePixelY*zoom, paste.canvas.canvas.width*zoom, paste.canvas.canvas.height*zoom)
+      ctx.drawImage(paste.canvas.canvas, offsetX + mousePixelX * zoom, offsetY + mousePixelY * zoom, paste.canvas.canvas.width * zoom, paste.canvas.canvas.height * zoom)
     }
 
     // Draw our selection overlay.
     if (file.selection.active) {
       ctx.imageSmoothingEnabled = false
-      ctx.drawImage(file.selection.marchingCanvas, offsetX-view.x*zoom, offsetY-view.y*zoom)
+      ctx.drawImage(file.selection.marchingCanvas, offsetX - $file.view.x * zoom, offsetY - $file.view.y * zoom)
     }
 
     // Draw our overlay with difference composition so visibility is better.
@@ -342,27 +343,27 @@
     if ($editor2DSettings.showCheckerboard) {
       ctx.beginPath()
       ctx.fillStyle = $editor2DSettings.checkerboardColor1
-      ctx.rect(offsetX, offsetY, view.width*zoom, view.height*zoom)
+      ctx.rect(offsetX, offsetY, $file.view.width * zoom, $file.view.height * zoom)
       ctx.fill()
 
-      let rows = view.height / $editor2DSettings.checkerboardSize
-      let cols = view.width / $editor2DSettings.checkerboardSize
+      let rows = $file.view.height / $editor2DSettings.checkerboardSize
+      let cols = $file.view.width / $editor2DSettings.checkerboardSize
       ctx.beginPath()
       ctx.fillStyle = $editor2DSettings.checkerboardColor2
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          if (r % 2 === 0 && c % 2 === 1 || r % 2 === 1 && c % 2 === 0) {
+          if ((r % 2 === 0 && c % 2 === 1) || (r % 2 === 1 && c % 2 === 0)) {
             let x = c * $editor2DSettings.checkerboardSize
             let y = r * $editor2DSettings.checkerboardSize
             let w = $editor2DSettings.checkerboardSize
             let h = $editor2DSettings.checkerboardSize
-            if (x+w > view.width) {
-              w = view.width - x
+            if (x + w > $file.view.width) {
+              w = $file.view.width - x
             }
-            if (y+h > view.height) {
-              h = view.height - y
+            if (y + h > $file.view.height) {
+              h = $file.view.height - y
             }
-            ctx.rect(offsetX+x*zoom, offsetY+y*zoom, w*zoom, h*zoom)
+            ctx.rect(offsetX + x * zoom, offsetY + y * zoom, w * zoom, h * zoom)
           }
         }
       }
@@ -383,18 +384,18 @@
       ctx.beginPath()
       ctx.strokeStyle = '#cc3388'
       ctx.lineWidth = 1
-      
+
       // Draw bounding box selection preview.
       if (($toolSettings.current instanceof SelectionRectangularTool || $toolSettings.current instanceof SelectionEllipseTool) && $toolSettings.current.isActive()) {
         // FIXME: Show ellipse preview!
-        let {x, y, width, height} = $toolSettings.current.getArea()
-        x -= view.x
-        y -= view.y
-        ctx.strokeRect(offsetX+x*zoom, offsetY+y*zoom, width*zoom, height*zoom)
+        let { x, y, width, height } = $toolSettings.current.getArea()
+        x -= $file.view.x
+        y -= $file.view.y
+        ctx.strokeRect(offsetX + x * zoom, offsetY + y * zoom, width * zoom, height * zoom)
       }
       // Draw zoomed pixel-sized square where mouse is.
       if (zoom > 1) {
-        ctx.rect(offsetX+mousePixelX*zoom, offsetY+mousePixelY*zoom, 1*zoom, 1*zoom)
+        ctx.rect(offsetX + mousePixelX * zoom, offsetY + mousePixelY * zoom, 1 * zoom, 1 * zoom)
       }
       // Draw pixel square where mouse is.
       if (zoom <= 1 || zoom > 4) {
@@ -408,14 +409,14 @@
       ctx.strokeStyle = '#cc3388'
       ctx.lineWidth = zoom
 
-      let x = Math.floor(view.x) + Math.floor($toolSettings.current.lastX)
-      let y = view.y + Math.floor(Math.floor($toolSettings.current.lastY))
+      let x = Math.floor($file.view.x) + Math.floor($toolSettings.current.lastX)
+      let y = $file.view.y + Math.floor(Math.floor($toolSettings.current.lastY))
 
-      let x2 = mousePixelX*zoom+zoom/2
-      let y2 = mousePixelY*zoom+zoom/2
+      let x2 = mousePixelX * zoom + zoom / 2
+      let y2 = mousePixelY * zoom + zoom / 2
 
-      ctx.moveTo(offsetX+(x+0.5)*zoom, offsetY+(y+0.5)*zoom)
-      ctx.lineTo(offsetX+x2, offsetY+y2)
+      ctx.moveTo(offsetX + (x + 0.5) * zoom, offsetY + (y + 0.5) * zoom)
+      ctx.lineTo(offsetX + x2, offsetY + y2)
       ctx.stroke()
     }
 
@@ -425,8 +426,8 @@
   function capOffset() {
     const boundsW = rootCanvas.width
     const boundsH = rootCanvas.height
-    const limitW = view.width * zoom
-    const limitH = view.height * zoom
+    const limitW = $file.view.width * zoom
+    const limitH = $file.view.height * zoom
     let minX: number = 0
     let minY: number = 0
     let maxX: number = 0
@@ -437,28 +438,28 @@
     } else {
       maxX = boundsW - limitW
     }
-    
+
     if (limitH > boundsH) {
       minY = -(limitH - boundsH)
     } else {
       maxY = boundsH - limitH
     }
 
-    const paddingX = (boundsW)/2
-    const paddingY = (boundsH)/2
+    const paddingX = limitW / 2
+    const paddingY = limitH / 2
 
-    if (offsetX < minX-paddingX) {
-      offsetX = minX-paddingX
-    } else if (offsetX > maxX+paddingX) {
-      offsetX = maxX+paddingX
+    if (offsetX < minX - paddingX) {
+      offsetX = minX - paddingX
+    } else if (offsetX > maxX + paddingX) {
+      offsetX = maxX + paddingX
     }
-    if (offsetY < minY-paddingY) {
-      offsetY = minY-paddingY
-    } else if (offsetY > maxY+paddingY) {
-      offsetY = maxY+paddingY
+    if (offsetY < minY - paddingY) {
+      offsetY = minY - paddingY
+    } else if (offsetY > maxY + paddingY) {
+      offsetY = maxY + paddingY
     }
   }
-  
+
   function canvasMousedown(node) {
     let buttons: Set<number> = new Set()
     let x: number = 0
@@ -488,21 +489,131 @@
         }
 
         if ($toolSettings.current instanceof BrushTool) {
-          $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          $toolSettings.current.pointerDown(
+            {
+              file,
+              view: $file.view,
+              brushSize: $brushSettings.size,
+              brushType: $brushSettings.type,
+              colorIndex: $brushSettings.primaryIndex,
+              color: $brushSettings.primaryColor,
+            },
+            {
+              x: viewPixelX,
+              y: viewPixelY,
+              id: e.button,
+              shift: e.shiftKey,
+              control: e.ctrlKey,
+            },
+          )
         } else if ($toolSettings.current instanceof EraserTool) {
-          $toolSettings.current.pointerDown({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          $toolSettings.current.pointerDown(
+            {
+              file,
+              view: $file.view,
+              brushSize: $brushSettings.size,
+              brushType: $brushSettings.type,
+            },
+            {
+              x: viewPixelX,
+              y: viewPixelY,
+              id: e.button,
+              shift: e.shiftKey,
+              control: e.ctrlKey,
+            },
+          )
         } else if ($toolSettings.current instanceof RectangleTool || $toolSettings.current instanceof EllipseTool) {
-          $toolSettings.current.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor, fill: $brushSettings.fill}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          $toolSettings.current.pointerDown(
+            {
+              file,
+              view: $file.view,
+              colorIndex: $brushSettings.primaryIndex,
+              color: $brushSettings.primaryColor,
+              fill: $brushSettings.fill,
+            },
+            {
+              x: viewPixelX,
+              y: viewPixelY,
+              id: e.button,
+              shift: e.shiftKey,
+              control: e.ctrlKey,
+            },
+          )
         } else if ($toolSettings.current instanceof SprayTool) {
-          $toolSettings.current.pointerDown({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          $toolSettings.current.pointerDown(
+            {
+              file,
+              view: $file.view,
+              radius: $brushSettings.sprayRadius,
+              density: $brushSettings.sprayDensity,
+              colorIndex: $brushSettings.primaryIndex,
+              color: $brushSettings.primaryColor,
+            },
+            {
+              x: viewPixelX,
+              y: viewPixelY,
+              id: e.button,
+              shift: e.shiftKey,
+              control: e.ctrlKey,
+            },
+          )
         } else if ($toolSettings.current instanceof FillTool) {
-          $toolSettings.current.pointerDown({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          $toolSettings.current.pointerDown(
+            {
+              file,
+              view: $file.view,
+              colorIndex: $brushSettings.primaryIndex,
+              color: $brushSettings.primaryColor,
+            },
+            {
+              x: viewPixelX,
+              y: viewPixelY,
+              id: e.button,
+              shift: e.shiftKey,
+              control: e.ctrlKey,
+            },
+          )
         } else if ($toolSettings.current instanceof PickerTool) {
-          $toolSettings.current.pointerDown({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          $toolSettings.current.pointerDown(
+            {
+              file,
+              view: $file.view,
+              setColorIndex: (index) => ($brushSettings.primaryIndex = index),
+            },
+            {
+              x: viewPixelX,
+              y: viewPixelY,
+              id: e.button,
+              shift: e.shiftKey,
+              control: e.ctrlKey,
+            },
+          )
         } else if ($toolSettings.current instanceof ReferenceTool) {
-          $toolSettings.current.pointerDown({file, view, imageReference: $editor2DSettings.imageReferences.list().find(v=>v.src===$file.selectedImageReference)}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey})
+          $toolSettings.current.pointerDown(
+            {
+              file,
+              view: $file.view,
+              imageReference: $editor2DSettings.imageReferences.list().find((v) => v.src === $file.selectedImageReference),
+            },
+            {
+              x: viewPixelX,
+              y: viewPixelY,
+              id: e.button,
+              shift: e.shiftKey,
+              control: e.ctrlKey,
+            },
+          )
         } else {
-          $toolSettings.current.pointerDown({file, view}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+          $toolSettings.current.pointerDown(
+            { file, view: $file.view },
+            {
+              x: viewPixelX,
+              y: viewPixelY,
+              id: e.button,
+              shift: e.shiftKey,
+              control: e.ctrlKey,
+            },
+          )
         }
       }
     })
@@ -544,12 +655,12 @@
       // Get mouse position relative to canvas.
       {
         let rect = canvas.getBoundingClientRect()
-        mouseX = (e.offsetX - rect.left)
-        mouseY = (e.offsetY - rect.top)
-        mousePixelX = Math.floor((mouseX-offsetX) / zoom)
-        mousePixelY = Math.floor((mouseY-offsetY) / zoom)
-        viewPixelX = mousePixelX + view.x
-        viewPixelY = mousePixelY + view.y
+        mouseX = e.offsetX - rect.left
+        mouseY = e.offsetY - rect.top
+        mousePixelX = Math.floor((mouseX - offsetX) / zoom)
+        mousePixelY = Math.floor((mouseY - offsetY) / zoom)
+        viewPixelX = mousePixelX + $file.view.x
+        viewPixelY = mousePixelY + $file.view.y
         overlayDirty = true
       }
 
@@ -562,19 +673,68 @@
       if (buttons.has(0)) {
         if ($toolSettings.current.isActive()) {
           if ($toolSettings.current instanceof BrushTool) {
-            $toolSettings.current.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
+            $toolSettings.current.pointerMove(
+              {
+                file,
+                view: $file.view,
+                brushSize: $brushSettings.size,
+                brushType: $brushSettings.type,
+                colorIndex: $brushSettings.primaryIndex,
+                color: $brushSettings.primaryColor,
+              },
+              { x: viewPixelX, y: viewPixelY, id: 0 },
+            )
           } else if ($toolSettings.current instanceof EraserTool) {
-            $toolSettings.current.pointerMove({file, view, brushSize: $brushSettings.size, brushType: $brushSettings.type}, {x: viewPixelX, y: viewPixelY, id: 0 })
+            $toolSettings.current.pointerMove(
+              {
+                file,
+                view: $file.view,
+                brushSize: $brushSettings.size,
+                brushType: $brushSettings.type,
+              },
+              { x: viewPixelX, y: viewPixelY, id: 0 },
+            )
           } else if ($toolSettings.current instanceof RectangleTool) {
-            $toolSettings.current.pointerMove({file, view}, {x: viewPixelX, y: viewPixelY, id: 0})
+            $toolSettings.current.pointerMove({ file, view: $file.view }, { x: viewPixelX, y: viewPixelY, id: 0 })
           } else if ($toolSettings.current instanceof SprayTool) {
-            $toolSettings.current.pointerMove({file, view, radius: $brushSettings.sprayRadius, density: $brushSettings.sprayDensity, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: e.button, shift: e.shiftKey, control: e.ctrlKey })
+            $toolSettings.current.pointerMove(
+              {
+                file,
+                view: $file.view,
+                radius: $brushSettings.sprayRadius,
+                density: $brushSettings.sprayDensity,
+                colorIndex: $brushSettings.primaryIndex,
+                color: $brushSettings.primaryColor,
+              },
+              {
+                x: viewPixelX,
+                y: viewPixelY,
+                id: e.button,
+                shift: e.shiftKey,
+                control: e.ctrlKey,
+              },
+            )
           } else if ($toolSettings.current instanceof FillTool) {
-            $toolSettings.current.pointerMove({file, view, colorIndex: $brushSettings.primaryIndex, color: $brushSettings.primaryColor}, {x: viewPixelX, y: viewPixelY, id: 0 })
+            $toolSettings.current.pointerMove(
+              {
+                file,
+                view: $file.view,
+                colorIndex: $brushSettings.primaryIndex,
+                color: $brushSettings.primaryColor,
+              },
+              { x: viewPixelX, y: viewPixelY, id: 0 },
+            )
           } else if ($toolSettings.current instanceof PickerTool) {
-            $toolSettings.current.pointerMove({file, view, setColorIndex: index=>$brushSettings.primaryIndex=index}, {x: viewPixelX, y: viewPixelY, id: e.button })
+            $toolSettings.current.pointerMove(
+              {
+                file,
+                view: $file.view,
+                setColorIndex: (index) => ($brushSettings.primaryIndex = index),
+              },
+              { x: viewPixelX, y: viewPixelY, id: e.button },
+            )
           } else {
-            $toolSettings.current.pointerMove({file, view}, {x: viewPixelX, y: viewPixelY, id: 0 })
+            $toolSettings.current.pointerMove({ file, view: $file.view }, { x: viewPixelX, y: viewPixelY, id: 0 })
           }
         }
       }
@@ -595,24 +755,32 @@
 
       if (e.button === 0) {
         if ($toolSettings.current.isActive()) {
-          $toolSettings.current.pointerUp({file, view}, {x: viewPixelX, y: viewPixelY, id: 0, shift: e.shiftKey, control: e.ctrlKey })
+          $toolSettings.current.pointerUp(
+            { file, view: $file.view },
+            {
+              x: viewPixelX,
+              y: viewPixelY,
+              id: 0,
+              shift: e.shiftKey,
+              control: e.ctrlKey,
+            },
+          )
         }
       }
 
       buttons.delete(e.button)
-
     })
   }
-  
+
   function coordToMousePixel(x: number, y: number): [number, number] {
     let rect = canvas.getBoundingClientRect()
-    let mouseX = (x - rect.left)
-    let mouseY = (y - rect.top)
-    return [Math.floor((mouseX-offsetX) / zoom), Math.floor((mouseY-offsetY) / zoom)]
+    let mouseX = x - rect.left
+    let mouseY = y - rect.top
+    return [Math.floor((mouseX - offsetX) / zoom), Math.floor((mouseY - offsetY) / zoom)]
   }
 
   function viewDrop(node) {
-    node.ondragover = "return false"
+    node.ondragover = 'return false'
     node.addEventListener('dragenter', (e: DragEvent) => {
       e.preventDefault()
       e.stopPropagation()
@@ -654,17 +822,18 @@
   function applyPaste() {
     if (!paste) return
     const width = paste.canvas.width
-    const pixels = [...paste.canvas.pixels].map((v,i)=>({
-      x: view.x + mousePixelX + i % width,
-      y: view.y + mousePixelY + Math.floor(i / width),
-      index: v,
-    })).filter(v=>v.index!==0) // FIXME: Make this user-configurable!
+    const pixels = [...paste.canvas.pixels]
+      .map((v, i) => ({
+        x: $file.view.x + mousePixelX + (i % width),
+        y: $file.view.y + mousePixelY + Math.floor(i / width),
+        index: v,
+      }))
+      .filter((v) => v.index !== 0) // FIXME: Make this user-configurable!
     file.push(new PixelsPlaceUndoable(pixels))
 
     paste = undefined
-    
   }
-  
+
   onMount(() => {
     let frameID: number = 0
     let frameDraw = () => {
@@ -679,47 +848,29 @@
 </script>
 
 <ShortcutHandlers>
-  <ShortcutHandler fileId={$file.id} group='editor2D' cmd='clear paste' on:trigger={clearPaste}/>
-  <ShortcutHandler fileId={$file.id} group='editor2D' cmd='paste' on:trigger={doPaste}/>
-  <ShortcutHandler fileId={$file.id} group='editor2D' cmd='apply paste' on:trigger={applyPaste}/>
+  <ShortcutHandler fileId={$file.id} group="editor2D" cmd="clear paste" on:trigger={clearPaste} />
+  <ShortcutHandler fileId={$file.id} group="editor2D" cmd="paste" on:trigger={doPaste} />
+  <ShortcutHandler fileId={$file.id} group="editor2D" cmd="apply paste" on:trigger={applyPaste} />
 </ShortcutHandlers>
 <main>
-  <section class='view' use:viewDrop>
-    <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e)=>e.preventDefault()}></canvas>
+  <section class="view" use:viewDrop>
+    <canvas bind:this={rootCanvas} use:canvasMousedown on:contextmenu={(e) => e.preventDefault()}></canvas>
   </section>
   <menu>
-    <section class='cursorInfo'>
-      <span><aside>{Math.sign(mousePixelX)===-1?'-':' '}</aside>{Math.abs(mousePixelX)}</span><span><aside>{Math.sign(mousePixelY)===-1?'-':' '}</aside>{Math.abs(mousePixelY)}</span>
-      <span>{view.width}</span><span>{view.height}</span>
+    <section class="cursorInfo">
+      <span
+        ><aside>{Math.sign(mousePixelX) === -1 ? '-' : ' '}</aside>
+        {Math.abs(mousePixelX)}</span
+      ><span
+        ><aside>{Math.sign(mousePixelY) === -1 ? '-' : ' '}</aside>
+        {Math.abs(mousePixelY)}</span
+      >
+      <span>{$file.view.width}</span><span>{$file.view.height}</span>
     </section>
-    <section class='controls'>
-      <Input
-        type="number"
-        min={0}
-        max={10}
-        step={1}
-        value={zoom}
-        width={5}
-        on:change={(e)=>setZoom(e.detail)}
-      />
-      <Button
-        on:click={zoomIn}
-        kind="ghost"
-        size="small"
-        icon={ZoomIn}
-        tooltip="Zoom In"
-        tooltipPosition="top"
-        tooltipAlignment="end"
-      />
-      <Button
-        on:click={zoomOut}
-        kind="ghost"
-        size="small"
-        icon={ZoomOut}
-        tooltip="Zoom Out"
-        tooltipPosition="top"
-        tooltipAlignment="end"
-      />
+    <section class="controls">
+      <Input type="number" min={0} max={10} step={1} value={zoom} width={5} on:change={(e) => setZoom(e.detail)} />
+      <Button on:click={zoomIn} kind="ghost" size="small" icon={ZoomIn} tooltip="Zoom In" tooltipPosition="top" tooltipAlignment="end" />
+      <Button on:click={zoomOut} kind="ghost" size="small" icon={ZoomOut} tooltip="Zoom Out" tooltipPosition="top" tooltipAlignment="end" />
     </section>
   </menu>
 </main>

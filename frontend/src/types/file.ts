@@ -27,6 +27,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   filepath: string
   title: string
   canvas: Canvas
+  view: CanvasView
   selection: SelectionArea
   threeDCursor1: [number, number, number] = [0, 0, 0]
   threeDCursor2: [number, number, number] = [0, 0, 0]
@@ -34,7 +35,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   data?: IndexedPNG
   //
   lastSaveIndex: number = 0
-  lastUndoableView: CanvasView|undefined
+  lastUndoableView: CanvasView | undefined
   //
   stacks: StaxStack[] = []
   stack?: StaxStack
@@ -62,7 +63,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   constructor(options: LoadedFileOptions) {
     super()
     this.id = ++id
-    
+
     // ... Sure, let's make this a store. I hope this doesn't cause any issues later.
     const { subscribe, set, update } = writable<LoadedFile>(this)
     this.subscribe = subscribe
@@ -83,7 +84,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       if (this.data.stacks.length > 0) {
         this.stack = this.data.stacks[0]
         this.stackName = this.data.stacks[0].name
-        
+
         if (this.stack.animations.length > 0) {
           this.animation = this.stack.animations[0]
           this.animationName = this.animation.name
@@ -106,10 +107,11 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     this.filepath = options.filepath
     this.title = options.title
     this.canvas = options.canvas
+    this.view = new CanvasView(this.canvas)
     this.preview = new Preview()
     this.selection = new SelectionArea(options.canvas.width, options.canvas.height, 1)
   }
-  
+
   cacheSlicePositions() {
     let y = 0
     for (let stack of this.stacks) {
@@ -126,7 +128,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       }
     }
   }
-  
+
   isFrameSelected(index: number): boolean {
     return this.selectedFrameIndices.includes(index)
   }
@@ -139,9 +141,9 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
   }
   deselectFrameIndex(index: number) {
-    this.selectedFrameIndices = this.selectedFrameIndices.filter(i => i !== index)
+    this.selectedFrameIndices = this.selectedFrameIndices.filter((i) => i !== index)
   }
-  
+
   setFrameIndex(index: number) {
     if (this.animation) {
       if (index >= this.animation.frames.length) {
@@ -176,7 +178,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
   }
   deselectSliceIndex(index: number) {
-    this.selectedSliceIndices = this.selectedSliceIndices.filter(i => i !== index)
+    this.selectedSliceIndices = this.selectedSliceIndices.filter((i) => i !== index)
   }
 
   setSliceIndex(index: number) {
@@ -195,47 +197,57 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       this.set(this)
     }
   }
-  
-  getAnimation(stack: string, name: string): StaxAnimation|undefined {
+
+  getAnimation(stack: string, name: string): StaxAnimation | undefined {
     const g = this.getStack(stack)
     if (g) {
-      return g.animations.find(v=>v.name===name)
+      return g.animations.find((v) => v.name === name)
     }
     return undefined
   }
-  
+
   setAnimation(name: string) {
     if (this.stack) {
-      this.animation = this.stack.animations.find(a => a.name === name)
+      this.animation = this.stack.animations.find((a) => a.name === name)
       this.animationName = name
       if (this.animation) {
         this.setFrameIndex(this.frameIndex)
       }
     }
   }
-  
+
   getStack(name: string): StaxStack | undefined {
-    return this.stacks.find(g => g.name === name)
+    return this.stacks.find((g) => g.name === name)
   }
-  
+
   setStack(name: string) {
-    this.stack = this.stacks.find(g => g.name === name)
+    this.stack = this.stacks.find((g) => g.name === name)
     this.stackName = name
-    if (this.stack.animations.find(a => a.name === this.animationName)) {
+    if (this.stack.animations.find((a) => a.name === this.animationName)) {
       this.setAnimation(this.animationName)
     } else {
       this.setAnimation(this.stack.animations[0]?.name)
     }
   }
-  
-  getStackArea(stack: string): { x: number, y: number, width: number, height: number } {
-    let g = this.stacks.find(g => g.name === stack)
+
+  getStackArea(stack: string): {
+    x: number
+    y: number
+    width: number
+    height: number
+  } {
+    let g = this.stacks.find((g) => g.name === stack)
     if (!g) {
       throw new Error('stack not found: ' + stack)
     }
     return this.getStackAreaFromStack(g)
   }
-  getStackAreaFromStack(stack: StaxStack): { x: number, y: number, width: number, height: number } {
+  getStackAreaFromStack(stack: StaxStack): {
+    x: number
+    y: number
+    width: number
+    height: number
+  } {
     let x = 0
     let y = 0
     let width = 0
@@ -255,23 +267,28 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
         height += this.frameHeight
       }
     }
-    
+
     return { x, y, width, height }
   }
-  
-  getAnimationArea(stack: string, anim: string): {x: number, y: number, width: number, height: number } {
-    let g = this.stacks.find(g => g.name === stack)
+
+  getAnimationArea(stack: string, anim: string): { x: number; y: number; width: number; height: number } {
+    let g = this.stacks.find((g) => g.name === stack)
     if (!g) {
       throw new Error('stack not found: ' + stack)
     }
-    let animation = g.animations.find(a => a.name === anim)
+    let animation = g.animations.find((a) => a.name === anim)
     if (!animation) {
       throw new Error('animation not found: ' + anim)
     }
     return this.getAnimationAreaFromAnimation(animation)
   }
 
-  getAnimationAreaFromAnimation(animation: StaxAnimation): {x: number, y: number, width: number, height: number } {
+  getAnimationAreaFromAnimation(animation: StaxAnimation): {
+    x: number
+    y: number
+    width: number
+    height: number
+  } {
     let x = 0
     let y = 0
     let width = 0
@@ -289,16 +306,16 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       }
       height += this.frameHeight
     }
-    
+
     return { x, y, width, height }
   }
-  
-  getFrameArea(stack: string, anim: string, frameIndex: number): {x: number, y: number, width: number, height: number} {
-    let g = this.stacks.find(g => g.name === stack)
+
+  getFrameArea(stack: string, anim: string, frameIndex: number): { x: number; y: number; width: number; height: number } {
+    let g = this.stacks.find((g) => g.name === stack)
     if (!g) {
       throw new Error('stack not found: ' + stack)
     }
-    let animation = g.animations.find(a => a.name === anim)
+    let animation = g.animations.find((a) => a.name === anim)
     if (!animation) {
       throw new Error('animation not found: ' + anim)
     }
@@ -307,29 +324,34 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
     return this.getFrameAreaFromFrame(animation.frames[frameIndex])
   }
-  
-  getFrameAreaFromFrame(frame: StaxFrame): {x: number, y: number, width: number, height: number} {
+
+  getFrameAreaFromFrame(frame: StaxFrame): { x: number; y: number; width: number; height: number } {
     let x = 0
     let y = 0
     let width = 0
     let height = this.frameHeight
-    
+
     if (frame.slices.length === 0) {
       throw new Error('no slices in frame')
     }
     x = frame.slices[0].x
     width = frame.slices.length * this.frameWidth
     y = frame.slices[0].y
-    
+
     return { x, y, width, height }
   }
-  
-  getSliceAreaFromFrame(frame: StaxFrame, sliceIndex: number): {x: number, y: number, width: number, height: number} {
+
+  getSliceAreaFromFrame(frame: StaxFrame, sliceIndex: number): { x: number; y: number; width: number; height: number } {
     if (sliceIndex >= frame.slices.length) {
       throw new Error(`slice oob: ${sliceIndex} out of ${frame.slices.length}`)
     }
     let slice = frame.slices[sliceIndex]
-    return { x: slice.x, y: slice.y, width: this.frameWidth, height: this.frameHeight }
+    return {
+      x: slice.x,
+      y: slice.y,
+      width: this.frameWidth,
+      height: this.frameHeight,
+    }
   }
 
   sanityCheck() {
@@ -341,7 +363,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       this.setSliceIndex(this.frame.slices.length - 1)
     }
   }
-  
+
   saved(): boolean {
     return this.lastSaveIndex === this.entriesIndex
   }
@@ -436,53 +458,57 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       flog.debug('...transforming by view')
       item = view.transformUndoable(item)
     }
-    
+
     // Transform pixel placement to work across frames. NOTE: It feels somewhat dangerous to just make modifications based upon frameIndex * frameHeight offsets, but it'll probably be fine.
-    let group: UndoableGroup<LoadedFile>|null = null
-      if (item instanceof PixelPlaceUndoable) {
-        let items: Undoable<LoadedFile>[] = []
-        let indices = this.selectedFrameIndices.filter(i => i < this.animation.frames.length) // Filter out any OOB indices.
-        for (let i of indices) {
-          let frame = this.animation.frames[i]
-          let offsetY = 0
-          if (i != this.frameIndex) {
-            offsetY = this.frameHeight * (i - this.frameIndex)
-          }
-
-          let sliceIndices = this.selectedSliceIndices.filter(i => i < frame.slices.length)
-          for (let j of sliceIndices) {
-            let offsetX = 0
-            if (j !== this.sliceIndex) {
-              offsetX = this.frameWidth * (j - this.sliceIndex)
-            }
-            let p = this.canvas.getPixel(item.x+offsetX, item.y+offsetY)
-            let item2 = new PixelPlaceUndoable(item.x+offsetX, item.y+offsetY, p, item.newIndex)
-            items.push(item2)
-          }
+    let group: UndoableGroup<LoadedFile> | null = null
+    if (item instanceof PixelPlaceUndoable) {
+      let items: Undoable<LoadedFile>[] = []
+      let indices = this.selectedFrameIndices.filter((i) => i < this.animation.frames.length) // Filter out any OOB indices.
+      for (let i of indices) {
+        let frame = this.animation.frames[i]
+        let offsetY = 0
+        if (i != this.frameIndex) {
+          offsetY = this.frameHeight * (i - this.frameIndex)
         }
-        group = new UndoableGroup(items)
-      } else if (item instanceof PixelsPlaceUndoable) {
-        let pixels: {x: number, y: number, index: number }[] = []
-        let indices = this.selectedFrameIndices.filter(i => i < this.animation.frames.length) // Filter out any OOB indices.
-        for (let i of indices) {
-          let frame = this.animation.frames[i]
-          let offsetY = 0
-          if (i !== this.frameIndex) {
-            offsetY = this.frameHeight * (i - this.frameIndex)
-          }
 
-          for (let j of this.selectedSliceIndices.filter(i => i < frame.slices.length)) {
-            let offsetX = 0
-            if (j !== this.sliceIndex) {
-              offsetX = this.frameWidth * (j - this.sliceIndex)
-            }
-            for (let pixel of item.pixels) {
-              pixels.push({ x: pixel.x+offsetX, y: pixel.y+offsetY, index: pixel.index })
-            }
+        let sliceIndices = this.selectedSliceIndices.filter((i) => i < frame.slices.length)
+        for (let j of sliceIndices) {
+          let offsetX = 0
+          if (j !== this.sliceIndex) {
+            offsetX = this.frameWidth * (j - this.sliceIndex)
           }
+          let p = this.canvas.getPixel(item.x + offsetX, item.y + offsetY)
+          let item2 = new PixelPlaceUndoable(item.x + offsetX, item.y + offsetY, p, item.newIndex)
+          items.push(item2)
         }
-        item.pixels = [...item.pixels, ...pixels]
       }
+      group = new UndoableGroup(items)
+    } else if (item instanceof PixelsPlaceUndoable) {
+      let pixels: { x: number; y: number; index: number }[] = []
+      let indices = this.selectedFrameIndices.filter((i) => i < this.animation.frames.length) // Filter out any OOB indices.
+      for (let i of indices) {
+        let frame = this.animation.frames[i]
+        let offsetY = 0
+        if (i !== this.frameIndex) {
+          offsetY = this.frameHeight * (i - this.frameIndex)
+        }
+
+        for (let j of this.selectedSliceIndices.filter((i) => i < frame.slices.length)) {
+          let offsetX = 0
+          if (j !== this.sliceIndex) {
+            offsetX = this.frameWidth * (j - this.sliceIndex)
+          }
+          for (let pixel of item.pixels) {
+            pixels.push({
+              x: pixel.x + offsetX,
+              y: pixel.y + offsetY,
+              index: pixel.index,
+            })
+          }
+        }
+      }
+      item.pixels = [...item.pixels, ...pixels]
+    }
 
     if (group) {
       super.push(group)
