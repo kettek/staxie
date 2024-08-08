@@ -1,14 +1,14 @@
 <!--
   @component
-  
+
   This component is a modal that provides settings for changing the theme.
 -->
-<script lang='ts'>
-  import { Dropdown, Modal } from "carbon-components-svelte";
+<script lang="ts">
+  import { Dropdown, Modal } from 'carbon-components-svelte'
 
-  export let theme: 'white'|'g10'|'g80'|'g90'|'g100' = "g90"
+  export let theme: 'white' | 'g10' | 'g80' | 'g90' | 'g100' = 'g90'
 
-  let pendingId: 'white'|'g10'|'g80'|'g90'|'g100' = theme
+  let pendingId: 'white' | 'g10' | 'g80' | 'g90' | 'g100' = theme
 
   $: {
     pendingId = theme
@@ -29,8 +29,8 @@
   modalHeading="Theme Settings"
   primaryButtonText="Apply"
   secondaryButtonText="Cancel"
-  on:close={() => open = false}
-  on:click:button--secondary={() => open = false}
+  on:close={() => (open = false)}
+  on:click:button--secondary={() => (open = false)}
   on:submit={() => {
     theme = pendingId
     open = false
@@ -42,14 +42,14 @@
     label="Theme"
     bind:selectedId={pendingId}
     items={[
-      {id: 'white', text: 'White'},
-      {id: 'g10', text: 'Gray 10'},
-      {id: 'g80', text: 'Gray 80'},
-      {id: 'g90', text: 'Gray 90 (default)'},
-      {id: 'g100', text: 'Gray 100'},
+      { id: 'white', text: 'White' },
+      { id: 'g10', text: 'Gray 10' },
+      { id: 'g80', text: 'Gray 80' },
+      { id: 'g90', text: 'Gray 90 (default)' },
+      { id: 'g100', text: 'Gray 100' },
     ]}
   />
-  <div class='kludge'></div>
+  <div class="kludge"></div>
 </Modal>
 
 <style>

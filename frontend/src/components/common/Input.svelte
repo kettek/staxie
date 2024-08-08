@@ -1,5 +1,5 @@
-<script lang='ts'>
-  import { createEventDispatcher } from "svelte"
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -38,18 +38,18 @@
 
 <label class={size}>
   <span>
-    <slot name='label'></slot>
+    <slot name="label"></slot>
   </span>
   {#if type === 'text'}
-    <input type="text" {...$$restProps} bind:value on:change={onChange} on:input={onInput}/>
+    <input type="text" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'number'}
-    <input type="number" style={`width: ${width}em`} {...$$restProps} bind:value on:change={onChange} on:input={onInput} class={`${!showSpinner?'-hideSpinner':''}`}/>
+    <input type="number" style={`width: ${width}em`} {...$$restProps} bind:value on:change={onChange} on:input={onInput} class={`${!showSpinner ? '-hideSpinner' : ''}`} />
   {:else if type === 'color'}
-    <input type="color" {...$$restProps} bind:value on:change={onChange} on:input={onInput}/>
+    <input type="color" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'file'}
-    <input type="file" {...$$restProps} bind:value on:change={onChange} on:input={onInput}/>
+    <input type="file" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'checkbox'}
-    <input type="checkbox" {...$$restProps} bind:checked on:change={onChange}/>
+    <input type="checkbox" {...$$restProps} bind:checked on:change={onChange} />
   {/if}
 </label>
 
@@ -88,16 +88,18 @@
     font-weight: var(--cds-code-01-font-weight, 400);
     line-height: var(--cds-code-01-line-height, 1.33333);
     letter-spacing: var(--cds-code-01-letter-spacing, 0.32px);
-    outline: 2px solid rgba(0,0,0,0);
+    outline: 2px solid rgba(0, 0, 0, 0);
     outline-offset: -2px;
     display: inline-flex;
     box-sizing: border-box;
     border: 0;
-    border-bottom: .0625rem solid var(--cds-ui-04, #8d8d8d);
+    border-bottom: 0.0625rem solid var(--cds-ui-04, #8d8d8d);
     border-radius: 0;
     background-color: var(--cds-field-01, #f4f4f4);
     color: var(--cds-text-01, #161616);
-    transition: background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9),outline 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
+    transition:
+      background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
+      outline 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
     padding-right: 1rem;
   }
   input:focus {

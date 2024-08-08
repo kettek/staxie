@@ -1,14 +1,14 @@
 <!--
   @component
-  
+
   This component shows a given color swatch/index and provides controls for adding and replacing swatches within the palette.
 -->
-<script lang='ts'>
-  import Button from "../components/common/Button.svelte"
-  import { AddLarge, ColorSwitch, WarningAltFilled } from "carbon-icons-svelte"
-  import { type LoadedFile } from "../types/file"
-  import { ReplaceSwatchUndoable, AddSwatchUndoable } from "../types/file/undoables"
-  import { createEventDispatcher } from "svelte"
+<script lang="ts">
+  import Button from '../components/common/Button.svelte'
+  import { AddLarge, ColorSwitch, WarningAltFilled } from 'carbon-icons-svelte'
+  import { type LoadedFile } from '../types/file'
+  import { ReplaceSwatchUndoable, AddSwatchUndoable } from '../types/file/undoables'
+  import { createEventDispatcher } from 'svelte'
 
   import { brushSettings } from '../stores/brush'
   import { type Palette } from '../types/palette'
@@ -21,7 +21,7 @@
   export let green: number = 0
   export let blue: number = 255
   export let alpha: number = 255
-  
+
   let hexCode: string = ''
   $: hexCode = `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}${alpha.toString(16).padStart(2, '0')}`
 
@@ -29,19 +29,25 @@
   $: {
     hexGood = /^#[0-9A-Fa-f]{8}$/.test(hexCode)
   }
-  
+
   function adjustHex(e: Event) {
     const target = e.currentTarget as HTMLInputElement
     const value = target.value
     if (!value.startsWith('#')) alert('bad hex code')
     if (/^#[0-9A-Fa-f]{8}$/.test(value)) {
-      const [r, g, b, a] = value.slice(1).match(/.{2}/g)!.map(x => parseInt(x, 16))
+      const [r, g, b, a] = value
+        .slice(1)
+        .match(/.{2}/g)!
+        .map((x) => parseInt(x, 16))
       red = r
       green = g
       blue = b
       alpha = a
     } else if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
-      const [r, g, b] = value.slice(1).match(/.{2}/g)!.map(x => parseInt(x, 16))
+      const [r, g, b] = value
+        .slice(1)
+        .match(/.{2}/g)!
+        .map((x) => parseInt(x, 16))
       red = r
       green = g
       blue = b
@@ -98,7 +104,7 @@
 
 <main>
   <div class="color" style="background-color: rgba({red},{green},{blue},{alpha})">
-    <div class="label" style="color: rgb({255-red}, {255-green}, {255-blue})">
+    <div class="label" style="color: rgb({255 - red}, {255 - green}, {255 - blue})">
       <span class="index">
         {#if swatchExists}
           {$brushSettings.primaryIndex}:
@@ -106,10 +112,10 @@
           -:
         {/if}
       </span>
-      <input type="text" style="color: rgb({255-red}, {255-green}, {255-blue})" value={hexCode} on:input={adjustHex}/>
+      <input type="text" style="color: rgb({255 - red}, {255 - green}, {255 - blue})" value={hexCode} on:input={adjustHex} />
       {#if !swatchExists}
-        <span class='missing'>
-          <WarningAltFilled size={16} title='missing swatch' />
+        <span class="missing">
+          <WarningAltFilled size={16} title="missing swatch" />
         </span>
       {/if}
     </div>

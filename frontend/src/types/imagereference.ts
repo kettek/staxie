@@ -1,4 +1,4 @@
-import { writable, type Invalidator, type Subscriber, type Unsubscriber, type Updater } from "svelte/store"
+import { writable, type Invalidator, type Subscriber, type Unsubscriber, type Updater } from 'svelte/store'
 
 export type ImageReference = {
   image?: HTMLImageElement
@@ -12,7 +12,7 @@ export type ImageReference = {
 
   zoom: number
   opacity: number
-  
+
   overtop: boolean
 }
 
@@ -30,7 +30,7 @@ export function createImageReference(src: string, b64: string, x: number, y: num
     rotation: 0,
     zoom: 1,
     opacity: 0.75,
-    overtop: false
+    overtop: false,
   }
 }
 
@@ -52,21 +52,24 @@ export function createImageReferenceStore(): ImageReferenceStore {
     subscribe,
     set,
     update,
-    replace: (image: ImageReference) => update((state: ImageReference[]) => {
-      let index = state.findIndex((img) => img.src === image.src)
-      if (index !== -1) {
-        state[index] = image
-      }
-      return state
-    }),
-    add: (image: ImageReference) => update((state: ImageReference[]) => {
-      state.push(image)
-      return state
-    }),
-    remove: (src: string) => update((state: ImageReference[]) => {
-      state = state.filter((image) => image.src !== src)
-      return state
-    }),
+    replace: (image: ImageReference) =>
+      update((state: ImageReference[]) => {
+        let index = state.findIndex((img) => img.src === image.src)
+        if (index !== -1) {
+          state[index] = image
+        }
+        return state
+      }),
+    add: (image: ImageReference) =>
+      update((state: ImageReference[]) => {
+        state.push(image)
+        return state
+      }),
+    remove: (src: string) =>
+      update((state: ImageReference[]) => {
+        state = state.filter((image) => image.src !== src)
+        return state
+      }),
     clear: () => set([]),
     list: () => {
       let list: ImageReference[] = []
@@ -75,6 +78,6 @@ export function createImageReferenceStore(): ImageReferenceStore {
         return state
       })
       return list
-    }
+    },
   }
 }

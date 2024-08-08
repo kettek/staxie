@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
   import { LoadedFile } from '../types/file'
   import { Open, type ImportStaxie, type ImportStack, type ImportAnimation, type ImportFrame, type ImportSlice } from '../globals/importers/vio'
   import { Button, Checkbox, ComposedModal, ModalBody, ModalFooter, ModalHeader, StructuredList, StructuredListBody, StructuredListCell, StructuredListHead, StructuredListRow, TextInput } from 'carbon-components-svelte'
@@ -16,16 +16,16 @@
     sets: { [key: string]: VioSpriteSet }
   }
   type VioSpriteSet = {
-    subsets: { [key:string]: VioSpriteSubset }
+    subsets: { [key: string]: VioSpriteSubset }
   }
   type VioSpriteSubset = {
     frames: VioSpriteFrame[]
   }
   type VioSpriteFrame = {
-    x: number,
-    y: number,
-    width: number,
-    height: number,
+    x: number
+    y: number
+    width: number
+    height: number
     time: number
   }
 
@@ -38,23 +38,23 @@
   }
 
   type Mapping = {
-    vio: boolean,
-    staxie: boolean,
-    update?: boolean,
-    remove?: boolean,
+    vio: boolean
+    staxie: boolean
+    update?: boolean
+    remove?: boolean
   }
   let mappings: Record<string, Mapping> = {}
   $: {
     for (let stack of vioImport.stacks) {
       if (!mappings[stack.name]) {
-        mappings[stack.name] = {vio: true, staxie: false}
+        mappings[stack.name] = { vio: true, staxie: false }
       } else {
         mappings[stack.name].vio = true
       }
     }
     for (let stack of $file.stacks) {
       if (!mappings[stack.name]) {
-        mappings[stack.name] = {vio: false, staxie: true}
+        mappings[stack.name] = { vio: false, staxie: true }
       } else {
         mappings[stack.name].staxie = true
         if (mappings[stack.name].vio) {
@@ -78,7 +78,7 @@
     let newYaml = YAML.stringify(parsed)
     try {
       await SaveFileBytes(path, btoa(newYaml) as any)
-    } catch(e) {
+    } catch (e) {
       alert(e)
     }
     open = false
@@ -110,7 +110,7 @@
       for (let [setName, set] of Object.entries(anim.sets)) {
         const staxieAnimationName = setName.split('_')[0]
         const staxieAnimationFrame = parseInt(setName.split('_')[1])
-        let animation: ImportAnimation|undefined = stack.animations.find(a => a.name === staxieAnimationName)
+        let animation: ImportAnimation | undefined = stack.animations.find((a) => a.name === staxieAnimationName)
         if (!animation) {
           animation = {
             name: staxieAnimationName,
@@ -152,7 +152,7 @@
 
   function fileToVio(): VioSprite {
     let vio: VioSprite = {
-      animations: {}
+      animations: {},
     }
     for (let stack of $file.stacks) {
       let vioAnim: VioSpriteAnimation = {
@@ -181,7 +181,7 @@
             vioSet.subsets[sliceIndex] = vioSubset
           }
 
-          vioAnim.sets[`${anim.name}_${frameIndex<10?'0'+frameIndex:frameIndex}`] = vioSet
+          vioAnim.sets[`${anim.name}_${frameIndex < 10 ? '0' + frameIndex : frameIndex}`] = vioSet
         }
       }
 
@@ -206,7 +206,7 @@
                     if (parsed.animations[name].sets[setName].subsets[subsetName].frames[frameIndex]) {
                       parsed.animations[name].sets[setName].subsets[subsetName].frames[frameIndex] = {
                         ...parsed.animations[name].sets[setName].subsets[subsetName].frames[frameIndex],
-                        ...subset.frames[frameIndex]
+                        ...subset.frames[frameIndex],
                       }
                     } else {
                       parsed.animations[name].sets[setName].subsets[subsetName].frames[frameIndex] = subset.frames[frameIndex]
@@ -263,7 +263,7 @@
 </script>
 
 <ComposedModal bind:open size="sm" preventCloseOnClickOutside on:click:button--primary={update}>
-  <ModalHeader label="Vio Updater"/>
+  <ModalHeader label="Vio Updater" />
   <ModalBody>
     <main>
       <section>
@@ -304,10 +304,5 @@
       </section>
     </main>
   </ModalBody>
-  <ModalFooter
-    primaryButtonText="Update"
-    secondaryButtonText="Cancel"
-    primaryButtonDisabled={!path}
-    on:click:button--secondary={() => open = false}
-  />
+  <ModalFooter primaryButtonText="Update" secondaryButtonText="Cancel" primaryButtonDisabled={!path} on:click:button--secondary={() => (open = false)} />
 </ComposedModal>

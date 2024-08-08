@@ -39,8 +39,8 @@ export function HSV2RGB(hsv: number[]): number[] {
   i = Math.floor(hh)
   ff = hh - i
   p = hsv[2] * (1.0 - hsv[1])
-  q = hsv[2] * (1.0 - (hsv[1] * ff))
-  t = hsv[2] * (1.0 - (hsv[1] * (1.0 - ff)))
+  q = hsv[2] * (1.0 - hsv[1] * ff)
+  t = hsv[2] * (1.0 - hsv[1] * (1.0 - ff))
 
   switch (i) {
     case 0:
@@ -92,7 +92,7 @@ export function RGB2HSV(rgb: number[]): number[] {
   max = max > rgb[2] ? max : rgb[2]
 
   hsv[2] = max
-  delta  = max - min
+  delta = max - min
 
   if (delta < 0.00001) {
     hsv[1] = 0
@@ -109,18 +109,17 @@ export function RGB2HSV(rgb: number[]): number[] {
   }
 
   if (rgb[0] >= max) {
-    hsv[0] = ( rgb[1] - rgb[2] ) / delta
+    hsv[0] = (rgb[1] - rgb[2]) / delta
   } else if (rgb[1] >= max) {
-    hsv[0] = 2.0 + ( rgb[2] - rgb[0] ) / delta
+    hsv[0] = 2.0 + (rgb[2] - rgb[0]) / delta
   } else {
-    hsv[0] = 4.0 + ( rgb[0] - rgb[1] ) / delta
+    hsv[0] = 4.0 + (rgb[0] - rgb[1]) / delta
   }
 
-  hsv[0] *= 60.0;
+  hsv[0] *= 60.0
 
   if (hsv[0] < 0.0) {
     hsv[0] += 360.0
   }
   return hsv
 }
- 

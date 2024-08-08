@@ -5,7 +5,7 @@ export interface PixelPosition {
   index: number
 }
 
-export function NormalizeShape(shape: PixelPosition[], transform?: {x: number, y: number}): {shape: PixelPosition[], minX: number, minY: number, maxX: number, maxY: number, width: number, height: number} {
+export function NormalizeShape(shape: PixelPosition[], transform?: { x: number; y: number }): { shape: PixelPosition[]; minX: number; minY: number; maxX: number; maxY: number; width: number; height: number } {
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity
@@ -21,7 +21,7 @@ export function NormalizeShape(shape: PixelPosition[], transform?: {x: number, y
   }
 
   return {
-    shape: shape.map(pixel => ({x: pixel.x - minX + transformX, y: pixel.y - minY + transformY, index: pixel.index})),
+    shape: shape.map((pixel) => ({ x: pixel.x - minX + transformX, y: pixel.y - minY + transformY, index: pixel.index })),
     minX: minX + transformX,
     minY: minY + transformY,
     maxX: maxX + transformX,
@@ -38,7 +38,7 @@ export function FilledCircle(x: number, y: number, radius: number, index: number
   for (let dx = -radius; dx <= radius; dx++) {
     for (let dy = -radius; dy <= radius; dy++) {
       if (dx * dx + dy * dy <= radius * radius) {
-        pixels.push({x: x + dx, y: y + dy, index})
+        pixels.push({ x: x + dx, y: y + dy, index })
       }
     }
   }
@@ -49,12 +49,12 @@ export function FilledCircle(x: number, y: number, radius: number, index: number
 // FilledSquare returns an array of PixelPositions that correspond to a filled square.
 export function FilledSquare(x: number, y: number, size: number, index: number): PixelPosition[] {
   let pixels: PixelPosition[] = []
-  
+
   let center = Math.floor(size / 2)
-  
+
   for (let dx = 0; dx < size; dx++) {
     for (let dy = 0; dy < size; dy++) {
-      pixels.push({x: x + dx - center, y: y + dy - center, index})
+      pixels.push({ x: x + dx - center, y: y + dy - center, index })
     }
   }
 
@@ -74,10 +74,10 @@ export function RectangleShape(x1: number, y1: number, x2: number, y2: number, f
       if (!fill && x > xmin && x < xmax && y > ymin && y < ymax) {
         continue
       }
-      pixels.push({x, y, index})
+      pixels.push({ x, y, index })
     }
   }
-  
+
   return pixels
 }
 
@@ -97,7 +97,7 @@ export function EllipseShape(x1: number, y1: number, x2: number, y2: number, fil
   for (let x = xmin; x <= xmax; x++) {
     for (let y = ymin; y <= ymax; y++) {
       if (((x - xcenter) / xr) ** 2 + ((y - ycenter) / yr) ** 2 <= 1) {
-        pixels.push({x, y, index})
+        pixels.push({ x, y, index })
       }
     }
   }
@@ -137,8 +137,8 @@ export function RandomSpray(x: number, y: number, radius: number, density: numbe
     // Get dx/dy in a square.
     //let dx = Math.floor(Math.random() * radius * 2) - radius
     //let dy = Math.floor(Math.random() * radius * 2) - radius
-    
-    pixels.push({x: x + dx, y: y + dy, index})
+
+    pixels.push({ x: x + dx, y: y + dy, index })
   }
 
   return pixels

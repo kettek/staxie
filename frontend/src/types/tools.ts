@@ -1,17 +1,17 @@
-import { type LoadedFile } from "./file"
-import { PixelPlaceUndoable, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from "./file/undoables"
-import { Preview } from "./preview"
-import type { Pointer } from "./pointer"
-import { EllipseShape, FilledCircle, FilledSquare, RandomSpray, RectangleShape, type PixelPosition } from "./shapes"
-import type { CanvasView } from "./canvasview"
-import type { ImageReference } from "./imagereference"
+import { type LoadedFile } from './file'
+import { PixelPlaceUndoable, PixelsPlaceUndoable, SelectionClearUndoable, SelectionSetUndoable, SelectionMoveUndoable } from './file/undoables'
+import { Preview } from './preview'
+import type { Pointer } from './pointer'
+import { EllipseShape, FilledCircle, FilledSquare, RandomSpray, RectangleShape, type PixelPosition } from './shapes'
+import type { CanvasView } from './canvasview'
+import type { ImageReference } from './imagereference'
 
 export interface ToolContext {
   file: LoadedFile
   view: CanvasView
 }
 
-export type BrushType = "circle" | "square"
+export type BrushType = 'circle' | 'square'
 
 // Tool is an interface that receives pointer events and can act upon a ToolContext (which contains data such as the current file).
 export interface Tool {
@@ -57,8 +57,7 @@ export interface FloodToolContext {
 }
 
 // SelectionRectangularToolContext provides context specific to the selection tool.
-export interface SelectionRectangularToolContext {
-}
+export interface SelectionRectangularToolContext {}
 
 // PickerToolContext provides context specific to the picker tool.
 export interface PickerToolContext {
@@ -73,7 +72,7 @@ export class BrushTool implements Tool {
   isActive(): boolean {
     return this.active
   }
-  
+
   // FIXME: Move this to some standalone 2D utility library.
   drawLine(ctx: ToolContext & BrushToolContext, ptr: Pointer) {
     let startX = this.lastX
@@ -83,8 +82,8 @@ export class BrushTool implements Tool {
     // Bresenham it
     let dx = Math.abs(endX - startX)
     let dy = Math.abs(endY - startY)
-    let sx = (startX < endX) ? 1 : -1
-    let sy = (startY < endY) ? 1 : -1
+    let sx = startX < endX ? 1 : -1
+    let sy = startY < endY ? 1 : -1
     let err = dx - dy
     while (true) {
       if (startX >= 0 && startY >= 0 && startX < ctx.file.canvas.width && startY < ctx.file.canvas.height) {
@@ -96,25 +95,25 @@ export class BrushTool implements Tool {
         } else if (ctx.brushSize == 2) {
           for (let x1 = 0; x1 < 2; x1++) {
             for (let y1 = 0; y1 < 2; y1++) {
-              let p = ctx.file.canvas.getPixel(startX+x1, startY+y1)
-              if (p !== -1 && ctx.file.selection.isPixelMarked(startX+x1, startY+y1)) {
-                ctx.file.push(new PixelPlaceUndoable(startX+x1, startY+y1, p, ctx.colorIndex), ctx.view)
+              let p = ctx.file.canvas.getPixel(startX + x1, startY + y1)
+              if (p !== -1 && ctx.file.selection.isPixelMarked(startX + x1, startY + y1)) {
+                ctx.file.push(new PixelPlaceUndoable(startX + x1, startY + y1, p, ctx.colorIndex), ctx.view)
               }
             }
           }
         } else {
           let shape: PixelPosition[]
-          if (ctx.brushType == "circle") {
-            shape = FilledCircle(startX, startY, ctx.brushSize-2, ctx.colorIndex)
-          } else if (ctx.brushType == "square") {
+          if (ctx.brushType == 'circle') {
+            shape = FilledCircle(startX, startY, ctx.brushSize - 2, ctx.colorIndex)
+          } else if (ctx.brushType == 'square') {
             shape = FilledSquare(startX, startY, ctx.brushSize, ctx.colorIndex)
           }
-          shape = shape.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
+          shape = shape.filter((p) => ctx.file.selection.isPixelMarked(p.x, p.y))
           ctx.file.push(new PixelsPlaceUndoable(shape), ctx.view)
         }
       }
       if (startX == endX && startY == endY) break
-      let e2 = 2*err
+      let e2 = 2 * err
       if (e2 > -dy) {
         err -= dy
         startX += sx
@@ -152,20 +151,20 @@ export class BrushTool implements Tool {
     } else if (ctx.brushSize == 2) {
       for (let x1 = 0; x1 < 2; x1++) {
         for (let y1 = 0; y1 < 2; y1++) {
-          let p = ctx.file.canvas.getPixel(ptr.x+x1, ptr.y+y1)
-          if (p !== -1 && ctx.file.selection.isPixelMarked(ptr.x+x1, ptr.y+y1)) {
-            ctx.file.push(new PixelPlaceUndoable(ptr.x+x1, ptr.y+y1, p, ctx.colorIndex), ctx.view)
+          let p = ctx.file.canvas.getPixel(ptr.x + x1, ptr.y + y1)
+          if (p !== -1 && ctx.file.selection.isPixelMarked(ptr.x + x1, ptr.y + y1)) {
+            ctx.file.push(new PixelPlaceUndoable(ptr.x + x1, ptr.y + y1, p, ctx.colorIndex), ctx.view)
           }
         }
       }
     } else {
       let shape: PixelPosition[]
-      if (ctx.brushType == "circle") {
-        shape = FilledCircle(ptr.x, ptr.y, ctx.brushSize-2, ctx.colorIndex)
-      } else if (ctx.brushType == "square") {
+      if (ctx.brushType == 'circle') {
+        shape = FilledCircle(ptr.x, ptr.y, ctx.brushSize - 2, ctx.colorIndex)
+      } else if (ctx.brushType == 'square') {
         shape = FilledSquare(ptr.x, ptr.y, ctx.brushSize, ctx.colorIndex)
       }
-      shape = shape.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
+      shape = shape.filter((p) => ctx.file.selection.isPixelMarked(p.x, p.y))
       ctx.file.push(new PixelsPlaceUndoable(shape), ctx.view)
     }
   }
@@ -176,7 +175,7 @@ export class BrushTool implements Tool {
     this.lastY = ptr.y
 
     let angle = Math.atan2(dy, dx)
-    let dist = Math.sqrt(dx*dx + dy*dy)
+    let dist = Math.sqrt(dx * dx + dy * dy)
     let steps = Math.ceil(dist)
     for (let i = 0; i < steps; i++) {
       let x = Math.floor(this.lastX + Math.cos(angle) * i)
@@ -192,20 +191,20 @@ export class BrushTool implements Tool {
       } else if (ctx.brushSize == 2) {
         for (let x1 = 0; x1 < 2; x1++) {
           for (let y1 = 0; y1 < 2; y1++) {
-            let p = ctx.file.canvas.getPixel(x+x1, y+y1)
-            if (p !== -1 && ctx.file.selection.isPixelMarked(x+x1, y+y1)) {
-              ctx.file.push(new PixelPlaceUndoable(x+x1, y+y1, p, ctx.colorIndex), ctx.view)
+            let p = ctx.file.canvas.getPixel(x + x1, y + y1)
+            if (p !== -1 && ctx.file.selection.isPixelMarked(x + x1, y + y1)) {
+              ctx.file.push(new PixelPlaceUndoable(x + x1, y + y1, p, ctx.colorIndex), ctx.view)
             }
           }
         }
       } else {
         let shape: PixelPosition[]
-        if (ctx.brushType == "circle") {
-          shape = FilledCircle(x, y, ctx.brushSize-2, ctx.colorIndex)
-        } else if (ctx.brushType == "square") {
+        if (ctx.brushType == 'circle') {
+          shape = FilledCircle(x, y, ctx.brushSize - 2, ctx.colorIndex)
+        } else if (ctx.brushType == 'square') {
           shape = FilledSquare(x, y, ctx.brushSize, ctx.colorIndex)
         }
-        shape = shape.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
+        shape = shape.filter((p) => ctx.file.selection.isPixelMarked(p.x, p.y))
         ctx.file.push(new PixelsPlaceUndoable(shape), ctx.view)
       }
     }
@@ -219,10 +218,10 @@ export class BrushTool implements Tool {
 // EraserTool is basically the BrushTool, but with the color index set to 0 (meaning a transparent pixel).
 export class EraserTool extends BrushTool {
   pointerDown(ctx: ToolContext & EraserToolContext, ptr: Pointer) {
-    super.pointerDown({...ctx, colorIndex: 0}, ptr)
+    super.pointerDown({ ...ctx, colorIndex: 0 }, ptr)
   }
   pointerMove(ctx: ToolContext & EraserToolContext, ptr: Pointer) {
-    super.pointerMove({...ctx, colorIndex: 0}, ptr)
+    super.pointerMove({ ...ctx, colorIndex: 0 }, ptr)
   }
 }
 
@@ -230,7 +229,7 @@ export class RectangleTool implements Tool {
   public colorIndex: number = -1
   public fill: boolean = false
   private active: boolean = false
-  
+
   public x1: number = -1
   public y1: number = -1
   public x2: number = -1
@@ -239,7 +238,7 @@ export class RectangleTool implements Tool {
   isActive(): boolean {
     return this.active
   }
-  
+
   pointerDown(ctx: ToolContext & RectangleToolContext, ptr: Pointer): void {
     this.active = true
     this.x1 = this.x2 = ptr.x
@@ -251,9 +250,9 @@ export class RectangleTool implements Tool {
     this.x2 = ptr.x
     this.y2 = ptr.y
   }
-  pointerUp(ctx: ToolContext , ptr: Pointer): void {
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {
     let pixels: PixelPosition[] = []
-    
+
     pixels = RectangleShape(this.x1, this.y1, this.x2, this.y2, this.fill, this.colorIndex)
     ctx.file.push(new PixelsPlaceUndoable(pixels), ctx.view)
     this.active = false
@@ -288,7 +287,7 @@ export class EllipseTool implements Tool {
     let shape: PixelPosition[]
 
     shape = EllipseShape(this.x1, this.y1, this.x2, this.y2, this.fill, this.colorIndex)
-    
+
     ctx.file.push(new PixelsPlaceUndoable(shape), ctx.view)
     this.active = false
   }
@@ -310,7 +309,7 @@ export class SprayTool implements Tool {
     this.lastY = ptr.y
     ctx.file.capture()
     let pixels = RandomSpray(ptr.x, ptr.y, ctx.radius, ctx.density, ctx.colorIndex)
-    pixels = pixels.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
+    pixels = pixels.filter((p) => ctx.file.selection.isPixelMarked(p.x, p.y))
     ctx.file.push(new PixelsPlaceUndoable(pixels), ctx.view)
   }
   pointerMove(ctx: ToolContext & SprayToolContext, ptr: Pointer) {
@@ -320,7 +319,7 @@ export class SprayTool implements Tool {
     this.lastY = ptr.y
 
     let angle = Math.atan2(dy, dx)
-    let dist = Math.sqrt(dx*dx + dy*dy)
+    let dist = Math.sqrt(dx * dx + dy * dy)
     let steps = Math.ceil(dist)
     for (let i = 0; i < steps; i++) {
       let x = Math.floor(this.lastX + Math.cos(angle) * i)
@@ -329,7 +328,7 @@ export class SprayTool implements Tool {
       if (x < 0 || y < 0 || x >= ctx.file.canvas.width || y >= ctx.file.canvas.height) continue
 
       let pixels = RandomSpray(x, y, ctx.radius, ctx.density, ctx.colorIndex)
-      pixels = pixels.filter(p => ctx.file.selection.isPixelMarked(p.x, p.y))
+      pixels = pixels.filter((p) => ctx.file.selection.isPixelMarked(p.x, p.y))
       ctx.file.push(new PixelsPlaceUndoable(pixels), ctx.view)
     }
   }
@@ -345,24 +344,24 @@ export class FillTool implements Tool {
   isActive(): boolean {
     return this.active
   }
-  
+
   private pixels: PixelPosition[] = []
 
   pointerDown(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
     this.active = true
     this.pixels = []
-    
+
     let traversed = new Set<number>()
 
     if (!ctx.file.selection.isPixelMarked(ptr.x, ptr.y)) {
       return
     }
-    
+
     let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
     if (p !== -1) {
-      let queue = [{x: ptr.x, y: ptr.y}]
+      let queue = [{ x: ptr.x, y: ptr.y }]
       while (queue.length > 0) {
-        let {x, y} = queue.shift()
+        let { x, y } = queue.shift()
         let index = y * ctx.file.canvas.width + x
         if (traversed.has(index) || !ctx.file.selection.isPixelMarked(x, y)) {
           continue
@@ -370,17 +369,16 @@ export class FillTool implements Tool {
         traversed.add(index)
         let p2 = ctx.file.canvas.getPixel(x, y)
         if (p2 === p) {
-          this.pixels.push({x, y, index: ctx.colorIndex})
-          if (x > 0) queue.push({x: x-1, y})
-          if (x < ctx.file.canvas.width-1) queue.push({x: x+1, y})
-          if (y > 0) queue.push({x, y: y-1})
-          if (y < ctx.file.canvas.height-1) queue.push({x, y: y+1})
+          this.pixels.push({ x, y, index: ctx.colorIndex })
+          if (x > 0) queue.push({ x: x - 1, y })
+          if (x < ctx.file.canvas.width - 1) queue.push({ x: x + 1, y })
+          if (y > 0) queue.push({ x, y: y - 1 })
+          if (y < ctx.file.canvas.height - 1) queue.push({ x, y: y + 1 })
         }
       }
     }
   }
-  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
-  }
+  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {}
   pointerUp(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
     ctx.file.push(new PixelsPlaceUndoable(this.pixels), ctx.view)
     this.active = false
@@ -424,7 +422,7 @@ export class SelectionRectangularTool implements Tool {
     return this.active
   }
 
-  getArea(): { x: number, y: number, width: number, height: number } {
+  getArea(): { x: number; y: number; width: number; height: number } {
     let x1 = Math.min(this.startX, this.endX)
     let x2 = Math.max(this.startX, this.endX)
     let y1 = Math.min(this.startY, this.endY)
@@ -432,8 +430,8 @@ export class SelectionRectangularTool implements Tool {
     return {
       x: x1,
       y: y1,
-      width: x2-x1+1,
-      height: y2-y1+1,
+      width: x2 - x1 + 1,
+      height: y2 - y1 + 1,
     }
   }
 
@@ -446,8 +444,8 @@ export class SelectionRectangularTool implements Tool {
   pointerMove(ctx: ToolContext & SelectionRectangularToolContext, ptr: Pointer) {
     if (ptr.x < 0) ptr.x = 0
     if (ptr.y < 0) ptr.y = 0
-    if (ptr.x >= ctx.file.canvas.width) ptr.x = ctx.file.canvas.width-1
-    if (ptr.y >= ctx.file.canvas.height) ptr.y = ctx.file.canvas.height-1
+    if (ptr.x >= ctx.file.canvas.width) ptr.x = ctx.file.canvas.width - 1
+    if (ptr.y >= ctx.file.canvas.height) ptr.y = ctx.file.canvas.height - 1
     this.endX = ptr.x
     this.endY = ptr.y
   }
@@ -467,12 +465,12 @@ export class SelectionRectangularTool implements Tool {
       value = false
     }
 
-    let {x: startX, y: startY, width, height} = this.getArea()
+    let { x: startX, y: startY, width, height } = this.getArea()
 
-    let pixels: { x: number, y: number, marked: boolean }[] = []
-    for (let x = startX; x <= startX+width-1; x++) {
-      for (let y = startY; y <= startY+height-1; y++) {
-        pixels.push({x, y, marked: value})
+    let pixels: { x: number; y: number; marked: boolean }[] = []
+    for (let x = startX; x <= startX + width - 1; x++) {
+      for (let y = startY; y <= startY + height - 1; y++) {
+        pixels.push({ x, y, marked: value })
       }
     }
 
@@ -494,7 +492,7 @@ export class SelectionEllipseTool implements Tool {
     return this.active
   }
 
-  getArea(): { x: number, y: number, width: number, height: number } {
+  getArea(): { x: number; y: number; width: number; height: number } {
     let x1 = Math.min(this.startX, this.endX)
     let x2 = Math.max(this.startX, this.endX)
     let y1 = Math.min(this.startY, this.endY)
@@ -502,8 +500,8 @@ export class SelectionEllipseTool implements Tool {
     return {
       x: x1,
       y: y1,
-      width: x2-x1+1,
-      height: y2-y1+1,
+      width: x2 - x1 + 1,
+      height: y2 - y1 + 1,
     }
   }
 
@@ -516,8 +514,8 @@ export class SelectionEllipseTool implements Tool {
   pointerMove(ctx: ToolContext & SelectionRectangularToolContext, ptr: Pointer) {
     if (ptr.x < 0) ptr.x = 0
     if (ptr.y < 0) ptr.y = 0
-    if (ptr.x >= ctx.file.canvas.width) ptr.x = ctx.file.canvas.width-1
-    if (ptr.y >= ctx.file.canvas.height) ptr.y = ctx.file.canvas.height-1
+    if (ptr.x >= ctx.file.canvas.width) ptr.x = ctx.file.canvas.width - 1
+    if (ptr.y >= ctx.file.canvas.height) ptr.y = ctx.file.canvas.height - 1
     this.endX = ptr.x
     this.endY = ptr.y
   }
@@ -539,16 +537,15 @@ export class SelectionEllipseTool implements Tool {
 
     let shape = EllipseShape(this.startX, this.startY, this.endX, this.endY, true, 1)
 
-    let pixels: { x: number, y: number, marked: boolean }[] = []
+    let pixels: { x: number; y: number; marked: boolean }[] = []
 
-    pixels = shape.map(v=>({x:v.x, y:v.y, marked: value}))
+    pixels = shape.map((v) => ({ x: v.x, y: v.y, marked: value }))
 
     ctx.file.push(new SelectionSetUndoable(pixels, clear), ctx.view)
 
     this.active = false
   }
 }
-
 
 // MagicWandTool implements a magic wand tool.
 export class MagicWandTool implements Tool {
@@ -560,8 +557,8 @@ export class MagicWandTool implements Tool {
 
   pointerDown(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
     this.active = true
-    let pixels: { x: number, y: number, marked: boolean }[] = []
-    
+    let pixels: { x: number; y: number; marked: boolean }[] = []
+
     let traversed = new Set<number>()
 
     let value = true
@@ -575,9 +572,9 @@ export class MagicWandTool implements Tool {
 
     let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
     if (p !== -1) {
-      let queue = [{x: ptr.x, y: ptr.y}]
+      let queue = [{ x: ptr.x, y: ptr.y }]
       while (queue.length > 0) {
-        let {x, y} = queue.shift()
+        let { x, y } = queue.shift()
         let index = y * ctx.file.canvas.width + x
         if (traversed.has(index)) {
           continue
@@ -585,11 +582,11 @@ export class MagicWandTool implements Tool {
         traversed.add(index)
         let p2 = ctx.file.canvas.getPixel(x, y)
         if (p2 === p) {
-          pixels.push({x, y, marked: value})
-          if (x > 0) queue.push({x: x-1, y})
-          if (x < ctx.file.canvas.width-1) queue.push({x: x+1, y})
-          if (y > 0) queue.push({x, y: y-1})
-          if (y < ctx.file.canvas.height-1) queue.push({x, y: y+1})
+          pixels.push({ x, y, marked: value })
+          if (x > 0) queue.push({ x: x - 1, y })
+          if (x < ctx.file.canvas.width - 1) queue.push({ x: x + 1, y })
+          if (y > 0) queue.push({ x, y: y - 1 })
+          if (y < ctx.file.canvas.height - 1) queue.push({ x, y: y + 1 })
         }
       }
     }
@@ -597,8 +594,7 @@ export class MagicWandTool implements Tool {
     ctx.file.selection.active = true
     ctx.file.push(new SelectionSetUndoable(pixels, clear), ctx.view)
   }
-  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
-  }
+  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {}
   pointerUp(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
     this.active = false
   }
@@ -616,9 +612,9 @@ export class MoveTool implements Tool {
   isActive(): boolean {
     return this.active
   }
-  
-  previewPosition(): ({x: number, y: number}) {
-    return {x: this.endX - this.startX + this.preview.x, y: this.endY - this.startY + this.preview.y}
+
+  previewPosition(): { x: number; y: number } {
+    return { x: this.endX - this.startX + this.preview.x, y: this.endY - this.startY + this.preview.y }
   }
 
   shift(ctx: ToolContext, ptr: Pointer) {
@@ -649,8 +645,8 @@ export class MoveTool implements Tool {
     let dx = this.endX - this.startX
     let dy = this.endY - this.startY
 
-    let pixels: { x: number, y: number, index: number }[] = []
-    let clearPixels: { x: number, y: number, index: number }[] = []
+    let pixels: { x: number; y: number; index: number }[] = []
+    let clearPixels: { x: number; y: number; index: number }[] = []
     for (let x = 0; x < ctx.file.canvas.width; x++) {
       for (let y = 0; y < ctx.file.canvas.height; y++) {
         if (ctx.file.selection.isPixelMarked(x, y)) {
@@ -658,10 +654,10 @@ export class MoveTool implements Tool {
           let { a } = ctx.file.canvas.getPaletteAsRGBA(p)
           // FIXME: Do we really want to treat 0 as transparent index? Additionally, for RGBA, we probably want to merge the colors and create a new entry... maybe this should be handled in PixelsPlaceUndoable within the file class...
           if (a !== 0) {
-            if (x+dx >= 0 && x+dx < ctx.file.canvas.width && y+dy >= 0 && y+dy < ctx.file.canvas.height) {
-              pixels.push({x: x+dx, y: y+dy, index: p})
+            if (x + dx >= 0 && x + dx < ctx.file.canvas.width && y + dy >= 0 && y + dy < ctx.file.canvas.height) {
+              pixels.push({ x: x + dx, y: y + dy, index: p })
             }
-            clearPixels.push({x, y, index: 0})
+            clearPixels.push({ x, y, index: 0 })
           }
         }
       }
@@ -677,7 +673,7 @@ export class MoveTool implements Tool {
 }
 
 export interface ReferenceToolContext {
- imageReference: ImageReference | undefined
+  imageReference: ImageReference | undefined
 }
 
 export class ReferenceTool implements Tool {
@@ -717,46 +713,34 @@ export class PlaceVoxelTool implements Tool {
   isActive(): boolean {
     return false
   }
-  pointerDown(ctx: ToolContext, ptr: Pointer): void {
-  }
-  pointerUp(ctx: ToolContext, ptr: Pointer): void {
-  }
-  pointerMove(ctx: ToolContext, ptr: Pointer): void {
-  }
+  pointerDown(ctx: ToolContext, ptr: Pointer): void {}
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {}
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {}
 }
 
 export class ReplaceVoxelTool implements Tool {
   isActive(): boolean {
     return false
   }
-  pointerDown(ctx: ToolContext, ptr: Pointer): void {
-  }
-  pointerUp(ctx: ToolContext, ptr: Pointer): void {
-  }
-  pointerMove(ctx: ToolContext, ptr: Pointer): void {
-  }
+  pointerDown(ctx: ToolContext, ptr: Pointer): void {}
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {}
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {}
 }
 
 export class CursorVoxelTool implements Tool {
   isActive(): boolean {
     return false
   }
-  pointerDown(ctx: ToolContext, ptr: Pointer): void {
-  }
-  pointerUp(ctx: ToolContext, ptr: Pointer): void {
-  }
-  pointerMove(ctx: ToolContext, ptr: Pointer): void {
-  }
+  pointerDown(ctx: ToolContext, ptr: Pointer): void {}
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {}
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {}
 }
 
 export class SelectBoxVoxelTool implements Tool {
   isActive(): boolean {
     return false
   }
-  pointerDown(ctx: ToolContext, ptr: Pointer): void {
-  }
-  pointerUp(ctx: ToolContext, ptr: Pointer): void {
-  }
-  pointerMove(ctx: ToolContext, ptr: Pointer): void {
-  }
+  pointerDown(ctx: ToolContext, ptr: Pointer): void {}
+  pointerUp(ctx: ToolContext, ptr: Pointer): void {}
+  pointerMove(ctx: ToolContext, ptr: Pointer): void {}
 }

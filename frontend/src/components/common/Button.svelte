@@ -1,6 +1,5 @@
-<script lang='ts'>
-  import type { CarbonIcon } from "carbon-icons-svelte"
-
+<script lang="ts">
+  import type { CarbonIcon } from 'carbon-icons-svelte'
 
   export let icon: new (...args: any[]) => CarbonIcon
 
@@ -16,19 +15,18 @@
   export let tooltipPosition: 'top' | 'right' | 'bottom' | 'left' = 'top'
   // Not used for now.
   export let tooltipAlignment: 'start' | 'center' | 'end' = 'center'
-
 </script>
 
-<button tabindex={0} aria-pressed={selected} on:click on:contextmenu class='-{size}{selected?' -selected':''}{disabled?' -disabled':''}'>
+<button tabindex={0} aria-pressed={selected} on:click on:contextmenu class="-{size}{selected ? ' -selected' : ''}{disabled ? ' -disabled' : ''}">
   {#if icon}
     <svelte:component this={icon} />
   {/if}
   {#if tooltip}
-    <aside class='-{tooltipPosition}'>
+    <aside class="-{tooltipPosition}">
       {tooltip}
     </aside>
   {:else if $$slots.tooltip}
-    <aside class='-{tooltipPosition}'>
+    <aside class="-{tooltipPosition}">
       <slot name="tooltip"></slot>
     </aside>
   {/if}
@@ -45,13 +43,17 @@
     display: inline-flex;
     padding: 0;
     align-items: center;
-    padding: calc(.375rem - 3px) 16px;
-    padding-left: .4375rem;
-    padding-right: .4375rem;
+    padding: calc(0.375rem - 3px) 16px;
+    padding-left: 0.4375rem;
+    padding-right: 0.4375rem;
     color: var(--cds-link-01, #0f62fe);
     color: var(--cds-button-tertiary-active);
 
-    transition: background 70ms cubic-bezier(0, 0, 0.38, 0.9),box-shadow 70ms cubic-bezier(0, 0, 0.38, 0.9),border-color 70ms cubic-bezier(0, 0, 0.38, 0.9),outline 70ms cubic-bezier(0, 0, 0.38, 0.9);
+    transition:
+      background 70ms cubic-bezier(0, 0, 0.38, 0.9),
+      box-shadow 70ms cubic-bezier(0, 0, 0.38, 0.9),
+      border-color 70ms cubic-bezier(0, 0, 0.38, 0.9),
+      outline 70ms cubic-bezier(0, 0, 0.38, 0.9);
 
     font-size: var(--cds-body-short-01-font-size, 0.875rem);
     font-weight: var(--cds-body-short-01-font-weight, 400);

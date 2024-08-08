@@ -1,7 +1,7 @@
-<script lang='ts'>
-  import { LoadedFile } from "../types/file"
-  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateAnimationFrameUndoable, DuplicateSliceUndoable, RemoveSliceUndoable, RemoveAnimationFrameUndoable } from "../types/file/undoables"
-  import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
+<script lang="ts">
+  import { LoadedFile } from '../types/file'
+  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateAnimationFrameUndoable, DuplicateSliceUndoable, RemoveSliceUndoable, RemoveAnimationFrameUndoable } from '../types/file/undoables'
+  import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte'
   import Button from '../components/common/Button.svelte'
   import { fileStates } from '../stores/file'
   import { AddAlt } from 'carbon-icons-svelte'
@@ -22,7 +22,7 @@
   function addFrame() {
     file.push(new AddAnimationFrameUndoable(file.stack.name, file.animation.name))
   }
-  
+
   let contextFrameOpen: boolean = false
   let contextFrameIndex: number = -1
   let contextSliceOpen: boolean = false
@@ -100,7 +100,7 @@
 </script>
 
 <main>
-  <section class='slicesContainer'>
+  <section class="slicesContainer">
     <!--<Button
       kind="ghost"
       size="small"
@@ -110,32 +110,23 @@
       tooltipAlignment="end"
       disabled={!file || !file.frame}
     />-->
-    <section class='slices'>
+    <section class="slices">
       {#if $file.frame}
         {#each $file.frame.slices as slice, sliceIndex}
-          <article class='slice{sliceIndex===$file.sliceIndex?' --focused':''}{$file.isSliceSelected(sliceIndex)?' --selected':''}' on:click={(e)=>onSliceClick(e, sliceIndex)} on:contextmenu|preventDefault={(e)=>onSliceRightClick(e, sliceIndex)}>
-            <span class='sliceIndex'>{sliceIndex+1}</span>
+          <article class="slice{sliceIndex === $file.sliceIndex ? ' --focused' : ''}{$file.isSliceSelected(sliceIndex) ? ' --selected' : ''}" on:click={(e) => onSliceClick(e, sliceIndex)} on:contextmenu|preventDefault={(e) => onSliceRightClick(e, sliceIndex)}>
+            <span class="sliceIndex">{sliceIndex + 1}</span>
           </article>
         {/each}
       {/if}
     </section>
   </section>
-  <section class='framesContainer'>
-    <Button
-      kind="ghost"
-      size="small"
-      icon={AddAlt}
-      tooltip="Add Frame"
-      tooltipPosition="top"
-      tooltipAlignment="end"
-      disabled={!file || !file.animation}
-      on:click={addFrame}
-    />
-    <section class='frames'>
+  <section class="framesContainer">
+    <Button kind="ghost" size="small" icon={AddAlt} tooltip="Add Frame" tooltipPosition="top" tooltipAlignment="end" disabled={!file || !file.animation} on:click={addFrame} />
+    <section class="frames">
       {#if $file.animation}
         {#each $file.animation.frames as frame, frameIndex}
-          <article class='frame{frameIndex===$file.frameIndex?' --focused':''}{$file.isFrameSelected(frameIndex)?' --selected':''}' on:click={(e)=>onFrameClick(e, frameIndex)} on:contextmenu|preventDefault={(e)=>onFrameRightClick(e, frameIndex)}>
-            <span class='frameIndex'>{frameIndex+1}</span>
+          <article class="frame{frameIndex === $file.frameIndex ? ' --focused' : ''}{$file.isFrameSelected(frameIndex) ? ' --selected' : ''}" on:click={(e) => onFrameClick(e, frameIndex)} on:contextmenu|preventDefault={(e) => onFrameRightClick(e, frameIndex)}>
+            <span class="frameIndex">{frameIndex + 1}</span>
           </article>
         {/each}
       {/if}
@@ -149,7 +140,7 @@
   <ContextMenu bind:open={contextSliceOpen} bind:x={contextX} bind:y={contextY} target={[]}>
     <ContextMenuOption labelText="Clear Slice" on:click={contextSliceClear} />
     <ContextMenuOption labelText="Duplicate Slice" on:click={contextSliceDuplicate} />
-    <ContextMenuOption labelText='Delete Slice' kind='danger' on:click={contextSliceDelete} />
+    <ContextMenuOption labelText="Delete Slice" kind="danger" on:click={contextSliceDelete} />
   </ContextMenu>
 </main>
 

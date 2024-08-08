@@ -1,37 +1,48 @@
 html {
-    background-color: rgba(27, 38, 54, 1);
-    color: white;
+  background-color: rgba(27, 38, 54, 1);
+  color: white;
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    color: white;
-    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  color: white;
+  font-family:
+    'Nunito',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
     sans-serif;
 }
 
 @font-face {
-    font-family: "Nunito";
-    font-style: normal;
-    font-weight: 400;
-    src: local(""),
-    url("assets/fonts/nunito-v16-latin-regular.woff2") format("woff2");
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400;
+  src:
+    local(''),
+    url('assets/fonts/nunito-v16-latin-regular.woff2') format('woff2');
 }
 
 #app {
-    width: 100vw;
-    height: 100vh;
-    text-align: center;
+  width: 100vw;
+  height: 100vh;
+  text-align: center;
 }
 
 .bx--tab-content {
-    padding: 0 !important;
+  padding: 0 !important;
 }

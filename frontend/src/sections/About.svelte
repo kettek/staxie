@@ -1,39 +1,32 @@
 <!--
   @component
-  
+
   This component provides an about modal.
 -->
-<script lang='ts'>
-  import { onMount } from 'svelte';
+<script lang="ts">
+  import { onMount } from 'svelte'
   import { Version } from '../../wailsjs/go/main/App.js'
   import { BrowserOpenURL } from '../../wailsjs/runtime/runtime.js'
 
-  import {
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Link,
-  } from "carbon-components-svelte"
-  
-  
+  import { ModalHeader, ModalBody, ModalFooter, Link } from 'carbon-components-svelte'
+
   export const open: boolean = false
   let version: string = ''
-  
+
   function followLink(e: MouseEvent) {
     e.preventDefault()
     BrowserOpenURL((e.target as HTMLAnchorElement).href)
   }
-  
+
   onMount(async () => {
     version = await Version()
   })
 </script>
 
-<ModalHeader label="Staxie"/>
+<ModalHeader label="Staxie" />
 <ModalBody>
   <article>
-    <p>Staxie is an open source, free software, and cross-platform sprite and sprite stack editor written with Wails in Svelte and Go.
-    </p>
+    <p>Staxie is an open source, free software, and cross-platform sprite and sprite stack editor written with Wails in Svelte and Go.</p>
   </article>
   <article>
     <header>GitHub</header>

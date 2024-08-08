@@ -38,18 +38,19 @@ function createToolSettingsStore(): ToolSettingsStore {
     current: toolBrush,
     previous: toolBrush,
   })
-  
-  const storage: Record<string, {current: Tool, previous: Tool}> = {}
+
+  const storage: Record<string, { current: Tool; previous: Tool }> = {}
 
   return {
     subscribe,
     set,
     update,
-    swapTool: (tool: Tool) => update((state) => {
-      state.previous = state.current
-      state.current = tool
-      return state
-    }),
+    swapTool: (tool: Tool) =>
+      update((state) => {
+        state.previous = state.current
+        state.current = tool
+        return state
+      }),
     store: (set: string) => {
       update((state) => {
         storage[set] = {

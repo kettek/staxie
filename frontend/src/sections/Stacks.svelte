@@ -1,47 +1,49 @@
-<script lang='ts'>
-  import { FaceAdd, FolderAdd } from "carbon-icons-svelte";
-  import { type LoadedFile } from "../types/file"
-  import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable, RenameAnimationUndoable, RenameStackUndoable, DuplicateStackUndoable, DuplicateAnimationUndoable } from "../types/file/undoables"
-  import { ContextMenu, ContextMenuOption, TreeView, NumberInput } from "carbon-components-svelte"
-  import Button from "../components/common/Button.svelte"
-  import { fileStates } from "../stores/file"
-  import RenameModal from "../components/RenameModal.svelte"
+<script lang="ts">
+  import { FaceAdd, FolderAdd } from 'carbon-icons-svelte'
+  import { type LoadedFile } from '../types/file'
+  import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable, RenameAnimationUndoable, RenameStackUndoable, DuplicateStackUndoable, DuplicateAnimationUndoable } from '../types/file/undoables'
+  import { ContextMenu, ContextMenuOption, TreeView, NumberInput } from 'carbon-components-svelte'
+  import Button from '../components/common/Button.svelte'
+  import { fileStates } from '../stores/file'
+  import RenameModal from '../components/RenameModal.svelte'
 
   export let file: LoadedFile
-  
+
   let activeId: string | number = 0
-  let selectedIds: (string|number)[] = []
-  let children: ({id: string, text: string, children: ({id: string, text: string})[]})[] = []
+  let selectedIds: (string | number)[] = []
+  let children: { id: string; text: string; children: { id: string; text: string }[] }[] = []
   $: {
     if ($file) {
-      children = $file.stacks.map(stack => {
+      children = $file.stacks.map((stack) => {
         return {
           id: stack.name,
           text: stack.name,
-          children: stack.animations.map(animation => {
+          children: stack.animations.map((animation) => {
             return {
-              id: stack.name+'__'+animation.name,
-              text: animation.name
+              id: stack.name + '__' + animation.name,
+              text: animation.name,
             }
-          })
+          }),
         }
       })
     }
   }
-  
+
   function handleSelect(e) {
-    if (!e.detail.leaf) { // Stack
+    if (!e.detail.leaf) {
+      // Stack
       file.setStack(e.detail.id)
-    } else { // Animation
+    } else {
+      // Animation
       const stack = e.detail.id.substring(0, e.detail.id.indexOf('__'))
-      const animation = e.detail.id.substring(e.detail.id.indexOf('__')+2)
+      const animation = e.detail.id.substring(e.detail.id.indexOf('__') + 2)
       file.setStack(stack)
       file.setAnimation(animation)
     }
     file.refresh()
     fileStates.refresh()
   }
-  
+
   let contextX: number = 0
   let contextY: number = 0
   let contextStackOpen: boolean = false
@@ -51,7 +53,8 @@
     contextX = e.clientX
     contextY = e.clientY
     contextNode = node
-    if (node.leaf) { // animation
+    if (node.leaf) {
+      // animation
       contextAnimationOpen = true
       return
     }
@@ -66,25 +69,26 @@
   }
   function contextAnimationDelete() {
     const stackName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
-    const animationName = contextNode.id.substring(contextNode.id.indexOf('__')+2)
+    const animationName = contextNode.id.substring(contextNode.id.indexOf('__') + 2)
     if (file?.stack?.animations.length === 1) {
       alert('thou shall not delete the last animation')
       return
     }
     file.push(new RemoveAnimationUndoable(stackName, animationName))
   }
-  
-  function onStackContextMenu(e: CustomEvent) {
-  }
+
+  function onStackContextMenu(e: CustomEvent) {}
   function changeSlices(e: CustomEvent) {
     if (e.detail <= 0) {
       alert('thou shall not have less than 1 slice')
       return
     }
-    if (e.detail < file.stack.sliceCount) { // shrink
-      file.push(new ShrinkStackSliceUndoable(file.stack.name, file.stack.sliceCount-Number(e.detail)))
-    } else if (e.detail > file.stack.sliceCount) { // grow
-      file.push(new GrowStackSliceUndoable(file.stack.name, Number(e.detail)-file.stack.sliceCount))
+    if (e.detail < file.stack.sliceCount) {
+      // shrink
+      file.push(new ShrinkStackSliceUndoable(file.stack.name, file.stack.sliceCount - Number(e.detail)))
+    } else if (e.detail > file.stack.sliceCount) {
+      // grow
+      file.push(new GrowStackSliceUndoable(file.stack.name, Number(e.detail) - file.stack.sliceCount))
     }
   }
   function changeFrameTime(e: CustomEvent) {
@@ -101,17 +105,17 @@
   let pendingAnimationRename: string = ''
   function contextAnimationRename() {
     showAnimationRenameModal = true
-    pendingAnimationRename = contextNode.id.substring(contextNode.id.indexOf('__')+2)
+    pendingAnimationRename = contextNode.id.substring(contextNode.id.indexOf('__') + 2)
   }
   function renameAnimation(v: string) {
     const stackName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
-    const animationName = contextNode.id.substring(contextNode.id.indexOf('__')+2)
+    const animationName = contextNode.id.substring(contextNode.id.indexOf('__') + 2)
 
     file.push(new RenameAnimationUndoable(stackName, animationName, v))
   }
   function contextAnimationDuplicate() {
     const stackName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
-    const animationName = contextNode.id.substring(contextNode.id.indexOf('__')+2)
+    const animationName = contextNode.id.substring(contextNode.id.indexOf('__') + 2)
     file.push(new DuplicateAnimationUndoable(stackName, animationName))
   }
 
@@ -131,44 +135,19 @@
 </script>
 
 <main>
-  <menu class='toolbar'>
-    <Button
-      kind="ghost"
-      size="small"
-      icon={FolderAdd}
-      tooltip="Add Stack"
-      tooltipPosition="bottom"
-      tooltipAlignment="end"
-      disabled={!file}
-      on:click={addStack}
-    />
+  <menu class="toolbar">
+    <Button kind="ghost" size="small" icon={FolderAdd} tooltip="Add Stack" tooltipPosition="bottom" tooltipAlignment="end" disabled={!file} on:click={addStack} />
     <hr />
-    <Button
-      kind="ghost"
-      size="small"
-      icon={FaceAdd}
-      tooltip="Add Animation"
-      tooltipPosition="bottom"
-      tooltipAlignment="end"
-      disabled={!file || !file.stack}
-      on:click={addAnimation}
-    />
+    <Button kind="ghost" size="small" icon={FaceAdd} tooltip="Add Animation" tooltipPosition="bottom" tooltipAlignment="end" disabled={!file || !file.stack} on:click={addAnimation} />
   </menu>
-  <section class='selected'>
-    <NumberInput label='slices' value={$file?.stack?.sliceCount} on:change={changeSlices}/>
-    <NumberInput label='frametime (ms)' value={$file?.animation?.frameTime} on:change={changeFrameTime}/>
+  <section class="selected">
+    <NumberInput label="slices" value={$file?.stack?.sliceCount} on:change={changeSlices} />
+    <NumberInput label="frametime (ms)" value={$file?.animation?.frameTime} on:change={changeFrameTime} />
   </section>
-  <section class='stacks'>
+  <section class="stacks">
     {#if file}
-      <TreeView
-        size="compact"
-        {children}
-        bind:activeId
-        bind:selectedIds
-        on:select={handleSelect}
-        let:node
-      >
-        <span on:contextmenu|preventDefault={(e)=>onStackRightClick(e, node)}>{node.text}</span>
+      <TreeView size="compact" {children} bind:activeId bind:selectedIds on:select={handleSelect} let:node>
+        <span on:contextmenu|preventDefault={(e) => onStackRightClick(e, node)}>{node.text}</span>
       </TreeView>
     {/if}
   </section>

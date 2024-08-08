@@ -1,5 +1,5 @@
-import type { Canvas } from "./canvas"
-import type { SelectionArea } from "./selection"
+import type { Canvas } from './canvas'
+import type { SelectionArea } from './selection'
 
 // Preview is a helper class that provides a preview HTMLCanvasElement that is built from a Selection and a Canvas.
 export class Preview {
@@ -7,13 +7,13 @@ export class Preview {
   // x and y should be used to position the Preview's canvas relative to the top-left of the Canvas.
   public x: number // x is the x offet from the left-most pixel in the selection.
   public y: number // y is the y offset from the top-most pixel in the selection.
-  
+
   constructor() {
     this.canvas = document.createElement('canvas')
     this.x = 0
     this.y = 0
   }
-  
+
   fromSelectionAndCanvas(selection: SelectionArea, canvas: Canvas) {
     // Get our selection mask. FIXME: We can probably just use the selection's pixelMaskCanvasPixels...
     let mask = selection.getMask()
@@ -30,13 +30,13 @@ export class Preview {
     }
     let width = maxX - minX + 1
     let height = maxY - minY + 1
-    
+
     // Copy over the pixels from the canvas's image data to a preview image data.
     let imageData = new ImageData(width, height)
     for (let pixel of mask) {
       let p = canvas.getPixel(pixel.x, pixel.y)
       if (p !== -1) {
-        let {r, g, b, a} = canvas.getPaletteAsRGBA(p)
+        let { r, g, b, a } = canvas.getPaletteAsRGBA(p)
         imageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 0] = r
         imageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 1] = g
         imageData.data[((pixel.y - minY) * width + (pixel.x - minX)) * 4 + 2] = b

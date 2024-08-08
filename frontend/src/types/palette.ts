@@ -29,7 +29,7 @@ export class Palette extends UndoableStack<Palette> implements Writable<Palette>
     }
     let swatches = new Uint32Array(parseInt(lines[2]))
     for (let i = 3; i < lines.length; i++) {
-      let [r, g, b, a] = lines[i].split(' ').map(x => parseInt(x))
+      let [r, g, b, a] = lines[i].split(' ').map((x) => parseInt(x))
       if (a === undefined) a = 255
       swatches[i - 3] = (a << 24) | (b << 16) | (g << 8) | r
     }
@@ -40,10 +40,10 @@ export class Palette extends UndoableStack<Palette> implements Writable<Palette>
   toJASCPAL(): string {
     let out = `JASC-PAL\n0100\n${this.swatches.length}\n`
     for (let swatch of this.swatches) {
-      let a = (swatch >> 24) & 0xFF
-      let b = (swatch >> 16) & 0xFF
-      let g = (swatch >> 8) & 0xFF
-      let r = swatch & 0xFF
+      let a = (swatch >> 24) & 0xff
+      let b = (swatch >> 16) & 0xff
+      let g = (swatch >> 8) & 0xff
+      let r = swatch & 0xff
       out += `${r} ${g} ${b} ${a}\n`
     }
     return out
@@ -55,7 +55,7 @@ export class Palette extends UndoableStack<Palette> implements Writable<Palette>
 
   hasPaletteColor(r: number, g: number, b: number, a: number): boolean {
     for (let swatch of this.swatches) {
-      if ((swatch & 0xFF) === r && ((swatch >> 8) & 0xFF) === g && ((swatch >> 16) & 0xFF) === b && ((swatch >> 24) & 0xFF) === a) {
+      if ((swatch & 0xff) === r && ((swatch >> 8) & 0xff) === g && ((swatch >> 16) & 0xff) === b && ((swatch >> 24) & 0xff) === a) {
         return true
       }
     }

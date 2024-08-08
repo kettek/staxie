@@ -24,40 +24,41 @@ function createLogSettingsStore(): LogSettingsStore {
     subscribe,
     set,
     update,
-    setLevel: (level: LogLevel) => update((state) => {
-      let lvl = 0
-      switch(level) {
-        case 'silly':
-          lvl = 0
-        break
-        case 'trace':
-          lvl = 1
-        break
-        case 'debug':
-          lvl = 2
-        break
-        case 'info':
-          lvl = 3
-        break
-        case 'warn':
-          lvl = 4
-        break
-        case 'error':
-          lvl = 5
-        break
-        case 'fatal':
-          lvl = 6
-        break
-        default:
-          return state
-      }
-      state.level = level
-      log.settings.minLevel = lvl
-      flog.settings.minLevel = lvl
-      clog.settings.minLevel = lvl
-      plog.settings.minLevel = lvl
-      return state
-    }),
+    setLevel: (level: LogLevel) =>
+      update((state) => {
+        let lvl = 0
+        switch (level) {
+          case 'silly':
+            lvl = 0
+            break
+          case 'trace':
+            lvl = 1
+            break
+          case 'debug':
+            lvl = 2
+            break
+          case 'info':
+            lvl = 3
+            break
+          case 'warn':
+            lvl = 4
+            break
+          case 'error':
+            lvl = 5
+            break
+          case 'fatal':
+            lvl = 6
+            break
+          default:
+            return state
+        }
+        state.level = level
+        log.settings.minLevel = lvl
+        flog.settings.minLevel = lvl
+        clog.settings.minLevel = lvl
+        plog.settings.minLevel = lvl
+        return state
+      }),
   }
 }
 

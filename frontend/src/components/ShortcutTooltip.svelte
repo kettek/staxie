@@ -1,5 +1,5 @@
-<script lang='ts'>
-  import { getShortcutKeys } from "./Shortcuts.svelte"
+<script lang="ts">
+  import { getShortcutKeys } from './Shortcuts.svelte'
 
   export let group: string
   export let cmd: string

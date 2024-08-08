@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
   let left: HTMLElement
   let leftWidth = '50%'
 
@@ -36,16 +36,16 @@
 
 <main class="split">
   {#if !hideLeft}
-    <section class='left {hideRight?'solo':''}' bind:this={left} style='flex-basis: {leftWidth}' on:mousedown={()=>rightFocused=false}>
-      <slot name='left'></slot>
+    <section class="left {hideRight ? 'solo' : ''}" bind:this={left} style="flex-basis: {leftWidth}" on:mousedown={() => (rightFocused = false)}>
+      <slot name="left"></slot>
     </section>
   {/if}
   {#if !hideLeft && !hideRight}
     <aside use:gripper />
   {/if}
   {#if !hideRight}
-    <section class='right' on:mousedown={()=>rightFocused=true}>
-      <slot name='right'></slot>
+    <section class="right" on:mousedown={() => (rightFocused = true)}>
+      <slot name="right"></slot>
     </section>
   {/if}
 </main>
@@ -56,12 +56,12 @@
     align-items: stretch;
     width: 100%;
     max-width: 100%;
-    height: 100%
+    height: 100%;
   }
   aside {
     flex-grow: 0;
     flex-shrink: 0;
-    width: .2rem;
+    width: 0.2rem;
     background-color: var(--cds-ui-01, #8d8d8d);
     cursor: col-resize;
   }

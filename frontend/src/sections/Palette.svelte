@@ -1,24 +1,27 @@
 <!--
   @component
-  
+
   This component shows swatches of a given palette and provides controls for selecting, moving, and deleting swatches.
 -->
-<script lang='ts'>
+<script lang="ts">
   import type { Palette } from '../types/palette'
+
   import { type LoadedFile } from '../types/file'
   import { MoveSwatchUndoable } from '../types/file/undoables'
   import { createEventDispatcher } from 'svelte'
-  import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte';
+  import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte'
   import DeletePaletteEntryModal from '../components/DeletePaletteEntryModal.svelte'
   import MovePaletteEntryModal from '../components/MovePaletteEntryModal.svelte'
-  
+
   import { brushSettings } from '../stores/brush'
 
   export let file: LoadedFile
   let lastFile: LoadedFile
   export let refresh: {}
-  $: { refresh ? file = file : null }
-  
+  $: {
+    refresh ? (file = file) : null
+  }
+
   const dispatch = createEventDispatcher()
 
   export let fakePalette: Palette | undefined
@@ -30,7 +33,7 @@
       palette = $file ? $file.canvas.palette : []
     }
   }
-  
+
   function paletteClick(event: MouseEvent) {
     if (event.button === 2) {
       return
@@ -79,7 +82,7 @@
     }
     function stop(e: MouseEvent) {
       if (hoveringIndex !== -1 && hoveringIndex !== draggingIndex) {
-        file.push(new MoveSwatchUndoable(draggingIndex, hoveringIndex<draggingIndex?hoveringIndex:hoveringIndex-1))
+        file.push(new MoveSwatchUndoable(draggingIndex, hoveringIndex < draggingIndex ? hoveringIndex : hoveringIndex - 1))
       }
 
       draggingIndex = -1
@@ -95,7 +98,7 @@
       x = e.clientX
       y = e.clientY
 
-      if (Math.abs(dx)+Math.abs(dy) < 5) {
+      if (Math.abs(dx) + Math.abs(dy) < 5) {
         return
       }
       draggingIndex = index
@@ -105,13 +108,13 @@
         if (!entry) continue
         const rect = entry.getBoundingClientRect()
         if (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom) {
-          hoveringIndex = i+1
+          hoveringIndex = i + 1
           break
         }
       }
     }
   }
-  
+
   let showDeleteDialog: boolean = false
   let targetIndex: number = -1
   function onContextMenu(e: CustomEvent) {
@@ -125,7 +128,7 @@
   function showMoveSwatchDialog(e: CustomEvent) {
     showMoveDialog = true
   }
-  
+
   // These are entry refs for sharing the ContextMenu.
   let _refs = []
   $: refs = _refs.filter(Boolean)
@@ -133,28 +136,28 @@
 
 <main on:wheel={handleWheel}>
   {#each palette as swatch, swatchIndex}
-    {#if draggingIndex !== -1 && (swatchIndex === hoveringIndex || (swatchIndex === hoveringIndex-1 && swatchIndex === palette.length-1))}
+    {#if draggingIndex !== -1 && (swatchIndex === hoveringIndex || (swatchIndex === hoveringIndex - 1 && swatchIndex === palette.length - 1))}
       <span class="entry primary">
         <span class="checkerboard"></span>
-        <span style="background-color: rgba({palette[draggingIndex]&0xFF},{(palette[draggingIndex]>>8)&0xFF},{(palette[draggingIndex]>>16)&0xFF},{((palette[draggingIndex]>>24)&0xFF)/255})" class="color"></span>
-        <span class='label'>{draggingIndex}</span>
+        <span style="background-color: rgba({palette[draggingIndex] & 0xff},{(palette[draggingIndex] >> 8) & 0xff},{(palette[draggingIndex] >> 16) & 0xff},{((palette[draggingIndex] >> 24) & 0xff) / 255})" class="color"></span>
+        <span class="label">{draggingIndex}</span>
       </span>
     {/if}
     {#if swatchIndex !== draggingIndex}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span bind:this={_refs[swatchIndex]} on:click={paletteClick} x-index={swatchIndex} class='entry{swatchIndex===$brushSettings.primaryIndex?' primary':''}{swatchIndex===$brushSettings.secondaryIndex?' secondary':''}{swatchIndex===draggingIndex?' hide':''}' use:swatchDrag on:contextmenu|preventDefault>
+      <span bind:this={_refs[swatchIndex]} on:click={paletteClick} x-index={swatchIndex} class="entry{swatchIndex === $brushSettings.primaryIndex ? ' primary' : ''}{swatchIndex === $brushSettings.secondaryIndex ? ' secondary' : ''}{swatchIndex === draggingIndex ? ' hide' : ''}" use:swatchDrag on:contextmenu|preventDefault>
         <span class="checkerboard"></span>
-        <span style="background-color: rgba({swatch&0xFF},{(swatch>>8)&0xFF},{(swatch>>16)&0xFF},{((swatch>>24)&0xFF)/255})" class="color"></span>
-        <span class='label'>{swatchIndex}</span>
+        <span style="background-color: rgba({swatch & 0xff},{(swatch >> 8) & 0xff},{(swatch >> 16) & 0xff},{((swatch >> 24) & 0xff) / 255})" class="color"></span>
+        <span class="label">{swatchIndex}</span>
       </span>
     {/if}
   {/each}
   <ContextMenu target={_refs} on:open={onContextMenu}>
     <ContextMenuOption labelText="Move..." on:click={showMoveSwatchDialog} />
-    <ContextMenuOption labelText="Delete..." on:click={showDeleteSwatchDialog} kind='danger' />
+    <ContextMenuOption labelText="Delete..." on:click={showDeleteSwatchDialog} kind="danger" />
   </ContextMenu>
-  <DeletePaletteEntryModal bind:open={showDeleteDialog} paletteIndex={targetIndex} file={file}/>
-  <MovePaletteEntryModal bind:open={showMoveDialog} paletteIndex={targetIndex} file={file}/>
+  <DeletePaletteEntryModal bind:open={showDeleteDialog} paletteIndex={targetIndex} {file} />
+  <MovePaletteEntryModal bind:open={showMoveDialog} paletteIndex={targetIndex} {file} />
 </main>
 
 <style>
@@ -198,7 +201,11 @@
     height: 100%;
     background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
     background-size: 10px 10px;
-    background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+    background-position:
+      0 0,
+      0 5px,
+      5px -5px,
+      -5px 0px;
   }
   .label {
     position: absolute;

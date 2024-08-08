@@ -5,10 +5,7 @@ import { IndexedPNG } from '../../types/png'
 import YAML from 'yaml'
 
 export async function Open(): Promise<string> {
-  let filters: string[][] = [
-    ["VES Spritestack"],
-    ["*.yaml"],
-  ]
+  let filters: string[][] = [['VES Spritestack'], ['*.yaml']]
   return GetFilePath(filters[0], filters[1])
 }
 
@@ -62,9 +59,9 @@ export async function Read(filepath: string): Promise<VioImportResults> {
     alert('could not find root for imported YAML -- is it in a Sprites directory?')
     return
   }
-  const root = filePath.substring(0, i+('Sprites'.length))
+  const root = filePath.substring(0, i + 'Sprites'.length)
   spritePath = root + '/' + yml.source
-  
+
   title = /[^/\\]*$/.exec(filePath)[0]
 
   // Read in our sprite PNG
@@ -92,13 +89,13 @@ export async function Read(filepath: string): Promise<VioImportResults> {
       let anim = parts[0]
       let frame = Number(parts[1])
 
-      let inanimation: ImportAnimation|undefined = instack.animations.find(v=>v.name === anim)
+      let inanimation: ImportAnimation | undefined = instack.animations.find((v) => v.name === anim)
       if (!inanimation) {
         instack.animations.push({
           name: anim,
           frames: [],
         })
-        inanimation = instack.animations[instack.animations.length-1]
+        inanimation = instack.animations[instack.animations.length - 1]
       }
 
       for (let i = inanimation.frames.length; i <= frame; i++) {
@@ -114,7 +111,7 @@ export async function Read(filepath: string): Promise<VioImportResults> {
           pixels: canvas.getPixels(slice.x, slice.y, slice.width, slice.height),
           origSubset: subset,
         }
-        instack.sliceCount = Math.max(instack.sliceCount, sliceIndex+1)
+        instack.sliceCount = Math.max(instack.sliceCount, sliceIndex + 1)
         inanimation.frames[frame][sliceIndex] = inslice
         frameSizeCounts[`${slice.width}x${slice.height}`] = (frameSizeCounts[`${slice.width}x${slice.height}`] || 0) + 1
       }
@@ -127,7 +124,7 @@ export async function Read(filepath: string): Promise<VioImportResults> {
   let y = 0
   maxWidth = 0
   maxHeight = 0
-  
+
   let bestFrameSize = Object.keys(frameSizeCounts).sort((a, b) => frameSizeCounts[b] - frameSizeCounts[a])[0]
 
   let frameWidth = Number(bestFrameSize.split('x')[0])
@@ -185,7 +182,7 @@ export async function Read(filepath: string): Promise<VioImportResults> {
             y: y,
           }
           pngFrame.slices.push(pngSlice)
-          
+
           // Update original
           slice.origSubset.frames[0].x = x
           slice.origSubset.frames[0].y = y
@@ -201,7 +198,7 @@ export async function Read(filepath: string): Promise<VioImportResults> {
   }
 
   canvas.refreshCanvas()
-  
+
   return {
     png,
     canvas,
@@ -214,7 +211,7 @@ export async function Read(filepath: string): Promise<VioImportResults> {
 
 export async function Import(results: VioImportResults, updateSource: boolean = false, updatePNG: boolean = false): Promise<LoadedFile> {
   let { png, canvas, title, filePath, spritePath, parsed } = results
-  let file = new LoadedFile({filepath: spritePath, title: title, canvas: canvas, data: png})
+  let file = new LoadedFile({ filepath: spritePath, title: title, canvas: canvas, data: png })
   if (updateSource) {
     let newYaml = YAML.stringify(parsed)
     await SaveFileBytes(filePath, btoa(newYaml) as any)

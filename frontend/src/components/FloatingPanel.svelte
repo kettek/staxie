@@ -1,20 +1,18 @@
 <!--
   @component
-  
+
   This component provides a draggable floating panel that contains arbitrary content.
 -->
-<script lang='ts'>
-  import {
-    Close
-  } from 'carbon-icons-svelte'
-  
-  export let title: string = "Untitled"
-  export let label: string = "Untitled"
-  
+<script lang="ts">
+  import { Close } from 'carbon-icons-svelte'
+
+  export let title: string = 'Untitled'
+  export let label: string = 'Untitled'
+
   export let noPadding: boolean = false
-  
+
   export let open: boolean = false
-  
+
   function drag(node) {
     let dragging: boolean = false
     let x: number = 0
@@ -23,7 +21,7 @@
     window.addEventListener('mouseup', stop)
     window.addEventListener('mouseleave', stop)
     window.addEventListener('mousemove', move)
-    
+
     function start(e: MouseEvent) {
       dragging = true
       x = e.clientX
@@ -44,7 +42,7 @@
       node.style.top = parseInt(node.style.top) + dy + 'px'
     }
   }
-  
+
   let resizing: boolean = false
   function resizeDrag(node, direction: 'tl' | 'tr' | 'bl' | 'br' | 't' | 'r' | 'b' | 'l') {
     let dragging: boolean = false
@@ -60,7 +58,7 @@
     window.addEventListener('mouseup', stop)
     window.addEventListener('mouseleave', stop)
     window.addEventListener('mousemove', move)
-    
+
     function start(e: MouseEvent) {
       resizing = true
       dragging = true
@@ -87,7 +85,7 @@
       dy += e.clientY - y
       x = e.clientX
       y = e.clientY
-      
+
       if (direction === 't') {
         dialog.style.height = height - dy + 'px'
         dialog.style.top = top + dy + 'px'
@@ -117,30 +115,36 @@
         dialog.style.height = height + dy + 'px'
       }
     }
-  
   }
   let dialog: HTMLDialogElement
 </script>
 
 <dialog bind:this={dialog} use:drag style="left: 100px; top: 100px;">
-  <header class='bx--modal-header'>
-    <div class='header-left'><slot name='header-left'/></div>
-    <h2 class='bx--modal-header__label bx--type-delta'>{label}</h2>
-    <button class='bx--modal-close' aria-label='Close' title='Close' on:click={()=>{open=false}}>
-      <Close/>
+  <header class="bx--modal-header">
+    <div class="header-left"><slot name="header-left" /></div>
+    <h2 class="bx--modal-header__label bx--type-delta">{label}</h2>
+    <button
+      class="bx--modal-close"
+      aria-label="Close"
+      title="Close"
+      on:click={() => {
+        open = false
+      }}
+    >
+      <Close />
     </button>
   </header>
-  <section class='bx--modal-content {noPadding?'-noPadding':''}' on:mousedown={e=>e.stopPropagation()}>
-    <slot/>
+  <section class="bx--modal-content {noPadding ? '-noPadding' : ''}" on:mousedown={(e) => e.stopPropagation()}>
+    <slot />
   </section>
-  <aside use:resizeDrag={'tl'} class='top-left'></aside>
-  <aside use:resizeDrag={'tr'} class='top-right'></aside>
-  <aside use:resizeDrag={'bl'} class='bottom-left'></aside>
-  <aside use:resizeDrag={'br'} class='bottom-right'></aside>
-  <aside use:resizeDrag={'t'} class='top'></aside>
-  <aside use:resizeDrag={'r'} class='right'></aside>
-  <aside use:resizeDrag={'b'} class='bottom'></aside>
-  <aside use:resizeDrag={'l'} class='left'></aside>
+  <aside use:resizeDrag={'tl'} class="top-left"></aside>
+  <aside use:resizeDrag={'tr'} class="top-right"></aside>
+  <aside use:resizeDrag={'bl'} class="bottom-left"></aside>
+  <aside use:resizeDrag={'br'} class="bottom-right"></aside>
+  <aside use:resizeDrag={'t'} class="top"></aside>
+  <aside use:resizeDrag={'r'} class="right"></aside>
+  <aside use:resizeDrag={'b'} class="bottom"></aside>
+  <aside use:resizeDrag={'l'} class="left"></aside>
 </dialog>
 
 <style>
@@ -179,7 +183,14 @@
     margin-bottom: var(--cds-spacing-03, 1rem);
     overflow: auto;
   }
-  .top-left, .top-right, .bottom-left, .bottom-right, .top, .right, .bottom, .left {
+  .top-left,
+  .top-right,
+  .bottom-left,
+  .bottom-right,
+  .top,
+  .right,
+  .bottom,
+  .left {
     position: absolute;
     width: 1.25rem;
     height: 1.25rem;

@@ -1,4 +1,4 @@
-<script context='module' lang='ts'>
+<script context="module" lang="ts">
   import { handlers } from './ShortcutHandlers.svelte'
   import { setContext, onDestroy } from 'svelte'
   import { get, writable } from 'svelte/store'
@@ -6,25 +6,25 @@
 
   export const SHORTCUTS = {}
   export type ShortcutsType = {
-    registerShortcut: (opts: {cmd: string, group: string, global: boolean, keys: string[], trigger: () => void, release: () => void}) => void,
+    registerShortcut: (opts: { cmd: string; group: string; global: boolean; keys: string[]; trigger: () => void; release: () => void }) => void
   }
-  
-  let currentShortcuts = writable({id: {}, group: 'default'})
-  
+
+  let currentShortcuts = writable({ id: {}, group: 'default' })
+
   type Shortcut = {
-    id: {},
-    cmd: string,
-    keys: string[],
-    global: boolean,
-    trigger: () => void,
-    release: () => void,
-    group: string,
+    id: {}
+    cmd: string
+    keys: string[]
+    global: boolean
+    trigger: () => void
+    release: () => void
+    group: string
   }
-  
+
   let triggered: Set<string> = new Set()
   let keys: Set<string> = new Set()
   let keystring = ''
-  
+
   const modifiers = ['control', 'command', 'option', 'shift', 'alt', 'altgr', 'super', 'meta']
 
   let disabled: boolean = false
@@ -37,7 +37,7 @@
   export function isKeyActive(key: string): boolean {
     return keys.has(key)
   }
-  
+
   function normalizeKey(event: KeyboardEvent): string {
     let key = event.key
     // Chrome bug lol
@@ -46,7 +46,7 @@
     }
     return key.toLowerCase()
   }
-  
+
   function keysToString(keys: string[]): string {
     return [...keys].sort((a: string, b: string) => modifiers.indexOf(b) - modifiers.indexOf(a)).join('+')
   }
@@ -56,19 +56,19 @@
     for (let shortcut of get(shortcuts)) {
       if (shortcut.group === group && shortcut.cmd === cmd) {
         if (keys.includes(shortcut.keys)) continue
-        keys.push(shortcut.keys.map(v=>v.replace('control', '⌃').replace('shift', '⇧').replace('alt', '⌥').replace('+', '')))
+        keys.push(shortcut.keys.map((v) => v.replace('control', '⌃').replace('shift', '⇧').replace('alt', '⌥').replace('+', '')))
       }
     }
     return keys
   }
-  
+
   window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (disabled) return
     if (event.key === 'Alt') event.preventDefault() // Prevent alt because that opens a menu that doesn't exist.
     let key = normalizeKey(event)
     keys.add(key.toLowerCase())
     keystring = keysToString([...keys])
-    
+
     let cmds = new Set()
     let cur = get(currentShortcuts)
     for (let shortcut of get(shortcuts)) {
@@ -131,7 +131,7 @@
     }
 
     keystring = keysToString([...keys])
-    
+
     let cmds = new Set()
     let cur = get(currentShortcuts)
     for (let shortcut of get(shortcuts)) {
@@ -162,16 +162,15 @@
   })
 
   const shortcuts = writable([] as Shortcut[])
-
 </script>
 
-<script lang='ts'>
+<script lang="ts">
   const id = {}
   export let group: string = 'default'
   export let active: boolean = true
-  
+
   $: ((id, group, active) => {
-    currentShortcuts.update(currentShortcuts => {
+    currentShortcuts.update((currentShortcuts) => {
       if (active) {
         if (currentShortcuts.id === id) {
           currentShortcuts.group = group
@@ -188,18 +187,18 @@
   })(id, group, active)
 
   setContext(SHORTCUTS, {
-    registerShortcut: (opts: {cmd: string, keys: string[], global: boolean, trigger: () => void, release: () => void}) => {
-      shortcuts.update(shortcuts => {
-        let keys = opts.keys.map(v => {
+    registerShortcut: (opts: { cmd: string; keys: string[]; global: boolean; trigger: () => void; release: () => void }) => {
+      shortcuts.update((shortcuts) => {
+        let keys = opts.keys.map((v) => {
           return v.replaceAll('ctrl', 'control')
         })
-        shortcuts.push({id, cmd: opts.cmd, group: group, global: opts.global, keys: keys.map(v=>keysToString(v.toLowerCase().split('+'))), trigger: opts.trigger, release: opts.release})
+        shortcuts.push({ id, cmd: opts.cmd, group: group, global: opts.global, keys: keys.map((v) => keysToString(v.toLowerCase().split('+'))), trigger: opts.trigger, release: opts.release })
         return shortcuts
       })
-      
+
       onDestroy(() => {
-        shortcuts.update(shortcuts => {
-          return shortcuts.filter(shortcut => shortcut.id !== id)
+        shortcuts.update((shortcuts) => {
+          return shortcuts.filter((shortcut) => shortcut.id !== id)
         })
       })
     },

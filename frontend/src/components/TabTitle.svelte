@@ -1,8 +1,8 @@
-<script lang='ts'>
-  import type { LoadedFile } from "../types/file"
-  import { Button } from "carbon-components-svelte"
-  import { Close } from "carbon-icons-svelte"
-  import { createEventDispatcher } from "svelte"
+<script lang="ts">
+  import type { LoadedFile } from '../types/file'
+  import { Button } from 'carbon-components-svelte'
+  import { Close } from 'carbon-icons-svelte'
+  import { createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -12,13 +12,14 @@
     e.preventDefault()
     dispatch('close', file)
   }
-
 </script>
 
 <main>
   <span>{$file.title.substring(0, $file.title.lastIndexOf('.')) || $file.title}</span>
-  <aside>{#if !$file.saved()}*{/if}</aside>
-  <Button size="small" kind="ghost" iconDescription="close" icon={Close} href='#' on:click={handleClose} />
+  <aside>
+    {#if !$file.saved()}*{/if}
+  </aside>
+  <Button size="small" kind="ghost" iconDescription="close" icon={Close} href="#" on:click={handleClose} />
 </main>
 
 <style>
