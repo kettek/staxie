@@ -1030,7 +1030,8 @@ export class RemoveAnimationUndoable implements Undoable<LoadedFile> {
       throw new Error('animation not found: ' + this.animation)
     }
 
-    let {x, y, width, height} = file.getAnimationArea(this.stack, this.animation)
+    let {x, y, height} = file.getAnimationArea(this.stack, this.animation)
+    const width = file.canvas.width // Let's just shift the whole width...
     if (height > 0) {
       this.pixels = file.canvas.getPixels(x, y, width, height)
       this.x = x
@@ -1341,18 +1342,18 @@ export class RemoveAnimationFrameUndoable implements Undoable<LoadedFile> {
       throw new Error('frame oob')
     }
     
-    let {x, y, width, height} = file.getFrameArea(this.stackName, this.animationName, this.frameIndex)
-    this.pixels = file.canvas.getPixels(x, y, width, height)
+    let {x, y, height} = file.getFrameArea(this.stackName, this.animationName, this.frameIndex)
+    this.pixels = file.canvas.getPixels(x, y, file.canvas.width, height)
     this.pixelsX = x
     this.pixelsY = y
-    this.pixelsWidth = width
+    this.pixelsWidth = file.canvas.width
     this.pixelsHeight = height
     
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y+height, width, followingPixelsHeight)
+      let pixels = file.canvas.getPixels(x, y, file.canvas.width, followingPixelsHeight)
       // Move 'em back in place.
-      file.canvas.setPixels(x, y, width, followingPixelsHeight, pixels)
+      file.canvas.setPixels(x, y-height, file.canvas.width, followingPixelsHeight, pixels)
     }
     // Shrink our canvas by frame's height
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - height)
