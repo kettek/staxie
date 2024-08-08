@@ -1,6 +1,6 @@
 <script lang='ts' type='module'>
   import { onMount } from 'svelte'
-  import { SetRichPresenceState, SetRichPresenceDetails, UpdateRichPresence, StartRichPresence, StopRichPresence } from '../../wailsjs/go/main/App'
+  import { SetRichPresenceState, SetRichPresenceDetails, UpdateRichPresence, StartRichPresence, StopRichPresence, GetOSSeparator } from '../../wailsjs/go/main/App'
   import { fileStates } from '../stores/file'
   import { LoadedFile } from '../types/file'
 
@@ -18,7 +18,7 @@
   async function refresh() {
     if (lastFocusedFile) {
       await SetRichPresenceState(`Editing in ${is3D? '3D' : '2D'}`)
-      await SetRichPresenceDetails(lastFocusedFile.filepath?lastFocusedFile.filepath.split('/').pop():'something special')
+      await SetRichPresenceDetails(lastFocusedFile.filepath?lastFocusedFile.filepath.split((await GetOSSeparator() as string)).pop():'something special')
     } else {
       await SetRichPresenceState("Idle")
       await SetRichPresenceDetails("No file open")

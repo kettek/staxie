@@ -13,6 +13,8 @@ export function GetFileSavePath(arg1:Array<string>,arg2:Array<string>):Promise<s
 
 export function GetFilesInDir(arg1:string):Promise<Array<string>>;
 
+export function GetOSSeparator():Promise<string>;
+
 export function GetSetting(arg1:string):Promise<any>;
 
 export function OpenFileBytes(arg1:string):Promise<Array<number>>;
