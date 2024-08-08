@@ -48,6 +48,10 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
+func (a *App) GetOSSeparator() string {
+	return string(filepath.Separator)
+}
+
 func (a *App) AppDirectory(p string) string {
 	return filepath.Join(data.AppDirectory, p)
 }
