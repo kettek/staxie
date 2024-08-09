@@ -136,13 +136,7 @@ export class PixelsRotateUndoable implements Undoable<LoadedFile> {
     }
 
     // Collect our pixels.
-    if (!this.oldPixels.length) {
-      for (let x = minX; x < maxX; x++) {
-        for (let y = minY; y < maxY; y++) {
-          this.oldPixels.push({ x, y, index: file.canvas.getPixel(x, y) })
-        }
-      }
-    }
+    let shouldCollect = !this.oldPixels.length
 
     const rotatedPixels = []
     const centerX = (maxX - minX) / 2
@@ -172,6 +166,10 @@ export class PixelsRotateUndoable implements Undoable<LoadedFile> {
         px += minX
         py += minY
 
+        if (shouldCollect) {
+          this.oldPixels.push({ x: x, y: y, index: file.canvas.getPixel(x, y) })
+          this.oldPixels.push({ x: px, y: py, index: file.canvas.getPixel(px, py) })
+        }
         rotatedPixels.push({ x: px, y: py, index: file.canvas.getPixel(x, y) })
       }
     }
