@@ -1312,7 +1312,8 @@ export class AddAnimationFrameUndoable implements Undoable<LoadedFile> {
     }
 
     // Grow our canvas by 1 frameHeight
-    let { x, y, width, height } = file.getAnimationArea(this.stack, this.animation)
+    let { x, y, height } = file.getAnimationArea(this.stack, this.animation)
+    const width = file.canvas.width
     a.frames.push({
       slices: Array.from({ length: g.sliceCount }, (_) => ({
         shading: 1,
@@ -1347,7 +1348,8 @@ export class AddAnimationFrameUndoable implements Undoable<LoadedFile> {
     }
 
     // Acquire our pixels after our area and potentially shift them back.
-    let { x, y, width, height } = file.getAnimationArea(this.stack, this.animation)
+    let { x, y, height } = file.getAnimationArea(this.stack, this.animation)
+    const width = file.canvas.width
     a.frames.pop()
 
     let followingPixelsHeight = file.canvas.height - (y + height)
@@ -1400,8 +1402,8 @@ export class DuplicateAnimationFrameUndoable implements Undoable<LoadedFile> {
     // 2. Resize canvas
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + height)
     // 3. Shift all pixels after frame area down by frame area's height*2
-    let pixels = file.canvas.getPixels(x, y + height, width, file.canvas.height - (y + height))
-    file.canvas.setPixels(x, y + height * 2, width, file.canvas.height - (y + height), pixels)
+    let pixels = file.canvas.getPixels(x, y + height, file.canvas.width, file.canvas.height - (y + height))
+    file.canvas.setPixels(x, y + height * 2, file.canvas.width, file.canvas.height - (y + height), pixels)
     // 4. Set pixels at frame area + frame area height to stored
     file.canvas.setPixels(x, y + height, width, height, areaPixels)
     // 5. Update data structure
@@ -1420,8 +1422,8 @@ export class DuplicateAnimationFrameUndoable implements Undoable<LoadedFile> {
       throw new Error('animation not found: ' + this.animation)
     }
     // 1. Shift all pixels after stack area up by frame area's height
-    let pixels = file.canvas.getPixels(this.areaX, this.areaY + this.areaHeight * 2, this.areaWidth, file.canvas.height - (this.areaY + this.areaHeight))
-    file.canvas.setPixels(this.areaX, this.areaY + this.areaHeight, this.areaWidth, file.canvas.height - (this.areaY + this.areaHeight), pixels)
+    let pixels = file.canvas.getPixels(this.areaX, this.areaY + this.areaHeight * 2, file.canvas.width, file.canvas.height - (this.areaY + this.areaHeight))
+    file.canvas.setPixels(this.areaX, this.areaY + this.areaHeight, file.canvas.width, file.canvas.height - (this.areaY + this.areaHeight), pixels)
     // 2. Resize canvas
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - this.areaHeight)
     // 3. Update data structure
