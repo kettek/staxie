@@ -430,6 +430,9 @@
           <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor3DSettings.showCursor} labelText="Cursor" />
         </OverflowMenuItem>
         <OverflowMenuItem>
+          <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor3DSettings.hoverScale} labelText="Hover Scale" />
+        </OverflowMenuItem>
+        <OverflowMenuItem>
           <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor3DSettings.ignoreAlpha} labelText="Ignore Alpha" />
         </OverflowMenuItem>
         <OverflowMenuItem>

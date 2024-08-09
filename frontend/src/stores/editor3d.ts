@@ -17,6 +17,8 @@ type Editor3DSettings = {
   floodFillY: boolean
   floodFillZ: boolean
   showCursor: boolean
+  // Voxels
+  hoverScale: boolean
 }
 
 export const editor3DSettings = makeLocalStorageStore<Editor3DSettings>('editor3d', {
@@ -36,4 +38,6 @@ export const editor3DSettings = makeLocalStorageStore<Editor3DSettings>('editor3
   floodFillY: true,
   floodFillZ: true,
   showCursor: true,
+  // Voxels
+  hoverScale: true,
 })

@@ -11,6 +11,7 @@
   export let color: number = 0xff00ffff // RGBA
   export let ignoreEvents: boolean = false
   export let visible: boolean = true
+  export let hoverScale: boolean = true
   export let hideTransparent: boolean = false
   export let ignoreAlpha: boolean = false
 
@@ -46,7 +47,9 @@
     if (ignoreEvents || hidden) return
     e.stopPropagation()
     if (!wireframe) {
-      $scale = baseScale + 0.15
+      if (hoverScale) {
+        $scale = baseScale + 0.15
+      }
       hovered = true
     }
     dispatch('hover', {

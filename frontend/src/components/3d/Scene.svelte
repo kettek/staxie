@@ -345,7 +345,7 @@
     {#each $file.frame.slices as slice, y}
       {#each $file.canvas.getPixels(slice.x, slice.y, $file.frameWidth, $file.frameHeight) as pixel, index}
         {#if pixel !== 0}
-          <Voxel hideTransparent={$editor3DSettings.hideTransparent} ignoreAlpha={$editor3DSettings.ignoreAlpha} position={[index % $file.frameWidth, y, Math.floor(index / $file.frameWidth)]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={$palette ? $palette.swatches[pixel] : $file.canvas.getPaletteColor(pixel)} on:hover={onVoxelHover} on:move={onVoxelMove} on:leave={onVoxelLeave} on:click={onVoxelClick} />
+          <Voxel hoverScale={$editor3DSettings.hoverScale} hideTransparent={$editor3DSettings.hideTransparent} ignoreAlpha={$editor3DSettings.ignoreAlpha} position={[index % $file.frameWidth, y, Math.floor(index / $file.frameWidth)]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={$palette ? $palette.swatches[pixel] : $file.canvas.getPaletteColor(pixel)} on:hover={onVoxelHover} on:move={onVoxelMove} on:leave={onVoxelLeave} on:click={onVoxelClick} />
         {/if}
       {/each}
     {/each}
