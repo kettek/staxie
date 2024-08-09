@@ -14,7 +14,7 @@
   import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
-  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, SelectionClearUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
+  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, SelectionClearUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
 
   import 'carbon-components-svelte/css/all.css'
   import { Tabs, Tab, TabContent, Theme, NumberInput, Dropdown, Checkbox } from 'carbon-components-svelte'
@@ -23,7 +23,7 @@
 
   import { OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte'
 
-  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor, SquareOutline, CircleOutline, CircleDash, Chart_3D, WatsonHealth3DMprToggle, ImageReference } from 'carbon-icons-svelte'
+  import { Close, Erase, PaintBrushAlt, RainDrop, Redo, Select_01, Undo, Eyedropper, Move, MagicWand, SprayPaint, Maximize, Minimize, WatsonHealth3DSoftware, WatsonHealth3DCursor, SquareOutline, CircleOutline, CircleDash, Chart_3D, WatsonHealth3DMprToggle, ImageReference, Rotate, RotateClockwise, RotateCounterclockwise } from 'carbon-icons-svelte'
   import { MirrorH, MirrorV } from './icons'
   import StackPreview from './sections/StackPreview.svelte'
   import { Canvas } from './types/canvas'
@@ -325,6 +325,11 @@
     $fileStates.focused.push(new PixelsFlipUndoable(vertical, $fileStates.focused.selection, $fileStates.focused.view))
   }
 
+  function engageRotate(clockwise: boolean) {
+    if (!$fileStates.focused) return
+    $fileStates.focused.push(new PixelsRotateUndoable(clockwise, $fileStates.focused.selection, $fileStates.focused.view))
+  }
+
   function handlePaletteSelect(event: CustomEvent) {
     let index = event.detail.index
 
@@ -570,6 +575,8 @@
           <Shortcut global cmd="spray" keys={['p']} on:trigger={() => toolSettings.swapTool(toolSpray)} />
           <Shortcut global cmd="horizontal flip" keys={['h']} on:trigger={() => engageFlip(false)} />
           <Shortcut global cmd="vertical flip" keys={['shift+h']} on:trigger={() => engageFlip(true)} />
+          <Shortcut global cmd="rotate clockwise" keys={['r']} on:trigger={() => engageRotate(true)} />
+          <Shortcut global cmd="rotate counter clockwise" keys={['shift+r']} on:trigger={() => engageRotate(false)} />
           <Shortcut global cmd="copy" keys={['ctrl+c']} on:trigger={() => engageCopy()} />
           <Shortcut global cmd="cut" keys={['ctrl+x']} on:trigger={() => engageDelete(true)} />
           <Shortcut global cmd="paste" keys={['ctrl+v']} on:trigger={() => engagePaste()} />
@@ -616,6 +623,12 @@
         </Button>
         <Button kind="ghost" size="small" icon={MirrorV} tooltipPosition="right" on:click={() => engageFlip(true)}>
           <ShortcutTooltip slot="tooltip" group="editor2D" cmd="vertical flip" />
+        </Button>
+        <Button kind="ghost" size="small" icon={RotateClockwise} tooltipPosition="right" on:click={() => engageRotate(true)}>
+          <ShortcutTooltip slot="tooltip" group="editor2D" cmd="rotate clockwise" />
+        </Button>
+        <Button kind="ghost" size="small" icon={RotateCounterclockwise} tooltipPosition="right" on:click={() => engageRotate(false)}>
+          <ShortcutTooltip slot="tooltip" group="editor2D" cmd="rotate counter clockwise" />
         </Button>
       {/if}
     </menu>

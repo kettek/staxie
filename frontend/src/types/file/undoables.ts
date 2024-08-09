@@ -112,6 +112,80 @@ export class PixelsFlipUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class PixelsRotateUndoable implements Undoable<LoadedFile> {
+  private clockwise: boolean
+  private selection: SelectionArea
+  private view: CanvasView
+  private oldPixels: { x: number; y: number; index: number }[] = []
+  constructor(clockwise: boolean, selection: SelectionArea, view: CanvasView) {
+    this.clockwise = clockwise
+    this.selection = selection
+    this.view = view
+  }
+  apply(file: LoadedFile): void {
+    let minX = this.view.x
+    let minY = this.view.y
+    let maxX = this.view.x + this.view.width
+    let maxY = this.view.y + this.view.height
+    if (this.selection.active) {
+      const { x1, y1, x2, y2 } = this.selection.minmax()
+      minX = x1
+      minY = y1
+      maxX = x2
+      maxY = y2
+    }
+
+    // Collect our pixels.
+    if (!this.oldPixels.length) {
+      for (let x = minX; x < maxX; x++) {
+        for (let y = minY; y < maxY; y++) {
+          this.oldPixels.push({ x, y, index: file.canvas.getPixel(x, y) })
+        }
+      }
+    }
+
+    const rotatedPixels = []
+    const centerX = (maxX - minX) / 2
+    const centerY = (maxY - minY) / 2
+    for (let x = minX; x < maxX; x++) {
+      for (let y = minY; y < maxY; y++) {
+        if (!this.selection.isPixelMarked(x, y)) continue
+        let px = x
+        let py = y
+        px -= minX
+        py -= minY
+        px -= centerX
+        py -= centerY
+
+        if (this.clockwise) {
+          let temp = px
+          px = -py
+          py = temp
+        } else {
+          let temp = px
+          px = py
+          py = -temp
+        }
+
+        px += centerX
+        py += centerY
+        px += minX
+        py += minY
+
+        rotatedPixels.push({ x: px, y: py, index: file.canvas.getPixel(x, y) })
+      }
+    }
+    for (const pixel of rotatedPixels) {
+      file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
+    }
+  }
+  unapply(file: LoadedFile): void {
+    for (let pixel of this.oldPixels) {
+      file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
+    }
+  }
+}
+
 export class SelectionSetUndoable implements Undoable<LoadedFile> {
   private oldPixels: { x: number; y: number; marked: boolean }[] = []
   public pixels: { x: number; y: number; marked: boolean }[]
