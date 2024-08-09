@@ -611,8 +611,12 @@
         <hr />
         <Button selected={$toolSettings.current === toolReference} kind="ghost" size="small" icon={ImageReference} tooltip="reference" tooltipPosition="right" on:click={() => toolSettings.swapTool(toolReference)}></Button>
         <hr />
-        <Button kind="ghost" size="small" icon={MirrorH} tooltip="horizontal flip" tooltipPosition="right" on:click={() => engageFlip(false)}></Button>
-        <Button kind="ghost" size="small" icon={MirrorV} tooltip="vertical flip" tooltipPosition="right" on:click={() => engageFlip(true)}></Button>
+        <Button kind="ghost" size="small" icon={MirrorH} tooltipPosition="right" on:click={() => engageFlip(false)}>
+          <ShortcutTooltip slot="tooltip" group="editor2D" cmd="horizontal flip" />
+        </Button>
+        <Button kind="ghost" size="small" icon={MirrorV} tooltipPosition="right" on:click={() => engageFlip(true)}>
+          <ShortcutTooltip slot="tooltip" group="editor2D" cmd="vertical flip" />
+        </Button>
       {/if}
     </menu>
     <section class="middle">
