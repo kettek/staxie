@@ -160,6 +160,9 @@
     padding: 0;
     min-width: 10rem;
     min-height: 10rem;
+    width: 30rem;
+    height: 30rem;
+    margin: 0;
   }
   header {
     padding: var(--cds-spacing-03, 1rem);
