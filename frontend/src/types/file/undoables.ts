@@ -1541,9 +1541,9 @@ export class RemoveAnimationFrameUndoable implements Undoable<LoadedFile> {
 
     let followingPixelsHeight = file.canvas.height - (y + height)
     if (followingPixelsHeight > 0) {
-      let pixels = file.canvas.getPixels(x, y, file.canvas.width, followingPixelsHeight)
+      let pixels = file.canvas.getPixels(x, y + height, file.canvas.width, followingPixelsHeight)
       // Move 'em back in place.
-      file.canvas.setPixels(x, y - height, file.canvas.width, followingPixelsHeight, pixels)
+      file.canvas.setPixels(x, y, file.canvas.width, followingPixelsHeight, pixels)
     }
     // Shrink our canvas by frame's height
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height - height)
