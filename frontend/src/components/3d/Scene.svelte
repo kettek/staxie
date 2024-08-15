@@ -160,6 +160,10 @@
       if (!slice) return
       let p = file.canvas.getPixel(slice.x + hover.x, slice.y + hover.z)
       if (p !== -1) $brushSettings.primaryIndex = p
+    } else if ($toolSettings.current === toolVoxelCursor) {
+      if (!hover) return
+      cursor = [hover.x, hover.y, hover.z]
+      cursor2 = [hover.x, hover.y, hover.z]
     }
   }
 
