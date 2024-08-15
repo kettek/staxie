@@ -62,7 +62,7 @@
   import SmallStackPreview from './sections/SmallStackPreview.svelte'
 
   let useRichPresence: boolean = false
-  let is3D: boolean = false
+  let is3D: boolean = true
 
   let theme: 'white' | 'g10' | 'g80' | 'g90' | 'g100' = 'g90'
 
