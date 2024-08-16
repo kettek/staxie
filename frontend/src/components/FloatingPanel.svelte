@@ -91,7 +91,6 @@
         dialog.style.top = top + dy + 'px'
       } else if (direction === 'r') {
         dialog.style.width = width + dx + 'px'
-        dialog.style.left = left + dx + 'px'
       } else if (direction === 'b') {
         dialog.style.height = height + dy + 'px'
       } else if (direction === 'l') {
