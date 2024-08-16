@@ -101,6 +101,7 @@
 
 <main>
   <section class="slicesContainer">
+    <span class="buttons"> </span>
     <!--<Button
       kind="ghost"
       size="small"
@@ -121,7 +122,9 @@
     </section>
   </section>
   <section class="framesContainer">
-    <Button kind="ghost" size="small" icon={AddAlt} tooltip="Add Frame" tooltipPosition="top" tooltipAlignment="end" disabled={!file || !file.animation} on:click={addFrame} />
+    <span class="buttons">
+      <Button kind="ghost" size="small" icon={AddAlt} tooltip="Add Frame" tooltipPosition="top" tooltipAlignment="end" disabled={!file || !file.animation} on:click={addFrame} />
+    </span>
     <section class="frames">
       {#if $file.animation}
         {#each $file.animation.frames as frame, frameIndex}
@@ -155,7 +158,7 @@
   .slicesContainer {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: /*auto*/ minmax(0, 1fr);
+    grid-template-rows: /*auto*/ auto minmax(0, 1fr);
     min-width: 2em;
   }
   .slices {
@@ -200,7 +203,7 @@
   .framesContainer {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
     min-width: 2em;
   }
   .frames {
@@ -242,5 +245,8 @@
   .frame:hover {
     background: var(--cds-hover-primary);
     cursor: pointer;
+  }
+  .buttons {
+    min-height: 2rem;
   }
 </style>
