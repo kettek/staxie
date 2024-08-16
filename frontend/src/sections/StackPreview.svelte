@@ -65,10 +65,10 @@
     timeElapsed += ts - lastTime
     lastTime = ts
 
-    let computedSize = getComputedStyle(canvas)
-    if (canvas.width !== parseInt(computedSize.width) || canvas.height !== parseInt(computedSize.height)) {
-      canvas.width = parseInt(computedSize.width)
-      canvas.height = parseInt(computedSize.height)
+    let rect = canvas.getBoundingClientRect()
+    if (canvas.width !== rect.width || canvas.height !== rect.height) {
+      canvas.width = rect.width
+      canvas.height = rect.height
     }
 
     let ctx = canvas.getContext('2d')
@@ -260,40 +260,57 @@
   })
 </script>
 
-<Grid narrow condensed fullWidth>
-  <Row narrow condensed>
-    {#if !shronked}
-      <Column sm>
-        {#each $fileStates.files as file, i}
-          <Checkbox on:change={(e) => toggleFile(file, i, e)} checked={visibleFiles[file.id]?.visible} indeterminate={isFileIndeterminate(file)} labelText={file.title.length > 20 ? '…' + file.title.substring(file.title.length - 20) : file.title}></Checkbox>
-          {#each file.stacks as stack, stackIndex}
-            <div class="subcheck">
-              <Checkbox on:change={(e) => toggleStack(file, stack, e)} checked={visibleFiles[file.id]?.stacks[stack.name]?.visible} labelText={stack.name.length > 20 ? '…' + stack.name.substring(stack.name.length - 20) : stack.name}></Checkbox>
-              <Dropdown on:select={(e) => changeStackAnimation(file, stack, e)} selectedId={visibleFiles[file.id]?.stacks[stack.name]?.animation} items={stack.animations.map((animation) => ({ id: animation.name, text: animation.name }))}></Dropdown>
-              <div class="spinner">
-                <span>Slices</span>
-                <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackStart(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceStart || 0}></Input>
-                →
-                <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackEnd(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceEnd || stack.animations[0].frames[0].slices.length}></Input>
-              </div>
+<main class:shronked>
+  {#if !shronked}
+    <section class="settings">
+      {#each $fileStates.files as file, i}
+        <Checkbox on:change={(e) => toggleFile(file, i, e)} checked={visibleFiles[file.id]?.visible} indeterminate={isFileIndeterminate(file)} labelText={file.title.length > 20 ? '…' + file.title.substring(file.title.length - 20) : file.title}></Checkbox>
+        {#each file.stacks as stack, stackIndex}
+          <div class="subcheck">
+            <Checkbox on:change={(e) => toggleStack(file, stack, e)} checked={visibleFiles[file.id]?.stacks[stack.name]?.visible} labelText={stack.name.length > 20 ? '…' + stack.name.substring(stack.name.length - 20) : stack.name}></Checkbox>
+            <Dropdown on:select={(e) => changeStackAnimation(file, stack, e)} selectedId={visibleFiles[file.id]?.stacks[stack.name]?.animation} items={stack.animations.map((animation) => ({ id: animation.name, text: animation.name }))}></Dropdown>
+            <div class="spinner">
+              <span>Slices</span>
+              <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackStart(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceStart || 0}></Input>
+              →
+              <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackEnd(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceEnd || stack.animations[0].frames[0].slices.length}></Input>
             </div>
-          {/each}
+          </div>
         {/each}
-      </Column>
+      {/each}
+    </section>
+  {/if}
+  <section class="canvasGroup">
+    <canvas bind:this={canvas} on:mousedown={mousedown}></canvas>
+    {#if !shronked}
+      <Slider labelText="Global Zoom" min={1} max={10} step={1} bind:value={zoom} fullWidth></Slider>
+      <Slider labelText="Global Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
+      <Slider labelText="Global Slice Distance" min={0} max={2} step={0.1} bind:value={sliceDistance} fullWidth></Slider>
+      <Checkbox bind:checked={automaticShading} labelText="Automatic Shading"></Checkbox>
     {/if}
-    <Column>
-      <canvas bind:this={canvas} on:mousedown={mousedown}></canvas>
-      {#if !shronked}
-        <Slider labelText="Global Zoom" min={1} max={10} step={1} bind:value={zoom} fullWidth></Slider>
-        <Slider labelText="Global Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
-        <Slider labelText="Global Slice Distance" min={0} max={2} step={0.1} bind:value={sliceDistance} fullWidth></Slider>
-        <Checkbox bind:checked={automaticShading} labelText="Automatic Shading"></Checkbox>
-      {/if}
-    </Column>
-  </Row>
-</Grid>
+  </section>
+</main>
 
 <style>
+  main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  main.shronked {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .canvasGroup {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto auto auto auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+  }
   .subcheck {
     margin-left: 1em;
   }
