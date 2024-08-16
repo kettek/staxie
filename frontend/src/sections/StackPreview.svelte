@@ -349,8 +349,8 @@
     grid-template-columns: minmax(0, 1fr);
   }
   fieldset {
-    border: 1px solid var(--cds-border-01, #d9d9d9);
-    margin: 0.5rem;
+    margin: var(--cds-spacing-03);
+    background: var(--cds-background);
   }
   .stack {
     padding: 1rem;
@@ -361,6 +361,8 @@
     display: grid;
     grid-template-rows: minmax(0, 1fr) auto auto auto auto;
     grid-template-columns: minmax(0, 1fr);
+    background: var(--cds-background);
+    padding: var(--cds-spacing-03);
   }
   canvas {
     width: 100%;
