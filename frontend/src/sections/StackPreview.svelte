@@ -19,6 +19,8 @@
     orderIndex: number
     sliceStart: number
     sliceEnd: number
+    frameStart: number
+    frameEnd: number
   }
   type VisibleState = {
     visible: boolean
@@ -102,8 +104,11 @@
           if (!visibleFiles[file.id]?.stacks[stack.name]?.visible) continue
           let animation = stack.animations.find((animation) => animation.name === visibleFiles[file.id].stacks[stack.name].animation)
           if (animation) {
-            let frameIndex = Math.floor(timeElapsed / animation.frameTime) % animation.frames.length
+            const frameStart = Math.max(visibleFiles[file.id].stacks[stack.name].frameStart || 0, 0)
+            const frameEnd = Math.min(visibleFiles[file.id].stacks[stack.name].frameEnd || animation.frames.length, animation.frames.length)
+            let frameIndex = frameStart + (Math.floor(timeElapsed / animation.frameTime) % (frameEnd - frameStart))
             let frame = animation.frames[frameIndex]
+            if (!frame) continue
             let sliceStart = Math.max(visibleFiles[file.id].stacks[stack.name].sliceStart || 0, 0)
             let sliceEnd = Math.min(visibleFiles[file.id].stacks[stack.name].sliceEnd || frame.slices.length, frame.slices.length)
             for (let sliceIndex = sliceStart; sliceIndex < sliceEnd; sliceIndex++) {
@@ -263,6 +268,20 @@
     visibleFiles[file.id].stacks[stack.name].sliceEnd = e.detail
     visibleFiles = { ...visibleFiles }
   }
+  function setStackFrameStart(file: LoadedFile, stack: StaxStack, e: any) {
+    if (!visibleFiles[file.id]) visibleFiles[file.id] = { visible: true, stacks: {} }
+    visibleFiles[file.id].stacks[stack.name] = visibleFiles[file.id].stacks[stack.name] || { visible: true, animation: stack.animations[0]?.name, frameIndex: 0, orderIndex: 0 }
+    const frameCount = stack.animations.find((v) => v.name === visibleFiles[file.id].stacks[stack.name].animation)?.frames.length ?? 0
+    visibleFiles[file.id].stacks[stack.name].frameStart = e.detail < 0 ? 0 : e.detail > frameCount ? frameCount : e.detail
+    visibleFiles = { ...visibleFiles }
+  }
+  function setStackFrameEnd(file: LoadedFile, stack: StaxStack, e: any) {
+    if (!visibleFiles[file.id]) visibleFiles[file.id] = { visible: true, stacks: {} }
+    visibleFiles[file.id].stacks[stack.name] = visibleFiles[file.id].stacks[stack.name] || { visible: true, animation: stack.animations[0]?.name, frameIndex: 0, orderIndex: 0 }
+    const frameCount = stack.animations.find((v) => v.name === visibleFiles[file.id].stacks[stack.name].animation)?.frames.length ?? 0
+    visibleFiles[file.id].stacks[stack.name].frameEnd = e.detail < 0 ? 0 : e.detail > frameCount ? frameCount : e.detail
+    visibleFiles = { ...visibleFiles }
+  }
 
   onMount(() => {
     let frameID: number = 0
@@ -281,9 +300,16 @@
       {#each $fileStates.files as file, i}
         <Checkbox on:change={(e) => toggleFile(file, i, e)} checked={visibleFiles[file.id]?.visible} indeterminate={isFileIndeterminate(file)} labelText={file.title.length > 20 ? '…' + file.title.substring(file.title.length - 20) : file.title}></Checkbox>
         {#each file.stacks as stack, stackIndex}
+          {@const stackState = visibleFiles[file.id]?.stacks[stack.name] || { visible: false, animation: '', frameIndex: 0, orderIndex: 0 }}
           <div class="subcheck">
-            <Checkbox on:change={(e) => toggleStack(file, stack, e)} checked={visibleFiles[file.id]?.stacks[stack.name]?.visible} labelText={stack.name.length > 20 ? '…' + stack.name.substring(stack.name.length - 20) : stack.name}></Checkbox>
-            <Dropdown on:select={(e) => changeStackAnimation(file, stack, e)} selectedId={visibleFiles[file.id]?.stacks[stack.name]?.animation} items={stack.animations.map((animation) => ({ id: animation.name, text: animation.name }))}></Dropdown>
+            <Checkbox on:change={(e) => toggleStack(file, stack, e)} checked={stackState.visible} labelText={stack.name.length > 20 ? '…' + stack.name.substring(stack.name.length - 20) : stack.name}></Checkbox>
+            <Dropdown on:select={(e) => changeStackAnimation(file, stack, e)} selectedId={stackState.animation} items={stack.animations.map((animation) => ({ id: animation.name, text: animation.name }))}></Dropdown>
+            <div class="spinner">
+              <span>Frames</span>
+              <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackFrameStart(file, stack, e)} value={stackState.frameStart || 0}></Input>
+              →
+              <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackFrameEnd(file, stack, e)} value={stackState.frameEnd || stack.animations.find((v) => v.name === stackState.animation)?.frames.length}></Input>
+            </div>
             <div class="spinner">
               <span>Slices</span>
               <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackStart(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceStart || 0}></Input>
@@ -311,6 +337,7 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
+    height: 100%;
   }
   main.shronked {
     grid-template-columns: minmax(0, 1fr);
