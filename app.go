@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/kettek/staxie/pkg/data"
 
@@ -17,6 +18,7 @@ import (
 type App struct {
 	ctx           context.Context
 	versionString string
+	fsAccess      sync.Mutex
 	RichPresence
 }
 
@@ -77,6 +79,8 @@ func (a *App) GetFilesInDir(dir string) ([]string, error) {
 }
 
 func (a *App) GetFilePath(names []string, patterns []string) (string, error) {
+	a.fsAccess.Lock()
+	defer a.fsAccess.Unlock()
 	var f []runtime.FileFilter
 	for i, n := range names {
 		ff := runtime.FileFilter{
@@ -97,6 +101,8 @@ func (a *App) GetFilePath(names []string, patterns []string) (string, error) {
 }
 
 func (a *App) GetFileSavePath(names []string, patterns []string) (string, error) {
+	a.fsAccess.Lock()
+	defer a.fsAccess.Unlock()
 	var f []runtime.FileFilter
 	for i, n := range names {
 		ff := runtime.FileFilter{
@@ -125,6 +131,8 @@ func (a *App) OpenFileBytes(p string) ([]byte, error) {
 }
 
 func (a *App) SaveFilePath(p string) (string, error) {
+	a.fsAccess.Lock()
+	defer a.fsAccess.Unlock()
 	file, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
 		DefaultDirectory: filepath.Dir(p),
 		DefaultFilename:  filepath.Base(p),
