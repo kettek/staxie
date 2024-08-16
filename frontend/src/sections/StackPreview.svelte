@@ -190,6 +190,21 @@
     window.addEventListener('mouseup', mouseup)
     window.addEventListener('mousemove', mousemove)
   }
+  function mousewheel(e: WheelEvent) {
+    if (e.ctrlKey) {
+      if (e.deltaY > 0) {
+        rotation++
+      } else {
+        rotation--
+      }
+    } else {
+      if (e.deltaY > 0) {
+        zoom /= 2
+      } else {
+        zoom *= 2
+      }
+    }
+  }
 
   function toggleFile(file: LoadedFile, i: number, e: any) {
     visibleFiles[file.id] = visibleFiles[file.id] || { visible: e.target.checked, stacks: {} }
@@ -281,7 +296,7 @@
     </section>
   {/if}
   <section class="canvasGroup">
-    <canvas bind:this={canvas} on:mousedown={mousedown}></canvas>
+    <canvas bind:this={canvas} on:mousedown={mousedown} on:mousewheel={mousewheel}></canvas>
     {#if !shronked}
       <Slider labelText="Global Zoom" min={1} max={10} step={1} bind:value={zoom} fullWidth></Slider>
       <Slider labelText="Global Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
