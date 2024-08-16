@@ -198,15 +198,15 @@
   function mousewheel(e: WheelEvent) {
     if (e.ctrlKey) {
       if (e.deltaY > 0) {
-        rotation++
-      } else {
-        rotation--
-      }
-    } else {
-      if (e.deltaY > 0) {
         zoom /= 2
       } else {
         zoom *= 2
+      }
+    } else {
+      if (e.deltaY > 0) {
+        rotation++
+      } else {
+        rotation--
       }
     }
   }
