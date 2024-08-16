@@ -238,7 +238,7 @@
 
   function engageNew() {
     let file = new LoadedFile({
-      filepath: '',
+      filepath: 'untitled.png',
       title: 'Untitled',
       canvas: importCanvas,
       data: importPNG,
