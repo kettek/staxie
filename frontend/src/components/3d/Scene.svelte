@@ -19,6 +19,7 @@
   import ShortcutHandlers from '../ShortcutHandlers.svelte'
   import ShortcutHandler from '../ShortcutHandler.svelte'
   import { ThreeDCopyPaste } from '../../types/copypaste'
+  import { isKeyActive } from '../Shortcuts.svelte'
 
   export let file: LoadedFile
   export let palette: Palette | undefined
@@ -37,20 +38,17 @@
   let showTarget = false
   export let target: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 }
   export let hover: { x: number; y: number; z: number } | null = null
-  export let cursor: [number, number, number] = [2 * Math.round(file.frameWidth / 2), 0, 2 * Math.round(file.frameHeight / 2)]
-  export let cursor2: [number, number, number] = [2 * Math.round(file.frameWidth / 2), 0, 2 * Math.round(file.frameHeight / 2)]
+  let draggingVoxel: { x: number; y: number; z: number } | null = null
+  let cursorGrabbed: boolean = false
+  let grabbed: [number, number, number] = [0, 0, 0]
   function constrainCursor(c: [number, number, number]): [number, number, number] {
     return [Math.min(Math.max(c[0], 0), file.frameWidth - 1), Math.min(Math.max(c[1], 0), file.frame?.slices.length - 1), Math.min(Math.max(c[2], 0), file.frameHeight - 1)]
   }
-  $: cursor = constrainCursor(cursor)
-  $: cursor2 = constrainCursor(cursor2)
-  $: cursor = $file.threeDCursor1
-  $: cursor2 = $file.threeDCursor2
   function isSelectionSame(a: [number, number, number], b: [number, number, number]): boolean {
     return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]
   }
   let showSelection: boolean = false
-  $: showSelection = !isSelectionSame(cursor, cursor2)
+  $: showSelection = !isSelectionSame($file.threeDCursor1, $file.threeDCursor2)
   let cursorFirstMove = true
 
   let orbitControls: ThreeOrbitControls
@@ -143,6 +141,7 @@
     showTarget = false
   }
   function onVoxelClick(e: CustomEvent & { detail: VoxelClickEvent }) {
+    console.log('voxel Click')
     if ($toolSettings.current === toolVoxelPlace) {
       placePixelAt(target, $brushSettings.primaryIndex)
     } else if ($toolSettings.current === toolFill) {
@@ -161,9 +160,10 @@
       let p = file.canvas.getPixel(slice.x + hover.x, slice.y + hover.z)
       if (p !== -1) $brushSettings.primaryIndex = p
     } else if ($toolSettings.current === toolVoxelCursor) {
+      console.log('click', hover)
       if (!hover) return
-      cursor = [hover.x, hover.y, hover.z]
-      cursor2 = [hover.x, hover.y, hover.z]
+      $file.threeDCursor1 = [hover.x, hover.y, hover.z]
+      $file.threeDCursor2 = [hover.x, hover.y, hover.z]
     }
   }
 
@@ -209,32 +209,61 @@
   function onCursorChange(e: CustomEvent & { detail: [number, number, number] }) {
     const detail: [number, number, number] = e.detail
     if ($toolSettings.current === toolVoxelCursor) {
-      cursor = [...detail]
-      cursor2 = [...detail]
+      $file.threeDCursor1 = [...detail]
+      $file.threeDCursor2 = [...detail]
     } else if ($toolSettings.current === toolVoxelBoxSelection) {
-      if (isSelectionSame(cursor, cursor2)) {
+      if (isSelectionSame($file.threeDCursor1, $file.threeDCursor2)) {
         cursorFirstMove = true
       }
       if (cursorFirstMove) {
-        cursor2 = [...detail]
+        $file.threeDCursor2 = [...detail]
       } else {
-        cursor = [...detail]
+        $file.threeDCursor1 = [...detail]
       }
     }
   }
+  function onCursorGrab(e: CustomEvent) {
+    cursorGrabbed = true
+    grabbed = [...$file.threeDCursor1]
+  }
   function onCursorRelease(e: CustomEvent) {
+    if (cursorGrabbed) {
+      if (isKeyActive('shift')) {
+        const x = grabbed[0]
+        const y = grabbed[1]
+        const z = grabbed[2]
+        const nx = $file.threeDCursor1[0]
+        const ny = $file.threeDCursor1[1]
+        const nz = $file.threeDCursor1[2]
+        const slice = file.frame?.slices[y]
+        const nslice = file.frame?.slices[ny]
+        if (slice && nslice) {
+          const p = file.canvas.getPixel(slice.x + x, slice.y + z)
+          if (p !== -1 && file.selection.isPixelMarked(slice.x + x, slice.y + z)) {
+            file.push(
+              new PixelsPlaceUndoable([
+                { x: slice.x + x, y: slice.y + z, index: 0 },
+                { x: nslice.x + nx, y: nslice.y + nz, index: p },
+              ]),
+            )
+          }
+        }
+      }
+      cursorGrabbed = false
+    }
     if ($toolSettings.current === toolVoxelBoxSelection) {
       cursorFirstMove = false
-      file.push(new ThreeDSelectionBoxSetUndoable([...cursor], [...cursor2]))
+      file.push(new ThreeDSelectionBoxSetUndoable([...$file.threeDCursor1], [...$file.threeDCursor2]))
     }
   }
   function onCursor2Change(e: CustomEvent & { detail: [number, number, number] }) {
     const detail: [number, number, number] = e.detail
-    cursor2 = [...detail]
+    console.log('change2...', detail, $file.threeDCursor2)
+    $file.threeDCursor2 = [...detail]
   }
   function onCursor2Release(e: CustomEvent) {
     if ($toolSettings.current === toolVoxelBoxSelection) {
-      file.push(new ThreeDSelectionBoxSetUndoable([...cursor], [...cursor2]))
+      file.push(new ThreeDSelectionBoxSetUndoable([...$file.threeDCursor1], [...$file.threeDCursor2]))
     }
   }
 
@@ -349,7 +378,9 @@
     {#each $file.frame.slices as slice, y}
       {#each $file.canvas.getPixels(slice.x, slice.y, $file.frameWidth, $file.frameHeight) as pixel, index}
         {#if pixel !== 0}
-          <Voxel hoverScale={$editor3DSettings.hoverScale} hideTransparent={$editor3DSettings.hideTransparent} ignoreAlpha={$editor3DSettings.ignoreAlpha} position={[index % $file.frameWidth, y, Math.floor(index / $file.frameWidth)]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={$palette ? $palette.swatches[pixel] : $file.canvas.getPaletteColor(pixel)} on:hover={onVoxelHover} on:move={onVoxelMove} on:leave={onVoxelLeave} on:click={onVoxelClick} />
+          {@const x = index % $file.frameWidth}
+          {@const z = Math.floor(index / $file.frameWidth)}
+          <Voxel hoverScale={$editor3DSettings.hoverScale} hideTransparent={$editor3DSettings.hideTransparent} ignoreAlpha={$editor3DSettings.ignoreAlpha} position={[x, y, z]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={$palette ? $palette.swatches[pixel] : $file.canvas.getPaletteColor(pixel)} on:hover={onVoxelHover} on:move={onVoxelMove} on:leave={onVoxelLeave} on:click={onVoxelClick} ignoreEvents={cursorGrabbed} />
         {/if}
       {/each}
     {/each}
@@ -387,17 +418,17 @@
 </T.Mesh>
 
 {#if $toolSettings.current === toolVoxelCursor || $toolSettings.current === toolVoxelBoxSelection || pasting.length > 0}
-  <Cursor bind:position={cursor} on:move={onCursorChange} on:release={onCursorRelease} offset={[-$file.frameWidth / 2 + xOffset, 0, -$file.frameHeight / 2 + yOffset]} />
+  <Cursor position={$file.threeDCursor1} on:move={onCursorChange} on:grab={onCursorGrab} on:release={onCursorRelease} offset={[-$file.frameWidth / 2 + xOffset, 0, -$file.frameHeight / 2 + yOffset]} />
 {/if}
 {#if $toolSettings.current === toolVoxelBoxSelection && showSelection}
-  <Cursor position={cursor2} on:move={onCursor2Change} on:release={onCursor2Release} offset={[-$file.frameWidth / 2 + xOffset, 0, -$file.frameHeight / 2 + yOffset]} />
+  <Cursor position={$file.threeDCursor2} on:move={onCursor2Change} on:release={onCursor2Release} offset={[-$file.frameWidth / 2 + xOffset, 0, -$file.frameHeight / 2 + yOffset]} />
 {/if}
 {#if $editor3DSettings.showCursor}
-  <Voxel position={cursor} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={0x44ff00ff} baseScale={1.1} ignoreEvents={$toolSettings.current !== toolVoxelPlace && $toolSettings.current !== toolVoxelReplace} on:hover={onCursorHover} on:move={onCursorMove} on:leave={onCursorLeave} on:click={onCursorClick} alwaysOnTop wireframe />
+  <Voxel position={$file.threeDCursor1} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={0x44ff00ff} baseScale={1.1} ignoreEvents={$toolSettings.current !== toolVoxelPlace && $toolSettings.current !== toolVoxelReplace} on:hover={onCursorHover} on:move={onCursorMove} on:leave={onCursorLeave} on:click={onCursorClick} alwaysOnTop wireframe />
 {/if}
 
 {#if showSelection}
-  <Selection selection={[cursor, cursor2]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} />
+  <Selection selection={[$file.threeDCursor1, $file.threeDCursor2]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} />
 {/if}
 
 <Gizmo center={$center} verticalPlacement={'top'} size={64} paddingX={8} paddingY={8} />

@@ -10,6 +10,12 @@
   function onPositionChange(next: [number, number, number]) {
     dispatch('move', next)
   }
+  function onpointerdown(e: PointerEvent) {
+    //e.stopPropagation()
+  }
+  function onmousedown(e: MouseEvent) {
+    dispatch('grab', {})
+  }
   function onmouseup(e: MouseEvent) {
     dispatch('release', {})
   }
@@ -22,7 +28,9 @@
     on:objectChange={(e) => {
       onPositionChange([e.target.object.position.x, e.target.object.position.y, e.target.object.position.z])
     }}
+    on:pointerdown={onpointerdown}
     on:pointerup={onpointerup}
+    on:mouseDown={onmousedown}
     on:mouseUp={onmouseup}
     size={0.5}
   >
