@@ -13,19 +13,18 @@
 
   let target: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 }
   let hover: { x: number; y: number; z: number } | null = null
-  let cursor: [number, number, number] = [0, 0, 0]
 </script>
 
 <main style={`background: ${$editor2DSettings.backgroundColor}`}>
   <Canvas>
     <!--PerfMonitor anchorX={'right'} anchorY={'bottom'} /-->
-    <Scene bind:target bind:hover bind:cursor {file} {palette} {orthographic} />
+    <Scene bind:target bind:hover {file} {palette} {orthographic} />
   </Canvas>
   <menu>
     <section class="cursor">
       <span>hover: </span><span>{hover?.x ?? '-'}</span><span>{hover?.y ?? '-'}</span><span>{hover?.z ?? '-'}</span>
       <span>target: </span><span>{target.x ?? '-'}</span><span>{target.y ?? '-'}</span><span>{target.z ?? '-'}</span>
-      <span>cursor: </span><span>{cursor[0]}</span><span>{cursor[1]}</span><span>{cursor[2]}</span>
+      <span>cursor: </span><span>{$file.threeDCursor1[0]}</span><span>{$file.threeDCursor1[1]}</span><span>{$file.threeDCursor1[2]}</span>
     </section>
   </menu>
 </main>

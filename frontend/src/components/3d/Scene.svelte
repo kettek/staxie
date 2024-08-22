@@ -229,23 +229,50 @@
   function onCursorRelease(e: CustomEvent) {
     if (cursorGrabbed) {
       if (isKeyActive('shift')) {
-        const x = grabbed[0]
-        const y = grabbed[1]
-        const z = grabbed[2]
-        const nx = $file.threeDCursor1[0]
-        const ny = $file.threeDCursor1[1]
-        const nz = $file.threeDCursor1[2]
-        const slice = file.frame?.slices[y]
-        const nslice = file.frame?.slices[ny]
-        if (slice && nslice) {
-          const p = file.canvas.getPixel(slice.x + x, slice.y + z)
-          if (p !== -1 && file.selection.isPixelMarked(slice.x + x, slice.y + z)) {
-            file.push(
-              new PixelsPlaceUndoable([
-                { x: slice.x + x, y: slice.y + z, index: 0 },
-                { x: nslice.x + nx, y: nslice.y + nz, index: p },
-              ]),
-            )
+        if ($toolSettings.current === toolVoxelBoxSelection) {
+          const x1 = Math.min($file.threeDCursor1[0], $file.threeDCursor2[0])
+          const y1 = Math.min($file.threeDCursor1[1], $file.threeDCursor2[1])
+          const z1 = Math.min($file.threeDCursor1[2], $file.threeDCursor2[2])
+          const x2 = Math.max($file.threeDCursor1[0], $file.threeDCursor2[0])
+          const y2 = Math.max($file.threeDCursor1[1], $file.threeDCursor2[1])
+          const z2 = Math.max($file.threeDCursor1[2], $file.threeDCursor2[2])
+          for (let x = x1; x <= x2; x++) {
+            for (let y = y1; y <= y2; y++) {
+              for (let z = z1; z <= z2; z++) {
+                const slice = file.frame?.slices[y]
+                if (slice) {
+                  const p = file.canvas.getPixel(slice.x + x, slice.y + z)
+                  if (p !== -1 && file.selection.isPixelMarked(slice.x + x, slice.y + z)) {
+                    file.push(
+                      new PixelsPlaceUndoable([
+                        { x: slice.x + x, y: slice.y + z, index: 0 },
+                        { x: slice.x + x, y: slice.y + z, index: p },
+                      ]),
+                    )
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          const x = grabbed[0]
+          const y = grabbed[1]
+          const z = grabbed[2]
+          const nx = $file.threeDCursor1[0]
+          const ny = $file.threeDCursor1[1]
+          const nz = $file.threeDCursor1[2]
+          const slice = file.frame?.slices[y]
+          const nslice = file.frame?.slices[ny]
+          if (slice && nslice) {
+            const p = file.canvas.getPixel(slice.x + x, slice.y + z)
+            if (p !== -1 && file.selection.isPixelMarked(slice.x + x, slice.y + z)) {
+              file.push(
+                new PixelsPlaceUndoable([
+                  { x: slice.x + x, y: slice.y + z, index: 0 },
+                  { x: nslice.x + nx, y: nslice.y + nz, index: p },
+                ]),
+              )
+            }
           }
         }
       }
@@ -389,7 +416,7 @@
 
 {#if pasting.length > 0}
   {#each pasting as { x, y, z, index }}
-    <Voxel position={[x + cursor[0], y + cursor[1], z + cursor[2]]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={$palette ? $palette.swatches[index] : $file.canvas.getPaletteColor(index)} forceTransparent ignoreEvents />
+    <Voxel position={[x + $file.threeDCursor1[0], y + $file.threeDCursor1[1], z + $file.threeDCursor1[2]]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={$palette ? $palette.swatches[index] : $file.canvas.getPaletteColor(index)} forceTransparent ignoreEvents />
   {/each}
 {/if}
 
