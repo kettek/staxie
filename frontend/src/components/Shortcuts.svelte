@@ -63,6 +63,7 @@
   }
 
   window.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
     if (disabled) return
     if (event.key === 'Alt') event.preventDefault() // Prevent alt because that opens a menu that doesn't exist.
     let key = normalizeKey(event)
@@ -91,6 +92,7 @@
     }
   })
   window.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
     if (disabled) return
     keystring = keysToString([...keys])
 
