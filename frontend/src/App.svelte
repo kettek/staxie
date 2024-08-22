@@ -60,6 +60,7 @@
   import Split from './components/common/Split.svelte'
   import ShortcutTooltip from './components/ShortcutTooltip.svelte'
   import SmallStackPreview from './sections/SmallStackPreview.svelte'
+  import Selection3D from './toolbars/Selection3D.svelte'
 
   let useRichPresence: boolean = false
   let is3D: boolean = true
@@ -647,6 +648,8 @@
           density:&nbsp; <NumberInput size="sm" min={1} max={100} step={1} bind:value={$brushSettings.sprayDensity} />
         {:else if $toolSettings.current === toolReference && $fileStates.focused}
           <ImageReferenceTool file={$fileStates.focused} imageReferences={$editor2DSettings.imageReferences} />
+        {:else if $toolSettings.current === toolVoxelBoxSelection}
+          <Selection3D />
         {/if}
       </menu>
       <Tabs bind:selected={$fileStates.focusedIndex}>
@@ -811,7 +814,11 @@
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    min-height: 2rem;
+    min-height: 2.5rem;
+  }
+  :global(.toolsettings > button) {
+    width: 4rem !important;
+    color: var(--cds-text-02, #c6c6c6);
   }
   :global(menu.toolsettings > .bx--form-item) {
     flex: initial;
