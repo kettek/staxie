@@ -30,6 +30,7 @@
       <slot name="tooltip"></slot>
     </aside>
   {/if}
+  <slot></slot>
 </button>
 
 <style>
