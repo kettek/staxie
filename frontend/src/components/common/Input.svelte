@@ -5,6 +5,7 @@
 
   export let size: 'small' | 'medium' | 'large' = 'medium'
   export let width: number = 6
+  export let labelColor: string | undefined
   export let type: 'text' | 'number' | 'color' | 'file' | 'checkbox' = 'text'
   export let value: string | number = ''
   export let checked: boolean = false
@@ -37,7 +38,7 @@
 </script>
 
 <label class={size}>
-  <span>
+  <span style="{labelColor?'color: '+labelColor:''}">
     <slot name="label"></slot>
   </span>
   {#if type === 'text'}
@@ -101,6 +102,7 @@
       background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
       outline 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
     padding-right: 1rem;
+    user-select: text;
   }
   input:focus {
     outline: 2px solid var(--cds-focus, #0f62fe);
