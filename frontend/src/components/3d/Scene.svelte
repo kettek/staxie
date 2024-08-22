@@ -330,9 +330,9 @@
     if (pasting === null) return
     let pixels: { x: number; y: number; index: number }[] = []
     for (let { x, y, z, index } of pasting) {
-      x += cursor[0]
-      y += cursor[1]
-      z += cursor[2]
+      x += $file.threeDCursor1[0]
+      y += $file.threeDCursor1[1]
+      z += $file.threeDCursor1[2]
       if (x < 0 || x >= file.frameWidth) continue
       if (z < 0 || z >= file.frameHeight) continue
       if (y < 0 || y >= file.frame?.slices.length) continue
