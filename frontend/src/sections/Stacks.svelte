@@ -1,7 +1,7 @@
 <script lang="ts">
   import { CaretDown, CaretRight, FaceAdd, FolderAdd } from 'carbon-icons-svelte'
   import { type LoadedFile } from '../types/file'
-  import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable, RenameAnimationUndoable, RenameStackUndoable, DuplicateStackUndoable, DuplicateAnimationUndoable } from '../types/file/undoables'
+  import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable, RenameAnimationUndoable, RenameStackUndoable, DuplicateStackUndoable, DuplicateAnimationUndoable, MoveAnimationUndoable } from '../types/file/undoables'
   import { ContextMenu, ContextMenuOption, NumberInput } from 'carbon-components-svelte'
   import Button from '../components/common/Button.svelte'
   import { fileStates } from '../stores/file'
@@ -102,6 +102,23 @@
     contextY = e.clientY
     contextStackOpen = true
   }
+  function handleStackDragStart(e: DragEvent, stack: string) {
+    e.dataTransfer?.setData('staxie/stack', stack)
+  }
+  function handleStackDragEnd(e: DragEvent) {
+  }
+  function handleStackDragOver(e: DragEvent) {
+    if (!e.dataTransfer?.types.includes('staxie/stack')) return
+    e.preventDefault()
+  }
+  function handleStackDrop(e: DragEvent, stackIndex: number) {
+    e.preventDefault()
+    const data = e.dataTransfer?.getData('staxie/stack')
+    if (!data) return
+    const fromStack = data
+    // TODO: Move it.
+  }
+
   function handleAnimationClick(stack: string, animation: string) {
     file.setStack(stack)
     file.setAnimation(animation)
@@ -114,6 +131,26 @@
     contextX = e.clientX
     contextY = e.clientY
     contextAnimationOpen = true
+  }
+  function handleAnimationDragStart(e: DragEvent, stack: string, animationIndex: string) {
+    e.dataTransfer?.setData('staxie/animation', JSON.stringify({ fromStack: stack, fromIndex: animationIndex }))
+  }
+  function handleAnimationDragEnd(e: DragEvent) {
+  }
+  function handleAnimationDragOver(e: DragEvent) {
+    if (!e.dataTransfer?.types.includes('staxie/animation')) return
+    e.preventDefault()
+  }
+  function handleAnimationDrop(e: DragEvent, stack: string, animationIndex: number) {
+    e.preventDefault()
+    const data = e.dataTransfer?.getData('staxie/animation')
+    if (!data) return
+    const { fromStack, fromIndex } = JSON.parse(data)
+    if (fromStack !== stack) {
+      alert('cannot move animations between stacks (if you want this, request)')
+      return
+    }
+    // TODO: Move it.
   }
 </script>
 
@@ -133,14 +170,14 @@
         {#each $file.stacks as stack, stackIndex}
           {@const stackSelected = $file.stackName===stack.name}
           <li class='stack'>
-            <header class:--selected={stackSelected} on:click={(e)=>handleStackClick(stack.name)} on:contextmenu|preventDefault={(e)=>handleStackRightClick(e, stack.name)}>
+            <header class:--selected={stackSelected} on:click={(e)=>handleStackClick(stack.name)} on:contextmenu|preventDefault={(e)=>handleStackRightClick(e, stack.name)} on:dragstart={(e)=>handleStackDragStart(e, stack.name)} on:dragend={handleStackDragEnd} on:dragover={handleStackDragOver} on:drop={(e)=>handleStackDrop(e, stack.name)} draggable={true}>
               <Button icon={folded[stack.name]?CaretRight:CaretDown} on:click={() => folded[stack.name] = !folded[stack.name]} />
               <span>{stack.name}</span>
             </header>
             <ul class='animations'>
               {#if !folded[stack.name]}
                 {#each stack.animations as animation, animationIndex}
-                  <li class='animation' on:click={(e)=>handleAnimationClick(stack.name, animation.name)} on:contextmenu|preventDefault={(e) => handleAnimationRightClick(e, stack.name, animation.name)}>
+                  <li class='animation' on:click={(e)=>handleAnimationClick(stack.name, animation.name)} on:contextmenu|preventDefault={(e) => handleAnimationRightClick(e, stack.name, animation.name)} on:dragstart={(e)=>handleAnimationDragStart(e, stack.name, animationIndex)} on:dragend={handleAnimationDragEnd} on:dragover={handleAnimationDragOver} on:drop={(e)=>handleAnimationDrop(e, stack.name, animationIndex)} draggable="true">
                     <header class:--selected={stackSelected&&$file.animationName===animation.name}>
                       <span>{animation.name}</span>
                     </header>
