@@ -1,6 +1,6 @@
 <script lang="ts">
   import { LoadedFile } from '../types/file'
-  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateAnimationFrameUndoable, DuplicateSliceUndoable, RemoveSliceUndoable, RemoveAnimationFrameUndoable } from '../types/file/undoables'
+  import { AddAnimationFrameUndoable, ClearAnimationFrameUndoable, ClearSliceUndoable, DuplicateAnimationFrameUndoable, DuplicateSliceUndoable, RemoveSliceUndoable, RemoveAnimationFrameUndoable, MoveAnimationFrameUndoable, MoveAnimationFrameSliceUndoable } from '../types/file/undoables'
   import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte'
   import Button from '../components/common/Button.svelte'
   import { fileStates } from '../stores/file'
@@ -97,6 +97,46 @@
     if (!file || !file.stack) return
     file.push(new RemoveSliceUndoable(file.stack.name, contextSliceIndex))
   }
+
+  function handleSliceDragStart(e: DragEvent, sliceIndex: number) {
+    e.dataTransfer?.setData('staxie/slice', JSON.stringify({index: sliceIndex}))
+  }
+  function handleSliceDragEnd(e: DragEvent) {
+  }
+  function handleSliceDragOver(e: DragEvent) {
+    if (!e.dataTransfer?.types.includes('staxie/slice')) return
+    e.preventDefault()
+  }
+  function handleSliceDrop(e: DragEvent, sliceIndex: number) {
+    if (!file || !file.frame) return
+    e.preventDefault()
+    const data = e.dataTransfer?.getData('staxie/slice')
+    if (!data) return
+    const { index } = JSON.parse(data)
+    file.push(new MoveAnimationFrameSliceUndoable(file.stackName, file.animationName, file.frameIndex, index, sliceIndex))
+    file.selectSliceIndex(index, true)
+    file.setSliceIndex(index)
+  }
+
+  function handleFrameDragStart(e: DragEvent, frameIndex: number) {
+    e.dataTransfer?.setData('staxie/frame', JSON.stringify({index: frameIndex}))
+  }
+  function handleFrameDragEnd(e: DragEvent) {
+  }
+  function handleFrameDragOver(e: DragEvent) {
+    if (!e.dataTransfer?.types.includes('staxie/frame')) return
+    e.preventDefault()
+  }
+  function handleFrameDrop(e: DragEvent, frameIndex: number) {
+    if (!file || !file.stack) return
+    e.preventDefault()
+    const data = e.dataTransfer?.getData('staxie/frame')
+    if (!data) return
+    const { index } = JSON.parse(data)
+    file.push(new MoveAnimationFrameUndoable(file.stackName, file.animationName, index, frameIndex))
+    file.selectFrameIndex(index, true)
+    file.setFrameIndex(index)
+  }
 </script>
 
 <main>
@@ -113,9 +153,10 @@
     />-->
     <section class="slices">
       {#if $file.frame}
-        {#each $file.frame.slices as slice, sliceIndex}
-          <article class="slice{sliceIndex === $file.sliceIndex ? ' --focused' : ''}{$file.isSliceSelected(sliceIndex) ? ' --selected' : ''}" on:click={(e) => onSliceClick(e, sliceIndex)} on:contextmenu|preventDefault={(e) => onSliceRightClick(e, sliceIndex)}>
-            <span class="sliceIndex">{sliceIndex + 1}</span>
+        {#each $file.frame.slices as slice, realSliceIndex}
+          {@const sliceIndex = $file.stack?.sliceCount - realSliceIndex - 1}
+          <article class="slice{sliceIndex === $file.sliceIndex ? ' --focused' : ''}{$file.isSliceSelected(sliceIndex) ? ' --selected' : ''}" on:click={(e) => onSliceClick(e, sliceIndex)} on:contextmenu|preventDefault={(e) => onSliceRightClick(e, sliceIndex)} on:dragstart={(e)=>handleSliceDragStart(e, sliceIndex)} on:dragend={handleSliceDragEnd} on:dragover={handleSliceDragOver} on:drop={(e)=>handleSliceDrop(e, sliceIndex)} draggable="true">
+            <span class="sliceIndex">{sliceIndex+1}</span>
           </article>
         {/each}
       {/if}
@@ -128,7 +169,7 @@
     <section class="frames">
       {#if $file.animation}
         {#each $file.animation.frames as frame, frameIndex}
-          <article class="frame{frameIndex === $file.frameIndex ? ' --focused' : ''}{$file.isFrameSelected(frameIndex) ? ' --selected' : ''}" on:click={(e) => onFrameClick(e, frameIndex)} on:contextmenu|preventDefault={(e) => onFrameRightClick(e, frameIndex)}>
+          <article class="frame{frameIndex === $file.frameIndex ? ' --focused' : ''}{$file.isFrameSelected(frameIndex) ? ' --selected' : ''}" on:click={(e) => onFrameClick(e, frameIndex)} on:contextmenu|preventDefault={(e) => onFrameRightClick(e, frameIndex)} on:dragstart={(e)=>handleFrameDragStart(e, frameIndex)} on:dragend={handleFrameDragEnd} on:dragover={handleFrameDragOver} on:drop={(e)=>handleFrameDrop(e, frameIndex)} draggable="true">
             <span class="frameIndex">{frameIndex + 1}</span>
           </article>
         {/each}

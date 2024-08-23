@@ -341,6 +341,21 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     return { x, y, width, height }
   }
 
+  getSliceArea(stack: string, anim: string, frameIndex: number, sliceIndex: number): { x: number; y: number; width: number; height: number } {
+    let g = this.stacks.find((g) => g.name === stack)
+    if (!g) {
+      throw new Error('stack not found: ' + stack)
+    }
+    let animation = g.animations.find((a) => a.name === anim)
+    if (!animation) {
+      throw new Error('animation not found: ' + anim)
+    }
+    if (frameIndex >= animation.frames.length) {
+      throw new Error(`frame oob: ${frameIndex} out of ${animation.frames.length}`)
+    }
+    return this.getSliceAreaFromFrame(animation.frames[frameIndex], sliceIndex)
+  }
+
   getSliceAreaFromFrame(frame: StaxFrame, sliceIndex: number): { x: number; y: number; width: number; height: number } {
     if (sliceIndex >= frame.slices.length) {
       throw new Error(`slice oob: ${sliceIndex} out of ${frame.slices.length}`)
