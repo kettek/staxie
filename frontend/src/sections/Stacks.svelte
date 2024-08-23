@@ -1,86 +1,46 @@
 <script lang="ts">
-  import { FaceAdd, FolderAdd } from 'carbon-icons-svelte'
+  import { CaretDown, CaretRight, FaceAdd, FolderAdd } from 'carbon-icons-svelte'
   import { type LoadedFile } from '../types/file'
   import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable, RenameAnimationUndoable, RenameStackUndoable, DuplicateStackUndoable, DuplicateAnimationUndoable } from '../types/file/undoables'
-  import { ContextMenu, ContextMenuOption, TreeView, NumberInput } from 'carbon-components-svelte'
+  import { ContextMenu, ContextMenuOption, NumberInput } from 'carbon-components-svelte'
   import Button from '../components/common/Button.svelte'
   import { fileStates } from '../stores/file'
   import RenameModal from '../components/RenameModal.svelte'
 
   export let file: LoadedFile
 
-  let activeId: string | number = 0
-  let selectedIds: (string | number)[] = []
-  let children: { id: string; text: string; children: { id: string; text: string }[] }[] = []
-  $: {
-    if ($file) {
-      children = $file.stacks.map((stack) => {
-        return {
-          id: stack.name,
-          text: stack.name,
-          children: stack.animations.map((animation) => {
-            return {
-              id: stack.name + '__' + animation.name,
-              text: animation.name,
-            }
-          }),
-        }
-      })
-    }
-  }
-
-  function handleSelect(e) {
-    if (!e.detail.leaf) {
-      // Stack
-      file.setStack(e.detail.id)
-    } else {
-      // Animation
-      const stack = e.detail.id.substring(0, e.detail.id.indexOf('__'))
-      const animation = e.detail.id.substring(e.detail.id.indexOf('__') + 2)
-      file.setStack(stack)
-      file.setAnimation(animation)
-    }
-    file.refresh()
-    fileStates.refresh()
-  }
+  let folded: Record<string, boolean> = {}
 
   let contextX: number = 0
   let contextY: number = 0
+  let contextStackName: string = ''
+  let contextAnimationName: string = ''
   let contextStackOpen: boolean = false
   let contextAnimationOpen: boolean = false
-  let contextNode: any = null
-  function onStackRightClick(e: MouseEvent, node: any) {
-    contextX = e.clientX
-    contextY = e.clientY
-    contextNode = node
-    if (node.leaf) {
-      // animation
-      contextAnimationOpen = true
-      return
-    }
-    contextStackOpen = true
-  }
+
   function contextStackDelete() {
     if (file.stacks.length === 1) {
       alert('thou shall not delete the last stack')
       return
     }
-    file.push(new RemoveStackUndoable(contextNode.id))
+    file.push(new RemoveStackUndoable(contextStackName))
   }
   function contextAnimationDelete() {
-    const stackName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
-    const animationName = contextNode.id.substring(contextNode.id.indexOf('__') + 2)
     if (file?.stack?.animations.length === 1) {
       alert('thou shall not delete the last animation')
       return
     }
-    file.push(new RemoveAnimationUndoable(stackName, animationName))
+    file.push(new RemoveAnimationUndoable(contextStackName, contextAnimationName))
   }
 
   function onStackContextMenu(e: CustomEvent) {}
   function changeSlices(e: CustomEvent) {
     if (e.detail <= 0) {
       alert('thou shall not have less than 1 slice')
+      return
+    }
+    if (!file.stack) {
+      alert('no stack selected')
       return
     }
     if (e.detail < file.stack.sliceCount) {
@@ -98,6 +58,10 @@
     file.push(new AddStackUndoable())
   }
   function addAnimation() {
+    if (!file.stack) {
+      alert('no stack selected')
+      return
+    }
     file.push(new AddAnimationUndoable(file.stack.name))
   }
 
@@ -105,32 +69,51 @@
   let pendingAnimationRename: string = ''
   function contextAnimationRename() {
     showAnimationRenameModal = true
-    pendingAnimationRename = contextNode.id.substring(contextNode.id.indexOf('__') + 2)
+    pendingAnimationRename = contextAnimationName
   }
   function renameAnimation(v: string) {
-    const stackName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
-    const animationName = contextNode.id.substring(contextNode.id.indexOf('__') + 2)
-
-    file.push(new RenameAnimationUndoable(stackName, animationName, v))
+    file.push(new RenameAnimationUndoable(contextStackName, contextAnimationName, v))
   }
   function contextAnimationDuplicate() {
-    const stackName = contextNode.id.substring(0, contextNode.id.indexOf('__'))
-    const animationName = contextNode.id.substring(contextNode.id.indexOf('__') + 2)
-    file.push(new DuplicateAnimationUndoable(stackName, animationName))
+    file.push(new DuplicateAnimationUndoable(contextStackName, contextAnimationName))
   }
 
   let showStackRenameModal: boolean = false
   let pendingStackRename: string = ''
   function contextStackRename() {
     showStackRenameModal = true
-    pendingStackRename = contextNode.id
+    pendingStackRename = contextStackName
   }
   function renameStack(v: string) {
-    const stackName = contextNode.id
-    file.push(new RenameStackUndoable(stackName, v))
+    file.push(new RenameStackUndoable(contextStackName, v))
   }
   function contextStackDuplicate() {
-    file.push(new DuplicateStackUndoable(contextNode.id))
+    file.push(new DuplicateStackUndoable(contextStackName))
+  }
+
+  function handleStackClick(stack: string) {
+    file.setStack(stack)
+    file.refresh()
+    fileStates.refresh()
+  }
+  function handleStackRightClick(e: MouseEvent, stack: string) {
+    contextStackName = stack
+    contextX = e.clientX
+    contextY = e.clientY
+    contextStackOpen = true
+  }
+  function handleAnimationClick(stack: string, animation: string) {
+    file.setStack(stack)
+    file.setAnimation(animation)
+    file.refresh()
+    fileStates.refresh()
+  }
+  function handleAnimationRightClick(e: MouseEvent, stack: string, animation: string) {
+    contextStackName = stack
+    contextAnimationName = animation
+    contextX = e.clientX
+    contextY = e.clientY
+    contextAnimationOpen = true
   }
 </script>
 
@@ -144,11 +127,30 @@
     <NumberInput label="slices" value={$file?.stack?.sliceCount} on:change={changeSlices} />
     <NumberInput label="frametime (ms)" value={$file?.animation?.frameTime} on:change={changeFrameTime} />
   </section>
-  <section class="stacks">
+  <section>
     {#if file}
-      <TreeView size="compact" {children} bind:activeId bind:selectedIds on:select={handleSelect} let:node>
-        <span on:contextmenu|preventDefault={(e) => onStackRightClick(e, node)}>{node.text}</span>
-      </TreeView>
+      <ul class='stacks'>
+        {#each $file.stacks as stack, stackIndex}
+          {@const stackSelected = $file.stackName===stack.name}
+          <li class='stack'>
+            <header class:--selected={stackSelected} on:click={(e)=>handleStackClick(stack.name)} on:contextmenu|preventDefault={(e)=>handleStackRightClick(e, stack.name)}>
+              <Button icon={folded[stack.name]?CaretRight:CaretDown} on:click={() => folded[stack.name] = !folded[stack.name]} />
+              <span>{stack.name}</span>
+            </header>
+            <ul class='animations'>
+              {#if !folded[stack.name]}
+                {#each stack.animations as animation, animationIndex}
+                  <li class='animation' on:click={(e)=>handleAnimationClick(stack.name, animation.name)} on:contextmenu|preventDefault={(e) => handleAnimationRightClick(e, stack.name, animation.name)}>
+                    <header class:--selected={stackSelected&&$file.animationName===animation.name}>
+                      <span>{animation.name}</span>
+                    </header>
+                  </li>
+                {/each}
+              {/if}
+            </ul>
+          </li>
+        {/each}
+      </ul>
     {/if}
   </section>
   <ContextMenu bind:open={contextStackOpen} bind:x={contextX} bind:y={contextY} target={[]} on:open={onStackContextMenu}>
@@ -190,15 +192,49 @@
     margin: 0 0.5rem;
   }
   .stacks {
-  }
-  .slices {
+    width: 100%;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
   }
-  .slice {
+  .stack {
+    width: 100%;
+  }
+  .stack header {
+    text-align: left;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: center;
+    background-color: var(--cds-ui-01, #f4f4f4);
+    color: var(--cds-text-02, #525252);
+    border-left: 0.25rem solid transparent;
+  }
+  .stack header:hover {
+    background-color: var(--cds-ui-02, #e0e0e0);
+  }
+  .stack > header.--selected {
+    border-left: 0.25rem solid var(--cds-interactive-04, #0f62fe);
+  }
+  .stack header span {
+    height: 100%;
+    display: grid;
+    align-items: center;
+  }
+  .animation {
+    text-align: left;
+  }
+  .animation header {
     padding: 0.25rem;
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid gray;
+    padding-left: 3rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: center;
+    background-color: var(--cds-ui-01, #f4f4f4);
+    color: var(--cds-text-02, #525252);
+  }
+  .animation header.--selected {
+    background-color: var(--cds-ui-02, #e0e0e0);
   }
 </style>
