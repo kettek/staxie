@@ -38,10 +38,9 @@
     return keys.has(key)
   }
 
-  function normalizeKey(event: KeyboardEvent): string {
-    let key = event.key
+  function normalizeKey(key: string, code: string): string {
     // Chrome bug lol
-    if (event.key === 'Meta' && event.code.startsWith('Alt')) {
+    if (key === 'Meta' && code.startsWith('Alt')) {
       key = 'Alt'
     }
     return key.toLowerCase()
@@ -62,11 +61,7 @@
     return keys
   }
 
-  window.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
-    if (disabled) return
-    if (event.key === 'Alt') event.preventDefault() // Prevent alt because that opens a menu that doesn't exist.
-    let key = normalizeKey(event)
+  function addKeydown(key: string) {
     keys.add(key.toLowerCase())
     keystring = keysToString([...keys])
 
@@ -90,10 +85,15 @@
         }
       }
     }
-  })
-  window.addEventListener('keyup', (event: KeyboardEvent) => {
+  }
+  window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
     if (disabled) return
+    if (event.key === 'Alt') event.preventDefault() // Prevent alt because that opens a menu that doesn't exist.
+    let key = normalizeKey(event.key, event.code)
+    addKeydown(key)
+  })
+  function addKeyup(key: string) {
     keystring = keysToString([...keys])
 
     let cur = get(currentShortcuts)
@@ -119,9 +119,15 @@
       }
     }
 
-    let key = normalizeKey(event)
     keys.delete(key.toLowerCase())
     keystring = keysToString([...keys])
+  }
+  window.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
+    if (disabled) return
+
+    const key = normalizeKey(event.key, event.code)
+    addKeyup(key)
   })
 
   window.addEventListener('wheel', (event: WheelEvent) => {
@@ -159,6 +165,9 @@
   })
 
   window.addEventListener('blur', () => {
+    for (let key of keys) {
+      addKeyup(key)
+    }
     keys.clear()
     keystring = ''
   })
