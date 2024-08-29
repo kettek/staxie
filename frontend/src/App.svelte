@@ -554,7 +554,9 @@
         <Button selected={$toolSettings.current === toolVoxelCursor} kind="ghost" size="small" icon={Chart_3D} tooltipPosition="right" on:click={() => toolSettings.swapTool(toolVoxelCursor)}>
           <ShortcutTooltip slot="tooltip" group="editor3D" cmd="cursor" />
         </Button>
-        <Button selected={$toolSettings.current === toolVoxelBoxSelection} kind="ghost" size="small" icon={WatsonHealth3DMprToggle} tooltip="box selection" tooltipPosition="right" on:click={() => toolSettings.swapTool(toolVoxelBoxSelection)}></Button>
+        <Button selected={$toolSettings.current === toolVoxelBoxSelection} kind="ghost" size="small" icon={WatsonHealth3DMprToggle} tooltipPosition="right" on:click={() => toolSettings.swapTool(toolVoxelBoxSelection)}>
+          <ShortcutTooltip slot="tooltip" group="editor3D" cmd="selection" />
+        </Button>
       {:else}
         <Shortcuts group="editor2D">
           <Shortcut global cmd="clear selection" keys={['escape']} on:trigger={() => $fileStates.focused?.push(new SelectionClearUndoable())} />
