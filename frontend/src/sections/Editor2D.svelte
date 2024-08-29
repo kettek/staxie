@@ -409,8 +409,8 @@
       ctx.strokeStyle = '#cc3388'
       ctx.lineWidth = zoom
 
-      let x = Math.floor($file.view.x) + Math.floor($toolSettings.current.lastX)
-      let y = $file.view.y + Math.floor(Math.floor($toolSettings.current.lastY))
+      let x = Math.floor($toolSettings.current.lastX) - Math.floor($file.view.x)
+      let y = Math.floor($toolSettings.current.lastY) - Math.floor($file.view.y)
 
       let x2 = mousePixelX * zoom + zoom / 2
       let y2 = mousePixelY * zoom + zoom / 2
