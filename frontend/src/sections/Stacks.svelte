@@ -74,6 +74,10 @@
   function renameAnimation(v: string) {
     file.push(new RenameAnimationUndoable(contextStackName, contextAnimationName, v))
   }
+  function isAnimationValid(v: string) {
+    const stack = file.stacks.find((s) => s.name === contextStackName)
+    return v !== '' && !stack?.animations.some((a) => a.name === v)
+  }
   function contextAnimationDuplicate() {
     file.push(new DuplicateAnimationUndoable(contextStackName, contextAnimationName))
   }
@@ -86,6 +90,9 @@
   }
   function renameStack(v: string) {
     file.push(new RenameStackUndoable(contextStackName, v))
+  }
+  function isStackValid(v: string) {
+    return v !== '' && !file.stacks.some((s) => s.name === v)
   }
   function contextStackDuplicate() {
     file.push(new DuplicateStackUndoable(contextStackName))
@@ -105,8 +112,7 @@
   function handleStackDragStart(e: DragEvent, stack: string) {
     e.dataTransfer?.setData('staxie/stack', stack)
   }
-  function handleStackDragEnd(e: DragEvent) {
-  }
+  function handleStackDragEnd(e: DragEvent) {}
   function handleStackDragOver(e: DragEvent) {
     if (!e.dataTransfer?.types.includes('staxie/stack')) return
     e.preventDefault()
@@ -135,8 +141,7 @@
   function handleAnimationDragStart(e: DragEvent, stack: string, animationIndex: string) {
     e.dataTransfer?.setData('staxie/animation', JSON.stringify({ fromStack: stack, fromIndex: animationIndex }))
   }
-  function handleAnimationDragEnd(e: DragEvent) {
-  }
+  function handleAnimationDragEnd(e: DragEvent) {}
   function handleAnimationDragOver(e: DragEvent) {
     if (!e.dataTransfer?.types.includes('staxie/animation')) return
     e.preventDefault()
@@ -166,19 +171,19 @@
   </section>
   <section>
     {#if file}
-      <ul class='stacks'>
+      <ul class="stacks">
         {#each $file.stacks as stack, stackIndex}
-          {@const stackSelected = $file.stackName===stack.name}
-          <li class='stack'>
-            <header class:--selected={stackSelected} on:click={(e)=>handleStackClick(stack.name)} on:contextmenu|preventDefault={(e)=>handleStackRightClick(e, stack.name)} on:dragstart={(e)=>handleStackDragStart(e, stack.name)} on:dragend={handleStackDragEnd} on:dragover={handleStackDragOver} on:drop={(e)=>handleStackDrop(e, stack.name)} draggable={true}>
-              <Button icon={folded[stack.name]?CaretRight:CaretDown} on:click={() => folded[stack.name] = !folded[stack.name]} />
+          {@const stackSelected = $file.stackName === stack.name}
+          <li class="stack">
+            <header class:--selected={stackSelected} on:click={(e) => handleStackClick(stack.name)} on:contextmenu|preventDefault={(e) => handleStackRightClick(e, stack.name)} on:dragstart={(e) => handleStackDragStart(e, stack.name)} on:dragend={handleStackDragEnd} on:dragover={handleStackDragOver} on:drop={(e) => handleStackDrop(e, stack.name)} draggable={true}>
+              <Button icon={folded[stack.name] ? CaretRight : CaretDown} on:click={() => (folded[stack.name] = !folded[stack.name])} />
               <span>{stack.name}</span>
             </header>
-            <ul class='animations'>
+            <ul class="animations">
               {#if !folded[stack.name]}
                 {#each stack.animations as animation, animationIndex}
-                  <li class='animation' on:click={(e)=>handleAnimationClick(stack.name, animation.name)} on:contextmenu|preventDefault={(e) => handleAnimationRightClick(e, stack.name, animation.name)} on:dragstart={(e)=>handleAnimationDragStart(e, stack.name, animationIndex)} on:dragend={handleAnimationDragEnd} on:dragover={handleAnimationDragOver} on:drop={(e)=>handleAnimationDrop(e, stack.name, animationIndex)} draggable="true">
-                    <header class:--selected={stackSelected&&$file.animationName===animation.name}>
+                  <li class="animation" on:click={(e) => handleAnimationClick(stack.name, animation.name)} on:contextmenu|preventDefault={(e) => handleAnimationRightClick(e, stack.name, animation.name)} on:dragstart={(e) => handleAnimationDragStart(e, stack.name, animationIndex)} on:dragend={handleAnimationDragEnd} on:dragover={handleAnimationDragOver} on:drop={(e) => handleAnimationDrop(e, stack.name, animationIndex)} draggable="true">
+                    <header class:--selected={stackSelected && $file.animationName === animation.name}>
                       <span>{animation.name}</span>
                     </header>
                   </li>
@@ -201,10 +206,10 @@
     <ContextMenuOption labelText="Delete Animation" kind="danger" on:click={contextAnimationDelete} />
   </ContextMenu>
   {#if showAnimationRenameModal}
-    <RenameModal bind:open={showAnimationRenameModal} bind:text={pendingAnimationRename} heading="Rename Animation" onsubmit={renameAnimation} />
+    <RenameModal bind:open={showAnimationRenameModal} bind:text={pendingAnimationRename} heading="Rename Animation" onsubmit={renameAnimation} isvalid={isAnimationValid} />
   {/if}
   {#if showStackRenameModal}
-    <RenameModal bind:open={showStackRenameModal} bind:text={pendingStackRename} heading="Rename Stack" onsubmit={renameStack} />
+    <RenameModal bind:open={showStackRenameModal} bind:text={pendingStackRename} heading="Rename Stack" onsubmit={renameStack} isvalid={isStackValid} />
   {/if}
 </main>
 

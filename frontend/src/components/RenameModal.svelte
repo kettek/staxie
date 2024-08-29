@@ -6,6 +6,7 @@
   export let open: boolean = false
   export let heading: string = 'Rename'
   export let onsubmit: (v: string) => void = () => {}
+  export let isvalid: (v: string) => boolean = () => true
 
   export let text: string = ''
 
@@ -23,6 +24,7 @@
   modalHeading={heading}
   primaryButtonText="Apply"
   secondaryButtonText="Cancel"
+  primaryButtonDisabled={!isvalid(text)}
   on:close={() => (open = false)}
   on:click:button--secondary={() => (open = false)}
   on:submit={() => {
@@ -30,5 +32,5 @@
     onsubmit(text)
   }}
 >
-  <TextInput id="rename" labelText="New name" bind:value={text} />
+  <TextInput id="rename" labelText="New name" bind:value={text} invalid={!isvalid(text)} />
 </Modal>
