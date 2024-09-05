@@ -19,7 +19,11 @@
   }
 
   onMount(async () => {
-    version = await Version()
+    if ((window as any)['go']) {
+      version = await Version()
+    } else {
+      version = 'unknown browser'
+    }
   })
 </script>
 

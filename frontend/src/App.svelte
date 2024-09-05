@@ -161,10 +161,35 @@
   }
 
   async function loadPNG() {
-    importFilepath = await GetFilePath(['PNG'], ['*.png'])
-    let b = (await OpenFileBytes(importFilepath)) as unknown as string
-    importTitle = /[^/\\]*$/.exec(importFilepath)[0]
-    importPNG = new IndexedPNG(Uint8Array.from(atob(b), (v) => v.charCodeAt(0)))
+    let b: string = ''
+    if ((window as any)['go']) {
+      importFilepath = await GetFilePath(['PNG'], ['*.png'])
+      b = (await OpenFileBytes(importFilepath)) as unknown as string
+      importTitle = /[^/\\]*$/.exec(importFilepath)[0]
+      importPNG = new IndexedPNG(Uint8Array.from(atob(b), (v) => v.charCodeAt(0)))
+    } else {
+      // This provides experimental file loading support in a non-Wails context.
+      await new Promise((resolve, reject) => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = '.png'
+        input.onchange = async (e: Event) => {
+          const target = e.target as HTMLInputElement
+          if (!target.files || target.files.length === 0) {
+            reject('No file selected')
+            return
+          }
+          const file = target.files[0]
+          const ab = await file.arrayBuffer()
+
+          importTitle = file.name
+          importPNG = new IndexedPNG(new Uint8Array(ab))
+          resolve(importPNG)
+        }
+        input.click()
+      })
+    }
+    if (!importPNG) return
     await importPNG.decode()
 
     importCanvas = new Canvas(importPNG)
@@ -212,7 +237,12 @@
     if (!$fileStates.focused) return
     try {
       let data = await $fileStates.focused.canvas.toPNG($fileStates.focused)
-      SaveFileBytes($fileStates.focused.filepath, [...data])
+
+      if ((window as any)['go']) {
+        SaveFileBytes($fileStates.focused.filepath, [...data])
+      } else {
+        await engageSaveAs()
+      }
       $fileStates.focused.markSaved()
       $fileStates.focused.refresh()
       fileStates.refresh()
@@ -225,9 +255,36 @@
     if (!$fileStates.focused) return
     try {
       let data = await $fileStates.focused.canvas.toPNG($fileStates.focused)
-      let path = await SaveFilePath($fileStates.focused.filepath)
-      if (path === '') return
-      SaveFileBytes(path, [...data])
+
+      let path: string = ''
+      if ((window as any)['go']) {
+        path = await SaveFilePath($fileStates.focused.filepath)
+        if (path === '') return
+        SaveFileBytes(path, [...data])
+      } else {
+        // This provides experimental file save support in non-Wails contexts, yo.
+        if ((window as any).showSaveFilePicker) {
+          const handle = await (window as any).showSaveFilePicker({
+            types: [
+              {
+                description: 'PNG Files',
+                accept: {
+                  'image/png': ['.png'],
+                },
+              },
+            ],
+          })
+          path = handle.name
+          const writable = await handle.createWritable()
+          await writable.write(new Blob([data], { type: 'image/png' }))
+          await writable.close()
+        } else {
+          const a = document.createElement('a')
+          a.href = URL.createObjectURL(new Blob([data], { type: 'image/png' }))
+          a.download = $fileStates.focused.filepath
+          a.click()
+        }
+      }
       $fileStates.focused.filepath = path
       $fileStates.focused.title = /[^/\\]*$/.exec(path)[0]
       $fileStates.focused.markSaved()
