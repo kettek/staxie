@@ -25,6 +25,23 @@ export class CanvasView {
     }
   }
 
+  toImage(): HTMLImageElement | undefined {
+    const image = new Image()
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+
+    if (!context) return undefined
+
+    canvas.width = this.width
+    canvas.height = this.height
+
+    context.drawImage(this.canvas.canvas, this.x, this.y, this.width, this.height, 0, 0, this.width, this.height)
+
+    image.src = canvas.toDataURL()
+
+    return image
+  }
+
   transformUndoable(item: Undoable<LoadedFile>): Undoable<LoadedFile> {
     if (item instanceof PixelPlaceUndoable) {
       item.x = Math.min(this.x + this.width - 1, Math.max(this.x, item.x))
