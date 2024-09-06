@@ -587,8 +587,8 @@
           <Shortcut global cmd="paste" keys={['ctrl+v']} on:trigger={() => {}} />
           <Shortcut global cmd="apply paste" keys={['enter']} on:trigger={() => {}} />
           <Shortcut global cmd="delete" keys={['delete']} on:trigger={() => $fileStates.focused?.push(new ThreeDSelectionBoxSetVoxelsUndoable($fileStates.focused?.stackName, $fileStates.focused?.animationName, $fileStates.focused?.frameIndex, $fileStates.focused.threeDCursor1, $fileStates.focused.threeDCursor2, 0))} />
-          <Shortcut global cmd="previousSlice" keys={['shift+wheelup']} on:trigger={() => $fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex - 1)} />
-          <Shortcut global cmd="nextSlice" keys={['shift+wheeldown']} on:trigger={() => $fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex + 1)} />
+          <Shortcut global cmd="previousSlice" keys={['shift+wheeldown']} on:trigger={() => $fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex - 1)} />
+          <Shortcut global cmd="nextSlice" keys={['shift+wheelup']} on:trigger={() => $fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex + 1)} />
           <Shortcut global cmd="cursor" keys={['c']} on:trigger={() => toolSettings.swapTool(toolVoxelCursor)} />
         </Shortcuts>
 
