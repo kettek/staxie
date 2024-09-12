@@ -19,6 +19,10 @@ type Editor2DSettings = {
   editorMode: '2d' | '3d' | 'both'
   // View mode
   viewMode: 'slice' | 'frame' | 'animation' | 'stack' | 'sheet'
+  sliceBorderColor: string
+  frameBorderColor: string
+  animationBorderColor: string
+  stackBorderColor: string
   // References
   imageReferences: ImageReferenceStore
 }
@@ -40,6 +44,10 @@ export const editor2DSettings = makeLocalStorageStore<Editor2DSettings>('editor2
   editorMode: '2d',
   // View
   viewMode: 'slice',
+  sliceBorderColor: '#ffffff',
+  frameBorderColor: '#ff0000',
+  animationBorderColor: '#00ffff',
+  stackBorderColor: '#0000ff',
   // References
   imageReferences: createImageReferenceStore(),
 })

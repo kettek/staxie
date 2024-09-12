@@ -61,6 +61,7 @@
   import ShortcutTooltip from './components/ShortcutTooltip.svelte'
   import SmallStackPreview from './sections/SmallStackPreview.svelte'
   import Selection3D from './toolbars/Selection3D.svelte'
+  import BorderSettingsModal from './components/BorderSettingsModal.svelte'
 
   let useRichPresence: boolean = false
   let is3D: boolean = true
@@ -125,6 +126,7 @@
   let showPreviewSettings: boolean = false
   let showGridSettings: boolean = false
   let showCheckerboardSettings: boolean = false
+  let showBorderSettings: boolean = false
   let showThemeSettings: boolean = false
   let showBackgroundSettings: boolean = false
 
@@ -539,6 +541,7 @@
           <input type="radio" name="view-mode" value="sheet" bind:group={$editor2DSettings.viewMode} />
         </label>
       </OverflowMenuItem>
+      <OverflowMenuItem hasDivider text="Change Borders..." on:click={() => (showBorderSettings = true)} />
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Windows</div>
@@ -778,6 +781,9 @@
     {/if}
     {#if showCheckerboardSettings}
       <CheckerboardSettingsModal bind:open={showCheckerboardSettings} />
+    {/if}
+    {#if showBorderSettings}
+      <BorderSettingsModal bind:open={showBorderSettings} />
     {/if}
     {#if showBackgroundSettings}
       <BackgroundSettingsModal bind:open={showBackgroundSettings} />

@@ -311,6 +311,42 @@
     }
     ctx.restore()
 
+    // Draw borders.
+    {
+      function drawBorder(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string) {
+        ctx.save()
+        ctx.strokeStyle = color
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.rect(offsetX + x * zoom, offsetY + y * zoom, width * zoom, height * zoom)
+        ctx.stroke()
+        ctx.restore()
+      }
+
+      switch ($editor2DSettings.viewMode) {
+        case 'sheet':
+          if ($file.stack) {
+            let { x, y, width, height } = $file.getStackAreaFromStack($file.stack)
+            drawBorder(ctx, x, y, width, height, $editor2DSettings.stackBorderColor)
+          }
+        case 'stack':
+          if ($file.animation) {
+            let { x, y, width, height } = $file.getAnimationAreaFromAnimation($file.animation)
+            drawBorder(ctx, x, y, width, height, $editor2DSettings.animationBorderColor)
+          }
+        case 'animation':
+          if ($file.frame) {
+            let { x, y, width, height } = $file.getFrameAreaFromFrame($file.frame)
+            drawBorder(ctx, x, y, width, height, $editor2DSettings.frameBorderColor)
+          }
+        case 'frame':
+          if ($file.frame) {
+            let { x, y, width, height } = $file.getSliceAreaFromFrame($file.frame, $file.sliceIndex)
+            drawBorder(ctx, x, y, width, height, $editor2DSettings.sliceBorderColor)
+          }
+      }
+    }
+
     // Draw any pasting.
     if (paste) {
       ctx.imageSmoothingEnabled = false
