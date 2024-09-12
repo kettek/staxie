@@ -36,7 +36,7 @@
 
 <main class="split">
   {#if !hideLeft}
-    <section class="left {hideRight ? 'solo' : ''}" bind:this={left} style="flex-basis: {leftWidth}" on:mousedown={() => (rightFocused = false)}>
+    <section class="left {hideRight ? 'solo' : ''}{!rightFocused && !hideRight ? ' focused' : ''}" bind:this={left} style="flex-basis: {leftWidth}" on:mousedown={() => (rightFocused = false)}>
       <slot name="left"></slot>
     </section>
   {/if}
@@ -44,7 +44,7 @@
     <aside use:gripper />
   {/if}
   {#if !hideRight}
-    <section class="right" on:mousedown={() => (rightFocused = true)}>
+    <section class="right{rightFocused && !hideLeft ? ' focused' : ''}" on:mousedown={() => (rightFocused = true)}>
       <slot name="right"></slot>
     </section>
   {/if}
@@ -77,5 +77,11 @@
     flex-grow: 1;
     flex-shrink: 1;
     overflow-x: auto;
+  }
+  section {
+    border: 1px solid var(--cds-ui-01, #8d8d8d);
+  }
+  .focused {
+    border-color: var(--cds-hover-primary);
   }
 </style>
