@@ -317,6 +317,10 @@
     if ($toolSettings.current === toolVoxelPlace) {
       let [x, z] = getGridXY(e)
       placePixelAt({ x, y: 0, z }, $brushSettings.primaryIndex)
+    } else if ($toolSettings.current === toolVoxelCursor) {
+      let [x, z] = getGridXY(e)
+      $file.threeDCursor1 = [x, 0, z]
+      $file.threeDCursor2 = [x, 0, z]
     }
   }
 
