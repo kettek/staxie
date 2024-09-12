@@ -350,7 +350,7 @@
           {/each}
         </fieldset>
       {/each}
-      <Button on:click={record} icon={recording ? StopFilledAlt : RecordingFilled} size="large" />
+      <Button on:click={record} tooltip="Timelapse" tooltipPosition="bottom" icon={recording ? StopFilledAlt : RecordingFilled} size="large" />
     </section>
   {/if}
   <section class="canvasGroup">
