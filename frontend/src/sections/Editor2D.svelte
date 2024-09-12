@@ -318,6 +318,8 @@
         ctx.strokeStyle = color
         ctx.lineWidth = 1
         ctx.beginPath()
+        x -= $file.view.x
+        y -= $file.view.y
         ctx.rect(offsetX + x * zoom, offsetY + y * zoom, width * zoom, height * zoom)
         ctx.stroke()
         ctx.restore()
