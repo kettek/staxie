@@ -55,6 +55,7 @@
   function contextFrameDuplicate() {
     if (!file || !file.stack || !file.animation) return
     file.push(new DuplicateAnimationFrameUndoable(file.stack.name, file.animation.name, contextFrameIndex))
+    file.setFrameIndex(file.frameIndex + 1)
   }
   function contextFrameDelete() {
     if (!file || !file.stack || !file.animation) return
@@ -92,6 +93,7 @@
   function contextSliceDuplicate() {
     if (!file || !file.stack) return
     file.push(new DuplicateSliceUndoable(file.stack.name, contextSliceIndex))
+    file.setSliceIndex(file.sliceIndex + 1)
   }
   function contextSliceDelete() {
     if (!file || !file.stack) return

@@ -80,6 +80,21 @@
   }
   function contextAnimationDuplicate() {
     file.push(new DuplicateAnimationUndoable(contextStackName, contextAnimationName))
+    // Okay this is crummy, but we have no other way to acquire the animation name.
+    const stack = file.getStack(contextStackName)
+    if (!stack) return
+    let name = contextAnimationName + ' copy'
+    for (let i = 0; i < stack.animations.length; i++) {
+      if (stack.animations[i].name.startsWith(name)) {
+        const ending = stack.animations[i].name.slice(name.length + 1)
+        if (ending === '') break
+        const endingIndex = Number(ending)
+        if (!isNaN(endingIndex)) {
+          name = contextAnimationName + ' copy ' + endingIndex
+        }
+      }
+    }
+    file.setAnimation(name)
   }
 
   let showStackRenameModal: boolean = false
@@ -96,6 +111,19 @@
   }
   function contextStackDuplicate() {
     file.push(new DuplicateStackUndoable(contextStackName))
+    // This is also crummy.
+    let name = contextStackName + ' copy'
+    for (let i = 0; i < file.stacks.length; i++) {
+      if (file.stacks[i].name.startsWith(name)) {
+        const ending = file.stacks[i].name.slice(name.length + 1)
+        if (ending === '') break
+        const endingIndex = Number(ending)
+        if (!isNaN(endingIndex)) {
+          name = contextStackName + ' copy ' + endingIndex
+        }
+      }
+    }
+    file.setStack(name)
   }
 
   function handleStackClick(stack: string) {
