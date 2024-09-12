@@ -5,12 +5,15 @@
 -->
 <script lang="ts">
   import { Grid, Row, Column, Checkbox, Slider, Dropdown } from 'carbon-components-svelte'
+  import { SaveFileBytes, GetFolderPath } from '../../wailsjs/go/main/App'
   import { fileStates } from '../stores/file'
   import { onMount } from 'svelte'
   import { previewSettings } from '../stores/preview'
   import type { LoadedFile } from '../types/file'
   import type { StaxStack } from '../types/png'
   import Input from '../components/common/Input.svelte'
+  import Button from '../components/common/Button.svelte'
+  import { RecordingFilled, StopFilledAlt } from 'carbon-icons-svelte'
 
   type StackState = {
     visible: boolean
@@ -60,6 +63,26 @@
 
   let timeElapsed: number = 0
   let lastTime: DOMHighResTimeStamp = performance.now()
+
+  let recording: boolean = false
+  let recordTimer: number = 0
+  async function record() {
+    if (!recording) {
+      const folder = await GetFolderPath()
+      if (folder === '') {
+        return
+      }
+      recordTimer = window.setInterval(() => {
+        const data = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '')
+        const ts = Date.now()
+        const p = `${folder}/${$previewSettings.framePrefix}${ts}${$previewSettings.frameSuffix}.png`
+        SaveFileBytes(p, data as any)
+      }, $previewSettings.secondsBetweenFrames * 1000)
+    } else {
+      clearInterval(recordTimer)
+    }
+    recording = !recording
+  }
 
   let canvas: HTMLCanvasElement
   function draw(ts: DOMHighResTimeStamp) {
@@ -327,6 +350,7 @@
           {/each}
         </fieldset>
       {/each}
+      <Button on:click={record} icon={recording ? StopFilledAlt : RecordingFilled} size="large" />
     </section>
   {/if}
   <section class="canvasGroup">

@@ -122,6 +122,16 @@ func (a *App) GetFileSavePath(names []string, patterns []string) (string, error)
 	return file, nil
 }
 
+func (a *App) GetFolderPath() (string, error) {
+	a.fsAccess.Lock()
+	defer a.fsAccess.Unlock()
+	file, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{})
+	if err != nil {
+		return "", err
+	}
+	return file, nil
+}
+
 func (a *App) OpenFileBytes(p string) ([]byte, error) {
 	b, err := os.ReadFile(p)
 	if err != nil {

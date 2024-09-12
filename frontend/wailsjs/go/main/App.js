@@ -26,6 +26,10 @@ export function GetFilesInDir(arg1) {
   return window['go']['main']['App']['GetFilesInDir'](arg1);
 }
 
+export function GetFolderPath() {
+  return window['go']['main']['App']['GetFolderPath']();
+}
+
 export function GetOSSeparator() {
   return window['go']['main']['App']['GetOSSeparator']();
 }

@@ -9,6 +9,10 @@ type PreviewSettings = {
   showBaseSizeOutline: boolean
   sizeOutlineColor: string
   showSizeOutline: boolean
+  // Recording
+  framePrefix: string
+  frameSuffix: string
+  secondsBetweenFrames: number
 }
 
 export const previewSettings = makeLocalStorageStore<PreviewSettings>('preview', {
@@ -20,4 +24,8 @@ export const previewSettings = makeLocalStorageStore<PreviewSettings>('preview',
   showBaseSizeOutline: true,
   sizeOutlineColor: '#ffff0077',
   showSizeOutline: true,
+  // Recording
+  secondsBetweenFrames: 10,
+  framePrefix: 'frame-',
+  frameSuffix: '',
 })

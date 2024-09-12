@@ -4,7 +4,7 @@
   This component is a modal that provides UI for changing the stack preview settings.
 -->
 <script lang="ts">
-  import { Checkbox, Column, Grid, Modal, Row, TextInput, FileUploaderButton } from 'carbon-components-svelte'
+  import { Checkbox, Column, Grid, Modal, Row, TextInput, FileUploaderButton, NumberInput } from 'carbon-components-svelte'
   import { previewSettings } from '../stores/preview'
   import { get } from 'svelte/store'
 
@@ -15,10 +15,11 @@
   let pendingBaseSizeOutlineColor: string = previewSettingsStore.baseSizeOutlineColor
   let pendingShowSizeOutline: boolean = previewSettingsStore.showSizeOutline
   let pendingSizeOutlineColor: string = previewSettingsStore.sizeOutlineColor
+  let pendingSecondsBetweenFrames: number = previewSettingsStore.secondsBetweenFrames
 
   let changed: boolean = false
   $: {
-    changed = $previewSettings.background !== pendingBackground || $previewSettings.showBaseSizeOutline !== pendingShowBaseSizeOutline || $previewSettings.baseSizeOutlineColor !== pendingBaseSizeOutlineColor || $previewSettings.showSizeOutline !== pendingShowSizeOutline || $previewSettings.sizeOutlineColor !== pendingSizeOutlineColor
+    changed = $previewSettings.background !== pendingBackground || $previewSettings.showBaseSizeOutline !== pendingShowBaseSizeOutline || $previewSettings.baseSizeOutlineColor !== pendingBaseSizeOutlineColor || $previewSettings.showSizeOutline !== pendingShowSizeOutline || $previewSettings.sizeOutlineColor !== pendingSizeOutlineColor || $previewSettings.secondsBetweenFrames !== pendingSecondsBetweenFrames
   }
 
   export let open: boolean = false
@@ -48,6 +49,7 @@
     $previewSettings.baseSizeOutlineColor = pendingBaseSizeOutlineColor
     $previewSettings.showSizeOutline = pendingShowSizeOutline
     $previewSettings.sizeOutlineColor = pendingSizeOutlineColor
+    $previewSettings.secondsBetweenFrames = pendingSecondsBetweenFrames
     open = false
   }}
   primaryButtonDisabled={!changed}
@@ -72,6 +74,13 @@
       </Row>
       <Row>
         <TextInput id="sizeOutlineColor" labelText="Size Outline Color" bind:value={pendingSizeOutlineColor} />
+      </Row>
+      <Row>
+        <NumberInput id="secondsBetweenFrames" label="Seconds Between Frames" bind:value={pendingSecondsBetweenFrames} min={0} step={0.5} />
+      </Row>
+      <Row>
+        <TextInput id="framePrefix" labelText="Frame Prefix" bind:value={$previewSettings.framePrefix} />
+        <TextInput id="frameSuffix" labelText="Frame Suffix" bind:value={$previewSettings.frameSuffix} />
       </Row>
     </Column>
   </Grid>
