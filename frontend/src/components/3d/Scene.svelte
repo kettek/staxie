@@ -20,6 +20,7 @@
   import ShortcutHandler from '../ShortcutHandler.svelte'
   import { ThreeDCopyPaste } from '../../types/copypaste'
   import { isKeyActive } from '../Shortcuts.svelte'
+  import OptimizedRender from './OptimizedRender.svelte'
 
   export let file: LoadedFile
   export let palette: Palette | undefined
@@ -417,6 +418,7 @@
     {/each}
   </T.Group>
 {/if}
+<OptimizedRender {file} />
 
 {#if pasting.length > 0}
   {#each pasting as { x, y, z, index }}
