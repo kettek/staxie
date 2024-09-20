@@ -91,7 +91,12 @@
     lastTime = ts
 
     let rect = canvas.getBoundingClientRect()
-    if (canvas.width !== rect.width || canvas.height !== rect.height) {
+    if ($previewSettings.useCanvasSize) {
+      if (canvas.width !== $previewSettings.canvasWidth || canvas.height !== $previewSettings.canvasHeight) {
+        canvas.width = $previewSettings.canvasWidth
+        canvas.height = $previewSettings.canvasHeight
+      }
+    } else if (canvas.width !== rect.width || canvas.height !== rect.height) {
       canvas.width = rect.width
       canvas.height = rect.height
     }
@@ -354,7 +359,7 @@
     </section>
   {/if}
   <section class="canvasGroup">
-    <canvas bind:this={canvas} on:mousedown={mousedown} on:mousewheel={mousewheel}></canvas>
+    <canvas bind:this={canvas} class={$previewSettings.useCanvasSize ? '-fixed' : ''} on:mousedown={mousedown} on:mousewheel={mousewheel}></canvas>
     {#if !shronked}
       <Slider labelText="Global Zoom" min={1} max={10} step={1} bind:value={zoom} fullWidth></Slider>
       <Slider labelText="Global Rotation" min={0} max={360} step={1} bind:value={rotation} fullWidth></Slider>
@@ -393,6 +398,10 @@
   canvas {
     width: 100%;
     height: 100%;
+  }
+  canvas.-fixed {
+    width: initial;
+    height: initial;
   }
   .spinner {
     display: flex;

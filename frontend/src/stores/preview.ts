@@ -13,6 +13,9 @@ type PreviewSettings = {
   framePrefix: string
   frameSuffix: string
   secondsBetweenFrames: number
+  canvasWidth: number
+  canvasHeight: number
+  useCanvasSize: boolean
 }
 
 export const previewSettings = makeLocalStorageStore<PreviewSettings>('preview', {
@@ -28,4 +31,7 @@ export const previewSettings = makeLocalStorageStore<PreviewSettings>('preview',
   secondsBetweenFrames: 10,
   framePrefix: 'frame-',
   frameSuffix: '',
+  canvasWidth: 200,
+  canvasHeight: 100,
+  useCanvasSize: false,
 })

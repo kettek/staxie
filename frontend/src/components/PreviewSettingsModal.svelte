@@ -16,10 +16,15 @@
   let pendingShowSizeOutline: boolean = previewSettingsStore.showSizeOutline
   let pendingSizeOutlineColor: string = previewSettingsStore.sizeOutlineColor
   let pendingSecondsBetweenFrames: number = previewSettingsStore.secondsBetweenFrames
+  let pendingPrefix: string = previewSettingsStore.framePrefix
+  let pendingSuffix: string = previewSettingsStore.frameSuffix
+  let pendingUseCanvasSize: boolean = previewSettingsStore.useCanvasSize
+  let pendingCanvasWidth: number = previewSettingsStore.canvasWidth
+  let pendingCanvasHeight: number = previewSettingsStore.canvasHeight
 
   let changed: boolean = false
   $: {
-    changed = $previewSettings.background !== pendingBackground || $previewSettings.showBaseSizeOutline !== pendingShowBaseSizeOutline || $previewSettings.baseSizeOutlineColor !== pendingBaseSizeOutlineColor || $previewSettings.showSizeOutline !== pendingShowSizeOutline || $previewSettings.sizeOutlineColor !== pendingSizeOutlineColor || $previewSettings.secondsBetweenFrames !== pendingSecondsBetweenFrames
+    changed = $previewSettings.background !== pendingBackground || $previewSettings.showBaseSizeOutline !== pendingShowBaseSizeOutline || $previewSettings.baseSizeOutlineColor !== pendingBaseSizeOutlineColor || $previewSettings.showSizeOutline !== pendingShowSizeOutline || $previewSettings.sizeOutlineColor !== pendingSizeOutlineColor || $previewSettings.secondsBetweenFrames !== pendingSecondsBetweenFrames || $previewSettings.framePrefix !== pendingPrefix || $previewSettings.frameSuffix !== pendingSuffix || $previewSettings.useCanvasSize !== pendingUseCanvasSize || $previewSettings.canvasWidth !== pendingCanvasWidth || $previewSettings.canvasHeight !== pendingCanvasHeight
   }
 
   export let open: boolean = false
@@ -50,6 +55,11 @@
     $previewSettings.showSizeOutline = pendingShowSizeOutline
     $previewSettings.sizeOutlineColor = pendingSizeOutlineColor
     $previewSettings.secondsBetweenFrames = pendingSecondsBetweenFrames
+    $previewSettings.framePrefix = pendingPrefix
+    $previewSettings.frameSuffix = pendingSuffix
+    $previewSettings.useCanvasSize = pendingUseCanvasSize
+    $previewSettings.canvasWidth = pendingCanvasWidth
+    $previewSettings.canvasHeight = pendingCanvasHeight
     open = false
   }}
   primaryButtonDisabled={!changed}
@@ -79,8 +89,13 @@
         <NumberInput id="secondsBetweenFrames" label="Seconds Between Frames" bind:value={pendingSecondsBetweenFrames} min={0} step={0.5} />
       </Row>
       <Row>
-        <TextInput id="framePrefix" labelText="Frame Prefix" bind:value={$previewSettings.framePrefix} />
-        <TextInput id="frameSuffix" labelText="Frame Suffix" bind:value={$previewSettings.frameSuffix} />
+        <TextInput id="framePrefix" labelText="Frame Prefix" bind:value={pendingPrefix} />
+        <TextInput id="frameSuffix" labelText="Frame Suffix" bind:value={pendingSuffix} />
+      </Row>
+      <Row>
+        <Checkbox labelText="Use Canvas Size" id="useCanvasSize" bind:checked={pendingUseCanvasSize} />
+        <TextInput disabled={!$previewSettings.useCanvasSize} id="canvasWidth" labelText="Canvas Width" bind:value={pendingCanvasWidth} />
+        <TextInput disabled={!$previewSettings.useCanvasSize} id="canvasHeight" labelText="Canvas Height" bind:value={pendingCanvasHeight} />
       </Row>
     </Column>
   </Grid>
