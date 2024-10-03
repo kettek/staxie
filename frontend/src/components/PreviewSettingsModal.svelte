@@ -93,7 +93,7 @@
         <TextInput id="frameSuffix" labelText="Frame Suffix" bind:value={pendingSuffix} />
       </Row>
       <Row>
-        <Checkbox labelText="Use Canvas Size" id="useCanvasSize" bind:checked={pendingUseCanvasSize} />
+        <Checkbox labelText="Force Canvas Size" id="useCanvasSize" bind:checked={pendingUseCanvasSize} />
         <TextInput disabled={!pendingUseCanvasSize} id="canvasWidth" labelText="Canvas Width" bind:value={pendingCanvasWidth} />
         <TextInput disabled={!pendingUseCanvasSize} id="canvasHeight" labelText="Canvas Height" bind:value={pendingCanvasHeight} />
       </Row>
