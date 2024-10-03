@@ -23,6 +23,11 @@
     file.push(new AddAnimationFrameUndoable(file.stack.name, file.animation.name))
   }
 
+  let hoveringSliceIndex: number = -1
+  let hoveringSliceSide: 'top' | 'bottom' | 'middle' = 'middle'
+  let hoveringFrameIndex: number = -1
+  let hoveringFrameSide: 'top' | 'bottom' | 'middle' = 'middle'
+
   let contextFrameOpen: boolean = false
   let contextFrameIndex: number = -1
   let contextSliceOpen: boolean = false
@@ -101,15 +106,30 @@
   }
 
   function handleSliceDragStart(e: DragEvent, sliceIndex: number) {
-    e.dataTransfer?.setData('staxie/slice', JSON.stringify({index: sliceIndex}))
+    e.dataTransfer?.setData('staxie/slice', JSON.stringify({ index: sliceIndex }))
   }
-  function handleSliceDragEnd(e: DragEvent) {
-  }
-  function handleSliceDragOver(e: DragEvent) {
+  function handleSliceDragEnd(e: DragEvent) {}
+  function handleSliceDragOver(e: DragEvent, sliceIndex: number) {
     if (!e.dataTransfer?.types.includes('staxie/slice')) return
     e.preventDefault()
+
+    hoveringSliceIndex = sliceIndex
+    const hoveredSliceElement = e.target as HTMLElement
+    const rect = hoveredSliceElement.getBoundingClientRect()
+    const relativeY = e.clientY - rect.top
+    const relativeHeight = rect.height
+    const relativePosition = relativeY / relativeHeight
+
+    if (relativePosition < 0.25) {
+      hoveringSliceSide = 'top'
+    } else if (relativePosition > 0.75) {
+      hoveringSliceSide = 'bottom'
+    } else {
+      hoveringSliceSide = 'middle'
+    }
   }
   function handleSliceDrop(e: DragEvent, sliceIndex: number) {
+    hoveringSliceIndex = -1
     if (!file || !file.frame) return
     e.preventDefault()
     const data = e.dataTransfer?.getData('staxie/slice')
@@ -119,17 +139,41 @@
     file.selectSliceIndex(index, true)
     file.setSliceIndex(index)
   }
+  function handleSliceDragLeave(e: DragEvent) {
+    if (!e.dataTransfer?.types.includes('staxie/slice')) return
+    e.preventDefault()
+    hoveringSliceIndex = -1
+  }
 
   function handleFrameDragStart(e: DragEvent, frameIndex: number) {
-    e.dataTransfer?.setData('staxie/frame', JSON.stringify({index: frameIndex}))
+    e.dataTransfer?.setData('staxie/frame', JSON.stringify({ index: frameIndex }))
   }
-  function handleFrameDragEnd(e: DragEvent) {
-  }
-  function handleFrameDragOver(e: DragEvent) {
+  function handleFrameDragEnd(e: DragEvent) {}
+  function handleFrameDragOver(e: DragEvent, frameIndex: number) {
     if (!e.dataTransfer?.types.includes('staxie/frame')) return
     e.preventDefault()
+    hoveringFrameIndex = frameIndex
+    const hoveredFrameElement = e.target as HTMLElement
+    const rect = hoveredFrameElement.getBoundingClientRect()
+    const relativeY = e.clientY - rect.top
+    const relativeHeight = rect.height
+    const relativePosition = relativeY / relativeHeight
+
+    if (relativePosition < 0.25) {
+      hoveringFrameSide = 'top'
+    } else if (relativePosition > 0.75) {
+      hoveringFrameSide = 'bottom'
+    } else {
+      hoveringFrameSide = 'middle'
+    }
+  }
+  function handleFrameDragLeave(e: DragEvent) {
+    if (!e.dataTransfer?.types.includes('staxie/frame')) return
+    e.preventDefault()
+    hoveringFrameIndex = -1
   }
   function handleFrameDrop(e: DragEvent, frameIndex: number) {
+    hoveringFrameIndex = -1
     if (!file || !file.stack) return
     e.preventDefault()
     const data = e.dataTransfer?.getData('staxie/frame')
@@ -157,8 +201,8 @@
       {#if $file.frame}
         {#each $file.frame.slices as slice, realSliceIndex}
           {@const sliceIndex = $file.stack?.sliceCount - realSliceIndex - 1}
-          <article class="slice{sliceIndex === $file.sliceIndex ? ' --focused' : ''}{$file.isSliceSelected(sliceIndex) ? ' --selected' : ''}" on:click={(e) => onSliceClick(e, sliceIndex)} on:contextmenu|preventDefault={(e) => onSliceRightClick(e, sliceIndex)} on:dragstart={(e)=>handleSliceDragStart(e, sliceIndex)} on:dragend={handleSliceDragEnd} on:dragover={handleSliceDragOver} on:drop={(e)=>handleSliceDrop(e, sliceIndex)} draggable="true">
-            <span class="sliceIndex">{sliceIndex+1}</span>
+          <article class="slice{sliceIndex === $file.sliceIndex ? ' --focused' : ''}{$file.isSliceSelected(sliceIndex) ? ' --selected' : ''}{hoveringSliceIndex === sliceIndex ? ' --targeted' + (' --' + hoveringSliceSide) : ''}" on:click={(e) => onSliceClick(e, sliceIndex)} on:contextmenu|preventDefault={(e) => onSliceRightClick(e, sliceIndex)} on:dragstart={(e) => handleSliceDragStart(e, sliceIndex)} on:dragend={handleSliceDragEnd} on:dragover={(e) => handleSliceDragOver(e, sliceIndex)} on:dragleave={handleSliceDragLeave} on:drop={(e) => handleSliceDrop(e, sliceIndex)} draggable="true">
+            <span class="sliceIndex">{sliceIndex + 1}</span>
           </article>
         {/each}
       {/if}
@@ -171,7 +215,7 @@
     <section class="frames">
       {#if $file.animation}
         {#each $file.animation.frames as frame, frameIndex}
-          <article class="frame{frameIndex === $file.frameIndex ? ' --focused' : ''}{$file.isFrameSelected(frameIndex) ? ' --selected' : ''}" on:click={(e) => onFrameClick(e, frameIndex)} on:contextmenu|preventDefault={(e) => onFrameRightClick(e, frameIndex)} on:dragstart={(e)=>handleFrameDragStart(e, frameIndex)} on:dragend={handleFrameDragEnd} on:dragover={handleFrameDragOver} on:drop={(e)=>handleFrameDrop(e, frameIndex)} draggable="true">
+          <article class="frame{frameIndex === $file.frameIndex ? ' --focused' : ''}{$file.isFrameSelected(frameIndex) ? ' --selected' : ''}{hoveringFrameIndex === frameIndex ? ' --targeted' + (' --' + hoveringFrameSide) : ''}" on:click={(e) => onFrameClick(e, frameIndex)} on:contextmenu|preventDefault={(e) => onFrameRightClick(e, frameIndex)} on:dragstart={(e) => handleFrameDragStart(e, frameIndex)} on:dragend={handleFrameDragEnd} on:dragover={(e) => handleFrameDragOver(e, frameIndex)} on:dragleave={handleFrameDragLeave} on:drop={(e) => handleFrameDrop(e, frameIndex)} draggable="true">
             <span class="frameIndex">{frameIndex + 1}</span>
           </article>
         {/each}
@@ -230,6 +274,7 @@
   .slice {
     text-align: center;
     padding: 0.2rem;
+    border-top: 1px solid transparent;
     border-bottom: 1px solid var(--cds-ui-01);
     background: var(--cds-ui-02);
   }
@@ -238,6 +283,15 @@
   }
   .slice.--focused {
     background: var(--cds-inverse-focus-ui);
+  }
+  .slice.--targeted {
+    background: var(--cds-highlight);
+  }
+  .slice.--targeted.--top {
+    border-top: 1px solid var(--cds-focus);
+  }
+  .slice.--targeted.--bottom {
+    border-bottom: 1px solid var(--cds-focus);
   }
   .slice:hover {
     background: var(--cds-hover-primary);
@@ -276,6 +330,7 @@
   .frame {
     text-align: center;
     padding: 0.2rem;
+    border-top: 1px solid transparent;
     border-bottom: 1px solid var(--cds-ui-01);
     background: var(--cds-ui-02);
   }
@@ -284,6 +339,15 @@
   }
   .frame.--focused {
     background: var(--cds-inverse-focus-ui);
+  }
+  .frame.--targeted {
+    background: var(--cds-highlight);
+  }
+  .frame.--targeted.--top {
+    border-top: 1px solid var(--cds-focus);
+  }
+  .frame.--targeted.--bottom {
+    border-bottom: 1px solid var(--cds-focus);
   }
   .frame:hover {
     background: var(--cds-hover-primary);
