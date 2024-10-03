@@ -94,8 +94,8 @@
       </Row>
       <Row>
         <Checkbox labelText="Use Canvas Size" id="useCanvasSize" bind:checked={pendingUseCanvasSize} />
-        <TextInput disabled={!$previewSettings.useCanvasSize} id="canvasWidth" labelText="Canvas Width" bind:value={pendingCanvasWidth} />
-        <TextInput disabled={!$previewSettings.useCanvasSize} id="canvasHeight" labelText="Canvas Height" bind:value={pendingCanvasHeight} />
+        <TextInput disabled={!pendingUseCanvasSize} id="canvasWidth" labelText="Canvas Width" bind:value={pendingCanvasWidth} />
+        <TextInput disabled={!pendingUseCanvasSize} id="canvasHeight" labelText="Canvas Height" bind:value={pendingCanvasHeight} />
       </Row>
     </Column>
   </Grid>
