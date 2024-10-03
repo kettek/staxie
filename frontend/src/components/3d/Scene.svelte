@@ -418,7 +418,7 @@
     {/each}
   </T.Group>
 {/if}
-<OptimizedRender {file} />
+<!--OptimizedRender {file} {palette} /-->
 
 {#if pasting.length > 0}
   {#each pasting as { x, y, z, index }}
