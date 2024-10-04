@@ -30,7 +30,7 @@
 
 <main>
   {#each palette as swatch, i}
-    <button class="swatch" data-index={i} on:click={swatchClick}>
+    <button class="swatch{selected === i ? ' --selected' : ''}" data-index={i} on:click={swatchClick}>
       <span class="checkerboard"></span>
       <span style="background-color: rgba({swatch & 0xff},{(swatch >> 8) & 0xff},{(swatch >> 16) & 0xff},{((swatch >> 24) & 0xff) / 255})" class="color"></span>
       <span class="label">{i}</span>
@@ -50,6 +50,10 @@
     height: 1em;
     border: none;
     cursor: pointer;
+    outline: 1px solid transparent;
+  }
+  button.--selected {
+    outline: 1px solid white;
   }
   .color {
     pointer-events: none;
