@@ -14,7 +14,7 @@
   import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
-  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, SelectionClearUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
+  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, SelectionClearUndoable, SelectionReplacePixelIndicesUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
 
   import 'carbon-components-svelte/css/all.css'
   import { Tabs, Tab, TabContent, Theme, NumberInput, Dropdown, Checkbox } from 'carbon-components-svelte'
@@ -62,6 +62,7 @@
   import SmallStackPreview from './sections/SmallStackPreview.svelte'
   import Selection3D from './toolbars/Selection3D.svelte'
   import BorderSettingsModal from './components/BorderSettingsModal.svelte'
+  import ReplacePixelIndicesModal from './components/ReplacePixelIndicesModal.svelte'
 
   let useRichPresence: boolean = false
   let is3D: boolean = true
@@ -121,6 +122,9 @@
 
   let showColorMode: boolean = false
   let newColorMode: boolean = false
+
+  let showReplacePixelIndices: boolean = false
+  let replacePixelIndicesFrom: number = 0
 
   let showPreview: boolean = false
   let showPreviewSettings: boolean = false
@@ -390,6 +394,15 @@
     $fileStates.focused.push(new PixelsRotateUndoable(clockwise, $fileStates.focused.selection, $fileStates.focused.view))
   }
 
+  function showReplacePixelIndicesModal() {
+    showReplacePixelIndices = true
+    replacePixelIndicesFrom = $brushSettings.primaryIndex
+  }
+  function engageReplacePixelIndices(from: number, to: number) {
+    if (!$fileStates.focused) return
+    $fileStates.focused.push(new SelectionReplacePixelIndicesUndoable($fileStates.focused.selection.getMask(), from, to))
+  }
+
   function handlePaletteSelect(event: CustomEvent) {
     let index = event.detail.index
 
@@ -440,6 +453,7 @@
         Redo &nbsp; <Redo />
       </OverflowMenuItem>
       <OverflowMenuItem hasDivider on:click={() => $fileStates.focused?.repeat()} disabled={!$fileStates.focused}>Repeat Last</OverflowMenuItem>
+      <OverflowMenuItem hasDivider on:click={showReplacePixelIndicesModal} disabled={!$fileStates.focused}>Replace Pixel Indices</OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Image</div>
@@ -814,6 +828,9 @@
   <ComposedModal bind:open={showColorMode} size="sm" preventCloseOnClickOutside on:click:button--primary={engageColorMode}>
     <ColorMode bind:open={showColorMode} bind:file={$fileStates.focused} bind:indexed={newColorMode} />
   </ComposedModal>
+{/if}
+{#if showReplacePixelIndices && $fileStates.focused}
+  <ReplacePixelIndicesModal bind:open={showReplacePixelIndices} onsubmit={engageReplacePixelIndices} bind:fromIndex={replacePixelIndicesFrom} />
 {/if}
 {#if showUpdater && $fileStates.focused}
   <VioUpdater bind:open={showUpdater} file={$fileStates.focused} />
