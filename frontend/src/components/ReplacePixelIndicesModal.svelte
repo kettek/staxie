@@ -2,6 +2,8 @@
   import { Modal, TextInput, NumberInput } from 'carbon-components-svelte'
   import { enableShortcuts, disableShortcuts } from './Shortcuts.svelte'
   import { onMount } from 'svelte'
+  import PaletteSwatchesList from './PaletteSwatchesList.svelte'
+  import { fileStates } from '../stores/file'
 
   export let open: boolean = false
   export let heading: string = 'Replace Pixel Indices'
@@ -32,5 +34,11 @@
   }}
 >
   <NumberInput id="fromIndex" label="From Index" bind:value={fromIndex} />
+  {#if $fileStates.focused}
+    <PaletteSwatchesList file={$fileStates.focused} bind:selected={fromIndex} />
+  {/if}
   <NumberInput id="toIndex" label="To Index" bind:value={toIndex} />
+  {#if $fileStates.focused}
+    <PaletteSwatchesList file={$fileStates.focused} bind:selected={toIndex} />
+  {/if}
 </Modal>
