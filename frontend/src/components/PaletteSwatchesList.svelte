@@ -89,7 +89,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 0.4rem;
+    font-size: 0.5rem;
     mix-blend-mode: difference;
+    color: white;
   }
 </style>
