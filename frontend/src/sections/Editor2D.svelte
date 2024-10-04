@@ -617,6 +617,7 @@
               file,
               view: $file.view,
               setColorIndex: (index) => ($brushSettings.primaryIndex = index),
+              setColorIndex2: (index) => ($brushSettings.secondaryIndex = index),
             },
             {
               x: viewPixelX,
@@ -768,6 +769,7 @@
                 file,
                 view: $file.view,
                 setColorIndex: (index) => ($brushSettings.primaryIndex = index),
+                setColorIndex2: (index) => ($brushSettings.secondaryIndex = index),
               },
               { x: viewPixelX, y: viewPixelY, id: e.button },
             )

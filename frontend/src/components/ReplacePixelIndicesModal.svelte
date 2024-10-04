@@ -8,7 +8,7 @@
   export let onsubmit: (from: number, to: number) => void = () => {}
 
   export let fromIndex: number = 0
-  let toIndex: number = 0
+  export let toIndex: number = 0
 
   onMount(() => {
     disableShortcuts()

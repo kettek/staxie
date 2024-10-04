@@ -159,7 +159,13 @@
       let slice = file.frame?.slices[hover.y]
       if (!slice) return
       let p = file.canvas.getPixel(slice.x + hover.x, slice.y + hover.z)
-      if (p !== -1) $brushSettings.primaryIndex = p
+      if (p !== -1) {
+        if (!e.detail.original.nativeEvent.shiftKey) {
+          $brushSettings.primaryIndex = p
+        } else {
+          $brushSettings.secondaryIndex = p
+        }
+      }
     } else if ($toolSettings.current === toolVoxelCursor) {
       console.log('click', hover)
       if (!hover) return

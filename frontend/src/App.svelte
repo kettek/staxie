@@ -125,6 +125,7 @@
 
   let showReplacePixelIndices: boolean = false
   let replacePixelIndicesFrom: number = 0
+  let replacePixelIndicesTo: number = 0
 
   let showPreview: boolean = false
   let showPreviewSettings: boolean = false
@@ -397,6 +398,7 @@
   function showReplacePixelIndicesModal() {
     showReplacePixelIndices = true
     replacePixelIndicesFrom = $brushSettings.primaryIndex
+    replacePixelIndicesTo = $brushSettings.secondaryIndex
   }
   function engageReplacePixelIndices(from: number, to: number) {
     if (!$fileStates.focused) return
@@ -830,7 +832,7 @@
   </ComposedModal>
 {/if}
 {#if showReplacePixelIndices && $fileStates.focused}
-  <ReplacePixelIndicesModal bind:open={showReplacePixelIndices} onsubmit={engageReplacePixelIndices} bind:fromIndex={replacePixelIndicesFrom} />
+  <ReplacePixelIndicesModal bind:open={showReplacePixelIndices} onsubmit={engageReplacePixelIndices} fromIndex={replacePixelIndicesFrom} toIndex={replacePixelIndicesTo} />
 {/if}
 {#if showUpdater && $fileStates.focused}
   <VioUpdater bind:open={showUpdater} file={$fileStates.focused} />

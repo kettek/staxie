@@ -292,6 +292,46 @@ export class SelectionClearUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class SelectionReplacePixelIndicesUndoable implements Undoable<LoadedFile> {
+  private oldPixels: { x: number; y: number; index: number }[] = []
+  private newPixels: { x: number; y: number }[]
+  private oldIndex: number
+  private newIndex: number
+  constructor(pixels: { x: number; y: number }[], oldIndex: number, newIndex: number) {
+    this.newPixels = pixels
+    this.oldIndex = oldIndex
+    this.newIndex = newIndex
+  }
+  apply(file: LoadedFile) {
+    if (this.newPixels.length === 0) {
+      for (let x = 0; x < file.canvas.width; x++) {
+        for (let y = 0; y < file.canvas.height; y++) {
+          if (file.canvas.getPixel(x, y) === this.oldIndex) {
+            this.oldPixels.push({ x, y, index: this.oldIndex })
+            file.canvas.setPixel(x, y, this.newIndex)
+          }
+        }
+      }
+    } else {
+      for (let pixel of this.newPixels) {
+        if (file.canvas.getPixel(pixel.x, pixel.y) === this.oldIndex) {
+          this.oldPixels.push({ x: pixel.x, y: pixel.y, index: this.oldIndex })
+          file.canvas.setPixel(pixel.x, pixel.y, this.newIndex)
+        }
+      }
+    }
+  }
+  unapply(file: LoadedFile) {
+    for (let pixel of this.oldPixels) {
+      file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
+    }
+    this.oldPixels = []
+  }
+  clone(): SelectionReplacePixelIndicesUndoable {
+    return new SelectionReplacePixelIndicesUndoable(this.newPixels, this.oldIndex, this.newIndex)
+  }
+}
+
 export class ReplacePaletteUndoable implements Undoable<LoadedFile> {
   private oldPalette: Uint32Array = new Uint32Array([])
   private newPalette: Uint32Array

@@ -62,6 +62,7 @@ export interface SelectionRectangularToolContext {}
 // PickerToolContext provides context specific to the picker tool.
 export interface PickerToolContext {
   setColorIndex(index: number): void
+  setColorIndex2(index: number): void
 }
 
 // BrushTool is a tool that allows the user to draw with a brush.
@@ -396,13 +397,21 @@ export class PickerTool implements Tool {
     this.active = true
     let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
     if (p !== -1) {
-      ctx.setColorIndex(p)
+      if (!ptr.shift) {
+        ctx.setColorIndex(p)
+      } else {
+        ctx.setColorIndex2(p)
+      }
     }
   }
   pointerMove(ctx: ToolContext & PickerToolContext, ptr: Pointer) {
     let p = ctx.file.canvas.getPixel(ptr.x, ptr.y)
     if (p !== -1) {
-      ctx.setColorIndex(p)
+      if (!ptr.shift) {
+        ctx.setColorIndex(p)
+      } else {
+        ctx.setColorIndex2(p)
+      }
     }
   }
   pointerUp(ctx: ToolContext & PickerToolContext, ptr: Pointer) {
