@@ -610,6 +610,23 @@ export class ChangeFrameTimeUndoable implements Undoable<LoadedFile> {
 }
 
 /** BEGIN STAX-RELATED CANVAS RESIZE TYPE Undoables */
+export class ResizeSlicesUndoable implements Undoable<LoadedFile> {
+  private oldWidth: number = -1
+  private newWidth: number
+  private oldHeight: number = -1
+  private newHeight: number
+  constructor(width: number, height: number) {
+    this.newWidth = width
+    this.newHeight = height
+  }
+  apply(file: LoadedFile) {
+    this.oldWidth = file.frameWidth
+    this.oldHeight = file.frameHeight
+  }
+  unapply(file: LoadedFile) {
+  }
+}
+
 export class AddStackUndoable implements Undoable<LoadedFile> {
   private stack: string = ''
   constructor() {}
