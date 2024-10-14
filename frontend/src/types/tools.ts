@@ -57,7 +57,7 @@ export interface FloodToolContext {
 }
 
 // SelectionRectangularToolContext provides context specific to the selection tool.
-export interface SelectionRectangularToolContext {}
+export interface SelectionRectangularToolContext { }
 
 // PickerToolContext provides context specific to the picker tool.
 export interface PickerToolContext {
@@ -379,7 +379,7 @@ export class FillTool implements Tool {
       }
     }
   }
-  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {}
+  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) { }
   pointerUp(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
     ctx.file.push(new PixelsPlaceUndoable(this.pixels), ctx.view)
     this.active = false
@@ -603,7 +603,7 @@ export class MagicWandTool implements Tool {
     ctx.file.selection.active = true
     ctx.file.push(new SelectionSetUndoable(pixels, clear), ctx.view)
   }
-  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) {}
+  pointerMove(ctx: ToolContext & FloodToolContext, ptr: Pointer) { }
   pointerUp(ctx: ToolContext & FloodToolContext, ptr: Pointer) {
     this.active = false
   }
@@ -722,34 +722,34 @@ export class PlaceVoxelTool implements Tool {
   isActive(): boolean {
     return false
   }
-  pointerDown(ctx: ToolContext, ptr: Pointer): void {}
-  pointerUp(ctx: ToolContext, ptr: Pointer): void {}
-  pointerMove(ctx: ToolContext, ptr: Pointer): void {}
+  pointerDown(ctx: ToolContext, ptr: Pointer): void { }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void { }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void { }
 }
 
 export class ReplaceVoxelTool implements Tool {
   isActive(): boolean {
     return false
   }
-  pointerDown(ctx: ToolContext, ptr: Pointer): void {}
-  pointerUp(ctx: ToolContext, ptr: Pointer): void {}
-  pointerMove(ctx: ToolContext, ptr: Pointer): void {}
+  pointerDown(ctx: ToolContext, ptr: Pointer): void { }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void { }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void { }
 }
 
 export class CursorVoxelTool implements Tool {
   isActive(): boolean {
     return false
   }
-  pointerDown(ctx: ToolContext, ptr: Pointer): void {}
-  pointerUp(ctx: ToolContext, ptr: Pointer): void {}
-  pointerMove(ctx: ToolContext, ptr: Pointer): void {}
+  pointerDown(ctx: ToolContext, ptr: Pointer): void { }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void { }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void { }
 }
 
 export class SelectBoxVoxelTool implements Tool {
   isActive(): boolean {
     return false
   }
-  pointerDown(ctx: ToolContext, ptr: Pointer): void {}
-  pointerUp(ctx: ToolContext, ptr: Pointer): void {}
-  pointerMove(ctx: ToolContext, ptr: Pointer): void {}
+  pointerDown(ctx: ToolContext, ptr: Pointer): void { }
+  pointerUp(ctx: ToolContext, ptr: Pointer): void { }
+  pointerMove(ctx: ToolContext, ptr: Pointer): void { }
 }
