@@ -79,6 +79,15 @@ export class Canvas {
     return canvas
   }
 
+  static clone(canvas: Canvas): Canvas {
+    let newCanvas = new Canvas(canvas.width, canvas.height)
+    newCanvas.palette = new Uint32Array(canvas.palette)
+    newCanvas.pixels = new Uint8Array(canvas.pixels)
+    newCanvas.imageData = new ImageData(new Uint8ClampedArray(canvas.imageData.data), canvas.width, canvas.height)
+    newCanvas.refreshCanvas()
+    return newCanvas
+  }
+
   // clear sets all pixels to 0.
   clear() {
     clog.debug('clear')
@@ -224,9 +233,10 @@ export class Canvas {
   }
 
   // setPixel sets the index at the provided pixel position.
-  setPixel(x: number, y: number, index: number) {
+  setPixel(x: number, y: number, index: number, noRefresh?: boolean) {
     //clog.debug('setPixel', x, y, index)
     this.pixels[y * this.width + x] = index
+    if (noRefresh) return
     let color = this.palette[index]
     let r = color & 0xff
     let g = (color >> 8) & 0xff
@@ -272,13 +282,14 @@ export class Canvas {
     return pixels
   }
 
-  setPixels(x: number, y: number, w: number, h: number, pixels: Uint8Array) {
+  setPixels(x: number, y: number, w: number, h: number, pixels: Uint8Array, noRefresh?: boolean) {
     clog.debug('setPixels', x, y, w, h, pixels.length)
     for (let i = 0; i < h; i++) {
       for (let j = 0; j < w; j++) {
         this.pixels[(y + i) * this.width + (x + j)] = pixels[i * w + j]
       }
     }
+    if (noRefresh) return
     this.refreshImageData() // FIXME: It might be more efficient to set imageData above.
   }
 
