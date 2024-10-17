@@ -3,6 +3,7 @@ import { type Undoable } from '../undo'
 import { type StaxFrame, type StaxStack, type StaxSlice } from '../png'
 import type { SelectionArea } from '../selection'
 import type { CanvasView } from '../canvasview'
+import { Canvas } from '../canvas'
 
 export class PixelPlaceUndoable implements Undoable<LoadedFile> {
   x: number
@@ -615,7 +616,7 @@ export class ResizeSlicesUndoable implements Undoable<LoadedFile> {
   private newWidth: number
   private oldHeight: number = -1
   private newHeight: number
-  private pixels: Uint8Array = new Uint8Array(0)
+  private oldCanvas: Canvas = new Canvas(1, 1)
   constructor(width: number, height: number) {
     this.newWidth = width
     this.newHeight = height
@@ -623,10 +624,72 @@ export class ResizeSlicesUndoable implements Undoable<LoadedFile> {
   apply(file: LoadedFile) {
     this.oldWidth = file.frameWidth
     this.oldHeight = file.frameHeight
+
+    const widthRatio = this.newWidth / this.oldWidth
+    const heightRatio = this.newHeight / this.oldHeight
+
     // Save the whole canvas.
-    this.pixels = file.canvas.getPixels(0, 0, file.canvas.width, file.canvas.height)
+    this.oldCanvas = Canvas.clone(file.canvas)
+
+    // Resize the canvas.
+    const newWidth = Math.round(file.canvas.width * widthRatio)
+    const newHeight = Math.round(file.canvas.height * heightRatio)
+    file.canvas.resizeCanvas(newWidth, newHeight)
+
+    // Clear the whole canvas.
+    file.canvas.clear()
+    file.canvas.refreshCanvas()
+    file.canvas.refreshImageData()
+
+    file.frameWidth = this.newWidth
+    file.frameHeight = this.newHeight
+
+    for (let stack of file.stacks) {
+      for (let animation of stack.animations) {
+        for (let frame of animation.frames) {
+          for (let slice of frame.slices) {
+            let maxWidth = Math.min(this.oldWidth, this.newWidth)
+            let maxHeight = Math.min(this.oldHeight, this.newHeight)
+
+            const slicePixels = this.oldCanvas.getPixels(slice.x, slice.y, maxWidth, maxHeight)
+
+            // Copy over the pixels.
+            let x = Math.round(slice.x * widthRatio)
+            let y = Math.round(slice.y * heightRatio)
+
+            // Center.
+            if (this.newWidth > this.oldWidth) {
+              x += Math.round((this.newWidth - this.oldWidth) / 2)
+            } else {
+              x -= Math.round((this.oldWidth - this.newWidth) / 2)
+            }
+            if (this.newHeight > this.oldHeight) {
+              y += Math.round((this.newHeight - this.oldHeight) / 2)
+            } else {
+              y -= Math.round((this.oldHeight - this.newHeight) / 2)
+            }
+
+            file.canvas.setPixels(x, y, maxWidth, maxHeight, slicePixels, true)
+          }
+        }
+      }
+    }
+    file.canvas.refreshImageData()
+    file.cacheSlicePositions()
   }
   unapply(file: LoadedFile) {
+    // Resize the canvas back to the old size.
+    file.canvas.resizeCanvas(this.oldCanvas.width, this.oldCanvas.height)
+
+    // Copy over the old canvas.
+    file.canvas.setPixels(0, 0, this.oldCanvas.width, this.oldCanvas.height, this.oldCanvas.pixels)
+
+    // Update the frame width and height.
+    file.frameWidth = this.oldWidth
+    file.frameHeight = this.oldHeight
+
+    // Update the slice positions.
+    file.cacheSlicePositions()
   }
 }
 

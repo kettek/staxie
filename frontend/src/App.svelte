@@ -14,7 +14,7 @@
   import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
-  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, SelectionClearUndoable, SelectionReplacePixelIndicesUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
+  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, ResizeSlicesUndoable, SelectionClearUndoable, SelectionReplacePixelIndicesUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
 
   import 'carbon-components-svelte/css/all.css'
   import { Tabs, Tab, TabContent, Theme, NumberInput, Dropdown, Checkbox } from 'carbon-components-svelte'
@@ -63,6 +63,7 @@
   import Selection3D from './toolbars/Selection3D.svelte'
   import BorderSettingsModal from './components/BorderSettingsModal.svelte'
   import ReplacePixelIndicesModal from './components/ReplacePixelIndicesModal.svelte'
+  import ResizeSlicesModal from './components/ResizeSlicesModal.svelte'
 
   let useRichPresence: boolean = false
   let is3D: boolean = true
@@ -126,6 +127,8 @@
   let showReplacePixelIndices: boolean = false
   let replacePixelIndicesFrom: number = 0
   let replacePixelIndicesTo: number = 0
+
+  let showResizeSlices: boolean = false
 
   let showPreview: boolean = false
   let showPreviewSettings: boolean = false
@@ -405,6 +408,14 @@
     $fileStates.focused.push(new SelectionReplacePixelIndicesUndoable($fileStates.focused.selection.getMask(), from, to))
   }
 
+  function showResizeSlicesModal() {
+    showResizeSlices = true
+  }
+  function engageResizeSlices(width: number, height: number) {
+    if (!$fileStates.focused) return
+    $fileStates.focused.push(new ResizeSlicesUndoable(width, height))
+  }
+
   function handlePaletteSelect(event: CustomEvent) {
     let index = event.detail.index
 
@@ -456,6 +467,7 @@
       </OverflowMenuItem>
       <OverflowMenuItem hasDivider on:click={() => $fileStates.focused?.repeat()} disabled={!$fileStates.focused}>Repeat Last</OverflowMenuItem>
       <OverflowMenuItem hasDivider on:click={showReplacePixelIndicesModal} disabled={!$fileStates.focused}>Replace Pixel Indices</OverflowMenuItem>
+      <OverflowMenuItem hasDivider on:click={showResizeSlicesModal} disabled={!$fileStates.focused}>Resize Slices</OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Image</div>
@@ -833,6 +845,9 @@
 {/if}
 {#if showReplacePixelIndices && $fileStates.focused}
   <ReplacePixelIndicesModal bind:open={showReplacePixelIndices} onsubmit={engageReplacePixelIndices} fromIndex={replacePixelIndicesFrom} toIndex={replacePixelIndicesTo} />
+{/if}
+{#if showResizeSlices && $fileStates.focused}
+  <ResizeSlicesModal bind:open={showResizeSlices} onsubmit={engageResizeSlices} />
 {/if}
 {#if showUpdater && $fileStates.focused}
   <VioUpdater bind:open={showUpdater} file={$fileStates.focused} />
