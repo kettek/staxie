@@ -653,6 +653,8 @@ export class ResizeSlicesUndoable implements Undoable<LoadedFile> {
 
             const slicePixels = this.oldCanvas.getPixels(slice.x, slice.y, maxWidth, maxHeight)
 
+            // TODO: Iterate over the x and y pixel positions so we can copy as much as data as possible (e.g., make sure the get and set pixels are either iterated or copy and position appropriately at the new centered positions.)
+
             // Copy over the pixels.
             let x = Math.round(slice.x * widthRatio)
             let y = Math.round(slice.y * heightRatio)
