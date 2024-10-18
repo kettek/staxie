@@ -54,6 +54,7 @@ export class PixelsPlaceUndoable implements Undoable<LoadedFile> {
 }
 
 export class PixelsFlipUndoable implements Undoable<LoadedFile> {
+  private flippedPixels: { x: number; y: number; index: number }[] = []
   private oldPixels: { x: number; y: number; index: number }[]
   private selection: SelectionArea
   private view: CanvasView
@@ -67,8 +68,8 @@ export class PixelsFlipUndoable implements Undoable<LoadedFile> {
   apply(file: LoadedFile) {
     let minX = this.view.x
     let minY = this.view.y
-    let maxX = this.view.x + this.view.width
-    let maxY = this.view.y + this.view.height
+    let maxX = this.view.x + this.view.width + 1
+    let maxY = this.view.y + this.view.height + 1
     if (this.selection.active) {
       const { x1, y1, x2, y2 } = this.selection.minmax()
       minX = x1
@@ -79,34 +80,37 @@ export class PixelsFlipUndoable implements Undoable<LoadedFile> {
 
     // Collect our pixels.
     if (!this.oldPixels.length) {
-      for (let x = minX; x < maxX; x++) {
-        for (let y = minY; y < maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        for (let y = minY; y <= maxY; y++) {
           this.oldPixels.push({ x, y, index: file.canvas.getPixel(x, y) })
         }
       }
     }
     //
-    const flippedPixels = []
-    for (let x = minX; x < maxX; x++) {
-      for (let y = minY; y < maxY; y++) {
+    this.flippedPixels = []
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
         if (!this.selection.isPixelMarked(x, y)) continue
         let px = x
         let py = y
         // Flip in place.
         if (this.vertical) {
-          py = minY + maxY - y - 1
+          py = minY + maxY - y
         } else {
-          px = minX + maxX - x - 1
+          px = minX + maxX - x
         }
 
-        flippedPixels.push({ x: px, y: py, index: file.canvas.getPixel(x, y) })
+        this.flippedPixels.push({ x: px, y: py, index: file.canvas.getPixel(x, y) })
       }
     }
-    for (let pixel of flippedPixels) {
+    for (let pixel of this.flippedPixels) {
       file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
     }
   }
   unapply(t: LoadedFile): void {
+    for (let pixel of this.flippedPixels) {
+      t.canvas.setPixel(pixel.x, pixel.y, 0)
+    }
     for (let pixel of this.oldPixels) {
       t.canvas.setPixel(pixel.x, pixel.y, pixel.index)
     }
@@ -118,6 +122,7 @@ export class PixelsRotateUndoable implements Undoable<LoadedFile> {
   private selection: SelectionArea
   private view: CanvasView
   private oldPixels: { x: number; y: number; index: number }[] = []
+  private rotatedPixels: { x: number; y: number; index: number }[] = []
   constructor(clockwise: boolean, selection: SelectionArea, view: CanvasView) {
     this.clockwise = clockwise
     this.selection = selection
@@ -126,8 +131,8 @@ export class PixelsRotateUndoable implements Undoable<LoadedFile> {
   apply(file: LoadedFile): void {
     let minX = this.view.x
     let minY = this.view.y
-    let maxX = this.view.x + this.view.width
-    let maxY = this.view.y + this.view.height
+    let maxX = this.view.x + this.view.width + 1
+    let maxY = this.view.y + this.view.height + 1
     if (this.selection.active) {
       const { x1, y1, x2, y2 } = this.selection.minmax()
       minX = x1
@@ -139,11 +144,11 @@ export class PixelsRotateUndoable implements Undoable<LoadedFile> {
     // Collect our pixels.
     let shouldCollect = !this.oldPixels.length
 
-    const rotatedPixels = []
+    this.rotatedPixels = []
     const centerX = (maxX - minX) / 2
     const centerY = (maxY - minY) / 2
-    for (let x = minX; x < maxX; x++) {
-      for (let y = minY; y < maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
         if (!this.selection.isPixelMarked(x, y)) continue
         let px = x
         let py = y
@@ -167,14 +172,24 @@ export class PixelsRotateUndoable implements Undoable<LoadedFile> {
         px += minX
         py += minY
 
+        px = Math.round(px)
+        py = Math.round(py)
+
         if (shouldCollect) {
           this.oldPixels.push({ x: x, y: y, index: file.canvas.getPixel(x, y) })
           this.oldPixels.push({ x: px, y: py, index: file.canvas.getPixel(px, py) })
         }
-        rotatedPixels.push({ x: px, y: py, index: file.canvas.getPixel(x, y) })
+        this.rotatedPixels.push({ x: px, y: py, index: file.canvas.getPixel(x, y) })
       }
     }
-    for (const pixel of rotatedPixels) {
+
+    // Out with the old.
+    for (const pixel of this.oldPixels) {
+      file.canvas.setPixel(pixel.x, pixel.y, 0)
+    }
+
+    // In with the new.
+    for (const pixel of this.rotatedPixels) {
       file.canvas.setPixel(pixel.x, pixel.y, pixel.index)
     }
   }
