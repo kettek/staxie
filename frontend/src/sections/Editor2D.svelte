@@ -22,7 +22,7 @@
   import ShortcutHandlers from '../components/ShortcutHandlers.svelte'
   import ShortcutHandler from '../components/ShortcutHandler.svelte'
   import { CopyPaste } from '../types/copypaste'
-  import { PixelsPlaceUndoable } from '../types/file/undoables'
+  import { PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable } from '../types/file/undoables'
 
   export let file: LoadedFile
   /*export let animation: data.Animation
@@ -873,6 +873,20 @@
 
     paste = undefined
   }
+  function engageFlip(vertical: boolean) {
+    if (paste) {
+      paste.flip(vertical)
+      return
+    }
+    file.push(new PixelsFlipUndoable(vertical, $file.selection, $file.view))
+  }
+  function engageRotate(clockwise: boolean) {
+    if (paste) {
+      paste.rotate(clockwise)
+      return
+    }
+    file.push(new PixelsRotateUndoable(clockwise, $file.selection, $file.view))
+  }
 
   onMount(() => {
     let frameID: number = 0
@@ -891,6 +905,10 @@
   <ShortcutHandler fileId={$file.id} group="editor2D" cmd="clear paste" on:trigger={clearPaste} />
   <ShortcutHandler fileId={$file.id} group="editor2D" cmd="paste" on:trigger={doPaste} />
   <ShortcutHandler fileId={$file.id} group="editor2D" cmd="apply paste" on:trigger={applyPaste} />
+  <ShortcutHandler fileId={$file.id} group="editor2D" cmd="vertical flip" on:trigger={() => engageFlip(true)} />
+  <ShortcutHandler fileId={$file.id} group="editor2D" cmd="horizontal flip" on:trigger={() => engageFlip(false)} />
+  <ShortcutHandler fileId={$file.id} group="editor2D" cmd="rotate clockwise" on:trigger={() => engageRotate(true)} />
+  <ShortcutHandler fileId={$file.id} group="editor2D" cmd="rotate counter clockwise" on:trigger={() => engageRotate(false)} />
 </ShortcutHandlers>
 <main>
   <section class="view" use:viewDrop>

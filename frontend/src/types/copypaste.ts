@@ -15,6 +15,52 @@ export class CopyPaste {
     this.selection = selection
   }
 
+  flip(vertical: boolean) {
+    let canvasPixels = new Uint8Array(this.canvas.height * this.canvas.width)
+
+    for (let y = 0; y < this.canvas.height; y++) {
+      for (let x = 0; x < this.canvas.width; x++) {
+        let index = this.canvas.getPixel(x, y)
+        let newX = vertical ? x : this.canvas.width - x - 1
+        let newY = vertical ? this.canvas.height - y - 1 : y
+        canvasPixels[newY * this.canvas.width + newX] = index
+      }
+    }
+
+    const newCanvas = Canvas.fromData({
+      width: this.canvas.width,
+      height: this.canvas.height,
+      isIndexed: this.canvas.isIndexed,
+      palette: this.canvas.palette,
+      pixels: canvasPixels,
+    })
+
+    this.canvas = newCanvas
+  }
+
+  rotate(clockwise: boolean) {
+    let canvasPixels = new Uint8Array(this.canvas.height * this.canvas.width)
+
+    for (let y = 0; y < this.canvas.height; y++) {
+      for (let x = 0; x < this.canvas.width; x++) {
+        let index = this.canvas.getPixel(x, y)
+        let newX = clockwise ? y : this.canvas.height - y - 1
+        let newY = clockwise ? this.canvas.width - x - 1 : x
+        canvasPixels[newY * this.canvas.height + newX] = index
+      }
+    }
+
+    const newCanvas = Canvas.fromData({
+      width: this.canvas.height,
+      height: this.canvas.width,
+      isIndexed: this.canvas.isIndexed,
+      palette: this.canvas.palette,
+      pixels: canvasPixels,
+    })
+
+    this.canvas = newCanvas
+  }
+
   // Returns the palette colors that are missing from another palette, if any.
   getMissingPaletteColors(palette: Uint32Array): { r: number; g: number; b: number; a: number; index: number }[] {
     let missingColors: { r: number; g: number; b: number; a: number; index: number }[] = []
@@ -85,7 +131,7 @@ export class CopyPaste {
 export class ThreeDCopyPaste {
   static pixels: { x: number; y: number; z: number; index: number }[] = []
 
-  constructor() {}
+  constructor() { }
 
   static copy(file: LoadedFile) {
     if (file.threeDCursor1[0] === file.threeDCursor2[0] && file.threeDCursor1[1] === file.threeDCursor2[1] && file.threeDCursor1[2] === file.threeDCursor2[2]) {

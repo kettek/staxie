@@ -29,7 +29,7 @@
   import { Canvas } from './types/canvas'
   import BrushSize from './components/BrushSize.svelte'
   import Shortcut from './components/Shortcut.svelte'
-  import Shortcuts, { getShortcutKeys } from './components/Shortcuts.svelte'
+  import Shortcuts, { getShortcutKeys, triggerCommand } from './components/Shortcuts.svelte'
   import { CopyPaste, ThreeDCopyPaste } from './types/copypaste'
   import type { PixelPosition } from './types/shapes.js'
   import ColorSelector from './components/ColorSelector.svelte'
@@ -388,16 +388,6 @@
     fileStates.refresh()
   }
 
-  function engageFlip(vertical: boolean) {
-    if (!$fileStates.focused) return
-    $fileStates.focused.push(new PixelsFlipUndoable(vertical, $fileStates.focused.selection, $fileStates.focused.view))
-  }
-
-  function engageRotate(clockwise: boolean) {
-    if (!$fileStates.focused) return
-    $fileStates.focused.push(new PixelsRotateUndoable(clockwise, $fileStates.focused.selection, $fileStates.focused.view))
-  }
-
   function showReplacePixelIndicesModal() {
     showReplacePixelIndices = true
     replacePixelIndicesFrom = $brushSettings.primaryIndex
@@ -667,10 +657,10 @@
           <Shortcut global cmd="picker" keys={['i']} on:trigger={() => toolSettings.swapTool(toolPicker)} />
           <Shortcut global cmd="erase" keys={['e']} on:trigger={() => toolSettings.swapTool(toolErase)} />
           <Shortcut global cmd="spray" keys={['p']} on:trigger={() => toolSettings.swapTool(toolSpray)} />
-          <Shortcut global cmd="horizontal flip" keys={['h']} on:trigger={() => engageFlip(false)} />
-          <Shortcut global cmd="vertical flip" keys={['shift+h']} on:trigger={() => engageFlip(true)} />
-          <Shortcut global cmd="rotate clockwise" keys={['r']} on:trigger={() => engageRotate(true)} />
-          <Shortcut global cmd="rotate counter clockwise" keys={['shift+r']} on:trigger={() => engageRotate(false)} />
+          <Shortcut global cmd="horizontal flip" keys={['h']} on:trigger={() => {}} />
+          <Shortcut global cmd="vertical flip" keys={['shift+h']} on:trigger={() => {}} />
+          <Shortcut global cmd="rotate clockwise" keys={['r']} on:trigger={() => {}} />
+          <Shortcut global cmd="rotate counter clockwise" keys={['shift+r']} on:trigger={() => {}} />
           <Shortcut global cmd="copy" keys={['ctrl+c']} on:trigger={() => engageCopy()} />
           <Shortcut global cmd="cut" keys={['ctrl+x']} on:trigger={() => engageDelete(true)} />
           <Shortcut global cmd="paste" keys={['ctrl+v']} on:trigger={() => engagePaste()} />
@@ -712,16 +702,16 @@
         <hr />
         <Button selected={$toolSettings.current === toolReference} kind="ghost" size="small" icon={ImageReference} tooltip="reference" tooltipPosition="right" on:click={() => toolSettings.swapTool(toolReference)}></Button>
         <hr />
-        <Button kind="ghost" size="small" icon={MirrorH} tooltipPosition="right" on:click={() => engageFlip(false)}>
+        <Button kind="ghost" size="small" icon={MirrorH} tooltipPosition="right" on:click={() => triggerCommand('editor2D', 'horizontal flip')}>
           <ShortcutTooltip slot="tooltip" group="editor2D" cmd="horizontal flip" />
         </Button>
-        <Button kind="ghost" size="small" icon={MirrorV} tooltipPosition="right" on:click={() => engageFlip(true)}>
+        <Button kind="ghost" size="small" icon={MirrorV} tooltipPosition="right" on:click={() => triggerCommand('editor2D', 'vertical flip')}>
           <ShortcutTooltip slot="tooltip" group="editor2D" cmd="vertical flip" />
         </Button>
-        <Button kind="ghost" size="small" icon={RotateClockwise} tooltipPosition="right" on:click={() => engageRotate(true)}>
+        <Button kind="ghost" size="small" icon={RotateClockwise} tooltipPosition="right" on:click={() => triggerCommand('editor2D', 'rotate clockwise')}>
           <ShortcutTooltip slot="tooltip" group="editor2D" cmd="rotate clockwise" />
         </Button>
-        <Button kind="ghost" size="small" icon={RotateCounterclockwise} tooltipPosition="right" on:click={() => engageRotate(false)}>
+        <Button kind="ghost" size="small" icon={RotateCounterclockwise} tooltipPosition="right" on:click={() => triggerCommand('editor2D', 'rotate counter clockwise')}>
           <ShortcutTooltip slot="tooltip" group="editor2D" cmd="rotate counter clockwise" />
         </Button>
       {/if}
