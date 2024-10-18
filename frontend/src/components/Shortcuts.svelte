@@ -38,6 +38,28 @@
     return keys.has(key)
   }
 
+  export function triggerCommand(group: string, cmd: string, fileId?: number) {
+    let cmds = new Set()
+    let cur = get(currentShortcuts)
+    for (let shortcut of get(shortcuts)) {
+      if (shortcut.group !== group) continue
+      if (!shortcut.global && shortcut.id !== cur.id) continue
+      if (shortcut.cmd === cmd) {
+        cmds.add(shortcut.cmd)
+        shortcut.trigger()
+      }
+    }
+
+    for (let cmd of cmds) {
+      for (let handler of get(handlers)) {
+        if (handler.fileId !== undefined && handler.fileId !== (fileId ?? get(fileStates).focused?.id)) continue
+        if (handler.group === group && handler.cmd === cmd) {
+          handler.trigger()
+        }
+      }
+    }
+  }
+
   function normalizeKey(key: string, code: string): string {
     // Chrome bug lol
     if (key === 'Meta' && code.startsWith('Alt')) {
