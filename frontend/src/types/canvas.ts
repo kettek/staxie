@@ -558,11 +558,11 @@ export class Canvas {
       bufferOffset = buffer.writeUInt8(0x0a, bufferOffset)
       out = Buffer.concat([out, buffer])
 
-      // TODO: Replace this manual buffer writing with something like `new Chunk('IHDR')`, then writing bytes as desired, then issuing `out = Buffer.concat([out, chunk.finish()])` or something similar. It might be convenient have chunk.write(...), chunk.done(), then one would have chunk.length, chunk.type, chunk.data, and chunk.crc, all of which could be written to out.
+        // TODO: Replace this manual buffer writing with something like `new Chunk('IHDR')`, then writing bytes as desired, then issuing `out = Buffer.concat([out, chunk.finish()])` or something similar. It might be convenient have chunk.write(...), chunk.done(), then one would have chunk.length, chunk.type, chunk.data, and chunk.crc, all of which could be written to out.
 
-      // Chunk o'clock (length, type, data, crc. crc = network-order CRC-32 of type + data)
-      // Write IHDR
-      ;(buffer = Buffer.alloc(12 + 13)), (bufferOffset = 0)
+        // Chunk o'clock (length, type, data, crc. crc = network-order CRC-32 of type + data)
+        // Write IHDR
+        ; (buffer = Buffer.alloc(12 + 13)), (bufferOffset = 0)
       bufferOffset = buffer.writeUInt32BE(13, bufferOffset)
       chunkStart = bufferOffset
       bufferOffset += buffer.write('IHDR', bufferOffset)
@@ -616,7 +616,7 @@ export class Canvas {
           }
         }
       }
-      ;(buffer = Buffer.alloc(8 + dbuffer.buffer.length + 4)), (bufferOffset = 0)
+      ; (buffer = Buffer.alloc(8 + dbuffer.buffer.length + 4)), (bufferOffset = 0)
       bufferOffset = buffer.writeUInt32BE(dbuffer.buffer.length, 0)
       chunkStart = bufferOffset
       bufferOffset += buffer.write('stAx', bufferOffset)
@@ -628,7 +628,7 @@ export class Canvas {
       // Write stored other chunks.
       for (let chunk of this.otherChunks) {
         const chunkLength = chunk.length - 4 // Chunk - type
-        ;(buffer = Buffer.alloc(12 + chunkLength)), (bufferOffset = 0)
+          ; (buffer = Buffer.alloc(12 + chunkLength)), (bufferOffset = 0)
         bufferOffset = buffer.writeUInt32BE(chunkLength, bufferOffset)
         chunkStart = bufferOffset
         bufferOffset += Buffer.from(chunk).copy(buffer, bufferOffset)
@@ -640,7 +640,7 @@ export class Canvas {
       if (this.isIndexed) {
         // Write PLTE
         let palettesSize = this.palette.length * 3
-        ;(buffer = Buffer.alloc(12 + palettesSize)), (bufferOffset = 0)
+          ; (buffer = Buffer.alloc(12 + palettesSize)), (bufferOffset = 0)
         bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
         chunkStart = bufferOffset
         bufferOffset += buffer.write('PLTE', bufferOffset)
@@ -655,7 +655,7 @@ export class Canvas {
         out = Buffer.concat([out, buffer])
         // Write tRNS
         palettesSize = this.palette.length
-        ;(buffer = Buffer.alloc(12 + palettesSize)), (bufferOffset = 0)
+          ; (buffer = Buffer.alloc(12 + palettesSize)), (bufferOffset = 0)
         bufferOffset = buffer.writeUInt32BE(palettesSize, bufferOffset)
         chunkStart = bufferOffset
         bufferOffset += buffer.write('tRNS', bufferOffset)
@@ -696,7 +696,7 @@ export class Canvas {
         deflatedData = zlibSync(data, { level: 9 })
       }
       // Write IDAT // Our DEFLATE and 0->raw scanline data
-      ;(buffer = Buffer.alloc(8)), (bufferOffset = 0)
+      ; (buffer = Buffer.alloc(8)), (bufferOffset = 0)
       bufferOffset = buffer.writeUInt32BE(deflatedData.length, bufferOffset)
       chunkStart = bufferOffset
       bufferOffset += buffer.write('IDAT', bufferOffset)
@@ -705,8 +705,8 @@ export class Canvas {
       chunkEnd = bufferOffset
       bufferOffset = buffer.writeInt32BE(crc32.buf(buffer.slice(chunkStart, chunkEnd)), bufferOffset)
       out = Buffer.concat([out, buffer])
-      // Write IEND
-      ;(buffer = Buffer.alloc(12)), (bufferOffset = 0)
+        // Write IEND
+        ; (buffer = Buffer.alloc(12)), (bufferOffset = 0)
       bufferOffset = buffer.writeUInt32BE(0, bufferOffset)
       chunkStart = bufferOffset
       bufferOffset += buffer.write('IEND', bufferOffset)
