@@ -666,27 +666,24 @@ export class ResizeSlicesUndoable implements Undoable<LoadedFile> {
             let maxWidth = Math.min(this.oldWidth, this.newWidth)
             let maxHeight = Math.min(this.oldHeight, this.newHeight)
 
-            const slicePixels = this.oldCanvas.getPixels(slice.x, slice.y, maxWidth, maxHeight)
+            // Get old pixels.
+            const oldSlicePixels = this.oldCanvas.getPixels(slice.x, slice.y, this.oldWidth, this.oldHeight)
+            // Get space for new pixels.
+            const newSlicePixels = new Uint8Array(maxWidth * maxHeight)
 
-            // TODO: Iterate over the x and y pixel positions so we can copy as much as data as possible (e.g., make sure the get and set pixels are either iterated or copy and position appropriately at the new centered positions.)
-
-            // Copy over the pixels.
-            let x = Math.round(slice.x * widthRatio)
-            let y = Math.round(slice.y * heightRatio)
-
-            // Center.
-            if (this.newWidth > this.oldWidth) {
-              x += Math.round((this.newWidth - this.oldWidth) / 2)
-            } else {
-              x -= Math.round((this.oldWidth - this.newWidth) / 2)
+            // Copy them pixels over, ensuring bounds and centering.
+            const offsetX = this.oldWidth > this.newWidth ? Math.round((maxWidth - this.oldWidth) / 2) : Math.round((this.newWidth - this.oldWidth) / 2)
+            const offsetY = this.oldHeight > this.newHeight ? Math.round((maxHeight - this.oldHeight) / 2) : Math.round((this.newHeight - this.oldHeight) / 2)
+            for (let y = 0; y < this.oldHeight; y++) {
+              for (let x = 0; x < this.oldWidth; x++) {
+                const newX = x + offsetX
+                const newY = y + offsetY
+                if (newX >= 0 && newX < maxWidth && newY >= 0 && newY < maxHeight) {
+                  newSlicePixels[newY * maxWidth + newX] = oldSlicePixels[y * this.oldWidth + x]
+                }
+              }
             }
-            if (this.newHeight > this.oldHeight) {
-              y += Math.round((this.newHeight - this.oldHeight) / 2)
-            } else {
-              y -= Math.round((this.oldHeight - this.newHeight) / 2)
-            }
-
-            file.canvas.setPixels(x, y, maxWidth, maxHeight, slicePixels, true)
+            file.canvas.setPixels(Math.round(slice.x * widthRatio), Math.round(slice.y * heightRatio), maxWidth, maxHeight, newSlicePixels, true)
           }
         }
       }
@@ -1422,9 +1419,9 @@ export class MoveAnimationUndoable implements Undoable<LoadedFile> {
     let { x: toX, y: toY, height: toHeight } = file.getAnimationArea(this.stackName, a2.name)
 
     if (toX < fromX) {
-      [fromX, toX] = [toX, fromX];
-      [fromY, toY] = [toY, fromY];
-      [fromHeight, toHeight] = [toHeight, fromHeight];
+      ;[fromX, toX] = [toX, fromX]
+        ;[fromY, toY] = [toY, fromY]
+        ;[fromHeight, toHeight] = [toHeight, fromHeight]
     }
 
     let fromPixels = file.canvas.getPixels(fromX, fromY, file.canvas.width, fromHeight)
@@ -1432,7 +1429,6 @@ export class MoveAnimationUndoable implements Undoable<LoadedFile> {
 
     file.canvas.setPixels(toX, toY, file.canvas.width, fromHeight, fromPixels)
     file.canvas.setPixels(fromX, toY + fromHeight, file.canvas.width, fromY - toY, toPixels)
-
 
     // Update animations.
     let anim = g.animations.splice(this.oldIndex, 1)[0]
@@ -2006,7 +2002,6 @@ export class MoveAnimationFrameSliceUndoable implements Undoable<LoadedFile> {
     file.cacheSlicePositions()
   }
 }
-
 
 export class ThreeDSelectionBoxClearUndoable implements Undoable<LoadedFile> {
   //private selection: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]]
