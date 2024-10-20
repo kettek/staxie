@@ -17,7 +17,7 @@ jobs:
       matrix:
         build: [
           {name: Staxie, platform: linux/amd64, os: ubuntu-latest},
-          {name: Staxie, platform: windows/amd64, os: windows-latest},
+          {name: Staxie.exe, platform: windows/amd64, os: windows-latest},
           {name: Staxie, platform: darwin/universal, os: macos-latest}
         ]
     runs-on: ${{ matrix.build.os }}
