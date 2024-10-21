@@ -669,7 +669,7 @@ export class ResizeSlicesUndoable implements Undoable<LoadedFile> {
             // Get old pixels.
             const oldSlicePixels = this.oldCanvas.getPixels(slice.x, slice.y, this.oldWidth, this.oldHeight)
             // Get space for new pixels.
-            const newSlicePixels = new Uint8Array(maxWidth * maxHeight)
+            const newSlicePixels = new Uint8Array(this.newWidth * this.newHeight)
 
             // Copy them pixels over, ensuring bounds and centering.
             const offsetX = this.oldWidth > this.newWidth ? Math.round((maxWidth - this.oldWidth) / 2) : Math.round((this.newWidth - this.oldWidth) / 2)
@@ -678,12 +678,12 @@ export class ResizeSlicesUndoable implements Undoable<LoadedFile> {
               for (let x = 0; x < this.oldWidth; x++) {
                 const newX = x + offsetX
                 const newY = y + offsetY
-                if (newX >= 0 && newX < maxWidth && newY >= 0 && newY < maxHeight) {
-                  newSlicePixels[newY * maxWidth + newX] = oldSlicePixels[y * this.oldWidth + x]
+                if (newX >= 0 && newX < this.newWidth && newY >= 0 && newY < this.newHeight) {
+                  newSlicePixels[newY * this.newWidth + newX] = oldSlicePixels[y * this.oldWidth + x]
                 }
               }
             }
-            file.canvas.setPixels(Math.round(slice.x * widthRatio), Math.round(slice.y * heightRatio), maxWidth, maxHeight, newSlicePixels, true)
+            file.canvas.setPixels(Math.round(slice.x * widthRatio), Math.round(slice.y * heightRatio), this.newWidth, this.newHeight, newSlicePixels, true)
           }
         }
       }
