@@ -174,6 +174,8 @@ export async function Read(filepath: string): Promise<VioImportResults> {
         for (let sliceIndex = 0; sliceIndex < frame.length; sliceIndex++) {
           let slice = frame[sliceIndex]
 
+          if (!slice) alert("slice index " + sliceIndex + " from frame index " + frameIndex + " is missing!")
+
           canvas.setPixels(x, y, frameWidth, frameHeight, slice.pixels)
 
           let pngSlice = {
