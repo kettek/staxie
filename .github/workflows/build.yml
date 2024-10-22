@@ -16,9 +16,12 @@ jobs:
       fail-fast: false
       matrix:
         build: [
-          {name: Staxie, platform: linux/amd64, os: ubuntu-latest},
-          {name: Staxie.exe, platform: windows/amd64, os: windows-latest},
-          {name: Staxie, platform: darwin/universal, os: macos-latest}
+          {name: "Staxie-x64", platform: linux/amd64, os: ubuntu-latest},
+          {name: "Staxie-arm64", platform: linux/arm64, os: ubuntu-latest},
+          {name: "Staxie-x64.exe", platform: windows/amd64, os: windows-latest},
+          {name: "Staxie-arm64.exe", platform: windows/arm64, os: windows-latest},
+          {name: "Staxie-darwin-x64", platform: darwin/amd64, os: macos-latest},
+          {name: "Staxie-darwin-arm64", platform: darwin/arm64, os: macos-latest}
         ]
     runs-on: ${{ matrix.build.os }}
     steps:
@@ -29,3 +32,4 @@ jobs:
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
+          nsis: false
