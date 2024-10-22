@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { Version, Update } from '../../wailsjs/go/main/App.js'
+  import { Version, Update, GetPlatform } from '../../wailsjs/go/main/App.js'
   import { BrowserOpenURL } from '../../wailsjs/runtime/runtime.js'
 
   import { ModalHeader, ModalBody, ModalFooter, Link } from 'carbon-components-svelte'
@@ -24,6 +24,19 @@
     BrowserOpenURL((e.target as HTMLAnchorElement).href)
   }
 
+  async function getRelativeTarget(asset: any[]) {
+    let platform = await GetPlatform()
+    if (platform.startsWith('windows')) {
+      platform += '.exe'
+    }
+    for (const a of asset) {
+      if (a.name === `Staxie-${platform}`) {
+        return a.browser_download_url
+      }
+    }
+    return ''
+  }
+
   async function getRelease() {
     const url = 'https://api.github.com/repos/kettek/staxie/releases/latest'
 
@@ -32,7 +45,7 @@
       const results = await (await fetch(url)).json()
       const tag = await (await fetch(`https://api.github.com/repos/kettek/staxie/git/ref/tags/${results.tag_name}`)).json()
       const sha = (await (await fetch(`https://api.github.com/repos/kettek/staxie/git/tags/${tag.object.sha}`)).json())?.object?.sha
-      const match = results.assets.find((asset: any) => asset.name === 'Staxie.exe')?.browser_download_url
+      const match = await getRelativeTarget(results.assets)
       downloadURL = match
 
       availableVersion = results.tag_name
@@ -80,7 +93,7 @@
     <article>
       <header>Latest Version</header>
       <Link on:click={followLink} href="https://github.com/kettek/staxie/releases/tag/{availableVersion}">{availableVersion} ({availableSHA})</Link>
-      {#if newer}
+      {#if newer && downloadURL}
         <Button kind="ghost" size="small" icon={UpdateNow} tooltipPosition="bottom" tooltip="Update Now" on:click={update} />
       {/if}
     </article>

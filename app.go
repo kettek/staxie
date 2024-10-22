@@ -22,6 +22,7 @@ type App struct {
 	versionString string
 	fsAccess      sync.Mutex
 	RichPresence
+	Platform
 }
 
 // NewApp creates a new App application struct
