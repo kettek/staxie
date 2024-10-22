@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 
 	"runtime/debug"
 
+	"github.com/kettek/go-updater"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -216,4 +218,9 @@ func (a *App) ToggleFullscreen() {
 	}
 	runtime.WindowFullscreen(a.ctx)
 	a.onResize(nil)
+}
+
+// Update replaces the running staxie application with the given source.
+func (a *App) Update(source string) {
+	updater.Update(source, os.Args[0], fmt.Sprintf("%d", os.Getpid()))
 }

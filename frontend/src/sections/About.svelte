@@ -5,16 +5,19 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { Version } from '../../wailsjs/go/main/App.js'
+  import { Version, Update } from '../../wailsjs/go/main/App.js'
   import { BrowserOpenURL } from '../../wailsjs/runtime/runtime.js'
 
   import { ModalHeader, ModalBody, ModalFooter, Link } from 'carbon-components-svelte'
+  import Button from '../components/common/Button.svelte'
+  import { UpdateNow } from 'carbon-icons-svelte'
 
   export const open: boolean = false
   let version: string = ''
   let newer: boolean = false
   let availableVersion: string = ''
   let availableSHA: string = ''
+  let downloadURL: string = ''
 
   function followLink(e: MouseEvent) {
     e.preventDefault()
@@ -28,7 +31,9 @@
       newer = false
       const results = await (await fetch(url)).json()
       const tag = await (await fetch(`https://api.github.com/repos/kettek/staxie/git/ref/tags/${results.tag_name}`)).json()
-      const sha = tag.object.sha
+      const sha = (await (await fetch(`https://api.github.com/repos/kettek/staxie/git/tags/${tag.object.sha}`)).json())?.object?.sha
+      const match = results.assets.find((asset: any) => asset.name === 'Staxie.exe')?.browser_download_url
+      downloadURL = match
 
       availableVersion = results.tag_name
       availableSHA = sha
@@ -41,6 +46,10 @@
     } catch (e) {
       console.error(e)
     }
+  }
+
+  function update() {
+    Update(downloadURL)
   }
 
   onMount(async () => {
@@ -71,6 +80,9 @@
     <article>
       <header>Latest Version</header>
       <Link on:click={followLink} href="https://github.com/kettek/staxie/releases/tag/{availableVersion}">{availableVersion} ({availableSHA})</Link>
+      {#if newer}
+        <Button kind="ghost" size="small" icon={UpdateNow} tooltipPosition="bottom" tooltip="Update Now" on:click={update} />
+      {/if}
     </article>
   {/if}
   <article>
@@ -85,6 +97,7 @@
     flex-direction: row;
     gap: 1rem;
     justify-content: flex-start;
+    align-items: center;
     user-select: none;
     padding-bottom: 1em;
   }
