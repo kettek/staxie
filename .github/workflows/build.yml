@@ -27,11 +27,7 @@ jobs:
               platform: windows/amd64,
               os: windows-latest,
             },
-            {
-              name: "Staxie-darwin-universal",
-              platform: darwin/universal,
-              os: macos-latest,
-            },
+            { name: "Staxie", platform: darwin/universal, os: macos-latest },
           ]
     runs-on: ${{ matrix.build.os }}
     steps:
