@@ -3,8 +3,8 @@ name: Wails build
 on:
   push:
     tags:
-    # Match any new tag
-      - '*'
+      # Match any new tag
+      - "*"
 
 env:
   # Necessary for most environments as build failure can occur due to OOM issues
@@ -15,14 +15,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build: [
-          {name: "Staxie-x64", platform: linux/amd64, os: ubuntu-latest},
-          {name: "Staxie-arm64", platform: linux/arm64, os: ubuntu-latest},
-          {name: "Staxie-x64.exe", platform: windows/amd64, os: windows-latest},
-          {name: "Staxie-arm64.exe", platform: windows/arm64, os: windows-latest},
-          {name: "Staxie-darwin-x64", platform: darwin/amd64, os: macos-latest},
-          {name: "Staxie-darwin-arm64", platform: darwin/arm64, os: macos-latest}
-        ]
+        build:
+          [
+            {
+              name: "Staxie-linux-amd64",
+              platform: linux/amd64,
+              os: ubuntu-latest,
+            },
+            {
+              name: "Staxie-windows-amd64.exe",
+              platform: windows/amd64,
+              os: windows-latest,
+            },
+            {
+              name: "Staxie-darwin-universal",
+              platform: darwin/universal,
+              os: macos-latest,
+            },
+          ]
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
