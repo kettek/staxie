@@ -16,6 +16,9 @@
     value = target.value
     if (type === 'number') {
       value = parseFloat(value)
+      if (isNaN(value)) {
+        value = ''
+      }
     } else if (type === 'checkbox') {
       checked = target.checked
       dispatch('change', checked)
