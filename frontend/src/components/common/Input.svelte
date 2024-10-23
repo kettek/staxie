@@ -28,6 +28,19 @@
     value = target.value
     if (type === 'number') {
       value = parseFloat(value)
+      if ((e as any).data === '-') {
+        if (!isNaN(value)) {
+          value = -value
+        } else {
+          value = '-'
+        }
+      } else if ((e as any).data === '.') {
+        value = value + '.'
+      } else {
+        if (isNaN(value)) {
+          value = ''
+        }
+      }
     } else if (type === 'checkbox') {
       checked = target.checked
       dispatch('change', checked)
@@ -38,13 +51,13 @@
 </script>
 
 <label class={size}>
-  <span style="{labelColor?'color: '+labelColor:''}">
+  <span style={labelColor ? 'color: ' + labelColor : ''}>
     <slot name="label"></slot>
   </span>
   {#if type === 'text'}
     <input type="text" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'number'}
-    <input type="number" style={`width: ${width}em`} {...$$restProps} bind:value on:change={onChange} on:input={onInput} class={`${!showSpinner ? '-hideSpinner' : ''}`} />
+    <input style={`width: ${width}em`} {...$$restProps} bind:value on:change={onChange} on:input={onInput} class={`${!showSpinner ? '-hideSpinner' : ''}`} />
   {:else if type === 'color'}
     <input type="color" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'file'}
