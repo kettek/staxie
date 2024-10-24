@@ -38,7 +38,9 @@
 
     const size = [maxX - minX, maxY - minY, maxZ - minZ]
     let center = [Math.floor(minX + size[0] / 2), Math.floor(minY + size[1] / 2), Math.floor(minZ + size[2] / 2)]
-    center = [Math.round(originX === '' ? center[0] : parseFloat(originX as string)), Math.round(originY === '' ? center[1] : parseFloat(originY as string)), Math.round(originZ === '' ? center[2] : parseFloat(originZ as string))]
+    center[0] += originX === '' ? 0 : Number(originX)
+    center[1] += originY === '' ? 0 : Number(originY)
+    center[2] += originZ === '' ? 0 : Number(originZ)
 
     const oldPixels: { x: number; y: number; index: number }[] = []
     const newPixels: { x: number; y: number; index: number }[] = []
@@ -79,7 +81,7 @@
   <Input type="number" width={4} bind:value={rotateX} labelColor="#ff3553">
     <svelte:fragment slot="label">X°</svelte:fragment>
   </Input>
-  <Input type="number" width={6} bind:value={originX} labelColor="#ff3553" placeholder="center">
+  <Input type="number" width={6} bind:value={originX} labelColor="#ff3553" placeholder="0">
     <svelte:fragment slot="label">Origin</svelte:fragment>
   </Input>
 </div>
@@ -87,7 +89,7 @@
   <Input type="number" width={4} bind:value={rotateY} labelColor="#8adb00">
     <svelte:fragment slot="label">Y°</svelte:fragment>
   </Input>
-  <Input type="number" width={6} bind:value={originY} labelColor="#8adb00" placeholder="center">
+  <Input type="number" width={6} bind:value={originY} labelColor="#8adb00" placeholder="0">
     <svelte:fragment slot="label">Origin</svelte:fragment>
   </Input>
 </div>
@@ -95,7 +97,7 @@
   <Input type="number" width={4} bind:value={rotateZ} labelColor="#2a8fff">
     <svelte:fragment slot="label">Z°</svelte:fragment>
   </Input>
-  <Input type="number" width={6} bind:value={originZ} labelColor="#2a8fff" placeholder="center">
+  <Input type="number" width={6} bind:value={originZ} labelColor="#2a8fff" placeholder="0">
     <svelte:fragment slot="label">Origin</svelte:fragment>
   </Input>
 </div>
