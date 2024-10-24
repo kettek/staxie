@@ -4,6 +4,7 @@ export function makeLocalStorageStore<T>(key: string, value: T): Writable<T> {
   // Load any existing storage.
   let existing = localStorage.getItem(key)
   if (existing) {
+    if (existing === 'undefined') existing = '{}'
     let storedValue = JSON.parse(existing)
 
     for (let [k, v] of Object.entries(value as any)) {
