@@ -1,3 +1,27 @@
+<script lang="ts" context="module">
+  import { onMount } from 'svelte'
+  import { makeLocalStorageStore } from '../stores/localstore'
+  import { get } from 'svelte/store'
+
+  type PanelState = {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+  type PanelStates = {
+    panels: { [key: string]: PanelState }
+  }
+
+  const panelStates = makeLocalStorageStore<PanelStates>('panelStates', { panels: {} })
+
+  function setPanelState(key: string, state: PanelState) {
+    if (!key) return
+    const states = get(panelStates)
+    panelStates.set({ panels: { ...states.panels, [key]: state } })
+  }
+</script>
+
 <!--
   @component
 
@@ -12,25 +36,38 @@
   export let noPadding: boolean = false
 
   export let open: boolean = false
+  export let id: string = ''
+
+  let dialog: HTMLDialogElement
 
   function drag(node) {
     let dragging: boolean = false
     let x: number = 0
     let y: number = 0
     node.addEventListener('mousedown', start)
-    window.addEventListener('mouseup', stop)
-    window.addEventListener('mouseleave', stop)
-    window.addEventListener('mousemove', move)
 
     function start(e: MouseEvent) {
       dragging = true
       x = e.clientX
       y = e.clientY
       node.style.cursor = 'grabbing'
+      window.addEventListener('mouseup', stop)
+      window.addEventListener('mouseleave', stop)
+      window.addEventListener('mousemove', move)
     }
     function stop(e: MouseEvent) {
+      window.removeEventListener('mouseup', stop)
+      window.removeEventListener('mouseleave', stop)
+      window.removeEventListener('mousemove', move)
       dragging = false
       node.style.cursor = 'auto'
+      if (!dialog) return
+      setPanelState(id, {
+        x: parseInt(dialog.style.left),
+        y: parseInt(dialog.style.top),
+        width: parseInt(dialog.style.width),
+        height: parseInt(dialog.style.height),
+      })
     }
     function move(e: MouseEvent) {
       if (!dragging || resizing) return
@@ -55,9 +92,6 @@
     let width: number = 0
     let height: number = 0
     node.addEventListener('mousedown', start)
-    window.addEventListener('mouseup', stop)
-    window.addEventListener('mouseleave', stop)
-    window.addEventListener('mousemove', move)
 
     function start(e: MouseEvent) {
       resizing = true
@@ -71,10 +105,23 @@
       height = rect.height
       top = rect.top
       left = rect.left
+      window.addEventListener('mouseup', stop)
+      window.addEventListener('mouseleave', stop)
+      window.addEventListener('mousemove', move)
     }
     function stop(e: MouseEvent) {
+      window.addEventListener('mouseup', stop)
+      window.addEventListener('mouseleave', stop)
+      window.addEventListener('mousemove', move)
       resizing = false
       dragging = false
+      if (!dialog) return
+      setPanelState(id, {
+        x: parseInt(dialog.style.left),
+        y: parseInt(dialog.style.top),
+        width: parseInt(dialog.style.width),
+        height: parseInt(dialog.style.height),
+      })
     }
     function move(e: MouseEvent) {
       if (!dragging) return
@@ -115,7 +162,16 @@
       }
     }
   }
-  let dialog: HTMLDialogElement
+
+  onMount(() => {
+    const state = $panelStates.panels[id]
+    if (state) {
+      dialog.style.left = state.x + 'px'
+      dialog.style.top = state.y + 'px'
+      dialog.style.width = state.width + 'px'
+      dialog.style.height = state.height + 'px'
+    }
+  })
 </script>
 
 <dialog bind:this={dialog} use:drag style="left: 100px; top: 100px;">
