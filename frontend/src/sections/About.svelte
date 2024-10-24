@@ -10,10 +10,11 @@
 
   import { ModalHeader, ModalBody, ModalFooter, Link } from 'carbon-components-svelte'
   import Button from '../components/common/Button.svelte'
-  import { UpdateNow } from 'carbon-icons-svelte'
+  import { UpdateNow, Async } from 'carbon-icons-svelte'
 
   export const open: boolean = false
   let version: string = ''
+  let dirty: boolean = false
   let newer: boolean = false
   let availableVersion: string = ''
   let availableSHA: string = ''
@@ -67,7 +68,13 @@
 
   onMount(async () => {
     if ((window as any)['go']) {
-      version = await Version()
+      const v = (await Version()).split('-')
+      if (v.length > 1) {
+        version = v[0]
+        dirty = true
+      } else {
+        version = v[0]
+      }
       await getRelease()
     } else {
       version = 'unknown browser'
@@ -93,8 +100,9 @@
     <article>
       <header>Latest Version</header>
       <Link on:click={followLink} href="https://github.com/kettek/staxie/releases/tag/{availableVersion}">{availableVersion} ({availableSHA})</Link>
+      <Button kind="ghost" size="small" icon={UpdateNow} tooltipPosition="bottom" tooltip="Check for Updates" on:click={getRelease} />
       {#if newer && downloadURL}
-        <Button kind="ghost" size="small" icon={UpdateNow} tooltipPosition="bottom" tooltip="Update Now" on:click={update} />
+        <Button kind="ghost" size="small" icon={Async} tooltipPosition="bottom" tooltip="Update Now" on:click={update} />
       {/if}
     </article>
   {/if}
