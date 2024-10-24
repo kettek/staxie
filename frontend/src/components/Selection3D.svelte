@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { NumberInput, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte'
-  import Button from '../components/common/Button.svelte'
+  import Button from './common/Button.svelte'
   import { fileStates } from '../stores/file'
   import { PixelsPlaceUndoable } from '../types/file/undoables'
-  import Input from '../components/common/Input.svelte'
+  import Input from './common/Input.svelte'
+  import { Checkmark } from 'carbon-icons-svelte'
 
   let rotateX: number = 0
   let rotateY: number = 0
@@ -75,29 +75,35 @@
   }
 </script>
 
-<OverflowMenu size="sm">
-  <div slot="menu">Rotate</div>
-  <Input type="number" bind:value={rotateX} labelColor="#ff3553">
-    <svelte:fragment slot="label">X</svelte:fragment>
+<div>
+  <Input type="number" width={4} bind:value={rotateX} labelColor="#ff3553">
+    <svelte:fragment slot="label">X°</svelte:fragment>
   </Input>
-  <Input type="number" bind:value={rotateY} labelColor="#8adb00">
-    <svelte:fragment slot="label">Y</svelte:fragment>
+  <Input type="number" width={6} bind:value={originX} labelColor="#ff3553" placeholder="center">
+    <svelte:fragment slot="label">Origin</svelte:fragment>
   </Input>
-  <Input type="number" bind:value={rotateZ} labelColor="#2a8fff">
-    <svelte:fragment slot="label">Z</svelte:fragment>
+</div>
+<div>
+  <Input type="number" width={4} bind:value={rotateY} labelColor="#8adb00">
+    <svelte:fragment slot="label">Y°</svelte:fragment>
   </Input>
-  <hr />
-  <Input type="number" bind:value={originX} labelColor="#ff3553" placeholder="center">
-    <svelte:fragment slot="label">Origin X</svelte:fragment>
+  <Input type="number" width={6} bind:value={originY} labelColor="#8adb00" placeholder="center">
+    <svelte:fragment slot="label">Origin</svelte:fragment>
   </Input>
-  <Input type="number" bind:value={originY} labelColor="#8adb00" placeholder="center">
-    <svelte:fragment slot="label">Origin Y</svelte:fragment>
+</div>
+<div>
+  <Input type="number" width={4} bind:value={rotateZ} labelColor="#2a8fff">
+    <svelte:fragment slot="label">Z°</svelte:fragment>
   </Input>
-  <Input type="number" bind:value={originZ} labelColor="#2a8fff" placeholder="center">
-    <svelte:fragment slot="label">Origin Z</svelte:fragment>
+  <Input type="number" width={6} bind:value={originZ} labelColor="#2a8fff" placeholder="center">
+    <svelte:fragment slot="label">Origin</svelte:fragment>
   </Input>
-  <Button kind="primary" on:click={doRotate}>Apply</Button>
-</OverflowMenu>
+</div>
+<Button icon={Checkmark} kind="primary" on:click={doRotate}>Apply</Button>
 
 <style>
+  div {
+    display: flex;
+    gap: 1rem;
+  }
 </style>

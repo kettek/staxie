@@ -60,7 +60,7 @@
   import Split from './components/common/Split.svelte'
   import ShortcutTooltip from './components/ShortcutTooltip.svelte'
   import SmallStackPreview from './sections/SmallStackPreview.svelte'
-  import Selection3D from './toolbars/Selection3D.svelte'
+  import Selection3D from './components/Selection3D.svelte'
   import BorderSettingsModal from './components/BorderSettingsModal.svelte'
   import ReplacePixelIndicesModal from './components/ReplacePixelIndicesModal.svelte'
   import ResizeSlicesModal from './components/ResizeSlicesModal.svelte'
@@ -139,6 +139,8 @@
   let showBackgroundSettings: boolean = false
 
   let showUpdater: boolean = false
+
+  let showRotate: boolean = false
 
   let previewUseMini: boolean = false
 
@@ -729,7 +731,7 @@
         {:else if $toolSettings.current === toolReference && $fileStates.focused}
           <ImageReferenceTool file={$fileStates.focused} imageReferences={$editor2DSettings.imageReferences} />
         {:else if $toolSettings.current === toolVoxelBoxSelection}
-          <Selection3D />
+          <Button kind="ghost" size="small" icon={Rotate} on:click={() => (showRotate = true)} />
         {/if}
       </menu>
       <Tabs bind:selected={$fileStates.focusedIndex}>
@@ -784,11 +786,16 @@
       {/if}
     </section>
     {#if showPreview}
-      <FloatingPanel label="Stack Preview" noPadding bind:open={showPreview}>
+      <FloatingPanel label="Stack Preview" noPadding bind:open={showPreview} id="preview">
         <div slot="header-left">
           <Button size="small" kind="ghost" icon={previewUseMini ? Maximize : Minimize} on:click={() => (previewUseMini = !previewUseMini)} />
         </div>
         <StackPreview shronked={previewUseMini} />
+      </FloatingPanel>
+    {/if}
+    {#if is3D && showRotate && $toolSettings.current === toolVoxelBoxSelection}
+      <FloatingPanel label="3D Resize" noPadding bind:open={showRotate} id="3d-resize">
+        <Selection3D />
       </FloatingPanel>
     {/if}
     {#if showPreviewSettings}
