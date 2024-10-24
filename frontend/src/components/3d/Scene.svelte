@@ -13,6 +13,8 @@
   import { OrbitControls as ThreeOrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
   import { editor2DSettings } from '../../stores/editor2d'
 
+  import { rotateOrigin } from '../Selection3D.svelte'
+
   import { toolSettings, toolVoxelPlace, toolVoxelReplace, toolErase, toolPicker, toolFill, toolVoxelCursor, toolVoxelBoxSelection } from '../../stores/tool'
   import Cursor from './Cursor.svelte'
   import Selection from './Selection.svelte'
@@ -21,6 +23,7 @@
   import { ThreeDCopyPaste } from '../../types/copypaste'
   import { isKeyActive } from '../Shortcuts.svelte'
   import OptimizedRender from './OptimizedRender.svelte'
+  import Point from './Point.svelte'
 
   export let file: LoadedFile
   export let palette: Palette | undefined
@@ -47,6 +50,15 @@
   }
   function isSelectionSame(a: [number, number, number], b: [number, number, number]): boolean {
     return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]
+  }
+  function getCenter(o: [number, number, number], a: [number, number, number], b: [number, number, number]): [number, number, number] {
+    let x = Math.max(a[0], b[0]) - Math.abs(a[0] - b[0]) / 2
+    let y = Math.max(a[1], b[1]) - Math.abs(a[1] - b[1]) / 2
+    let z = Math.max(a[2], b[2]) - Math.abs(a[2] - b[2]) / 2
+    x += o[0] || 0
+    y += o[1] || 0
+    z += o[2] || 0
+    return [x, y, z]
   }
   let showSelection: boolean = false
   $: showSelection = !isSelectionSame($file.threeDCursor1, $file.threeDCursor2)
@@ -468,6 +480,7 @@
 
 {#if showSelection}
   <Selection selection={[$file.threeDCursor1, $file.threeDCursor2]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} />
+  <Point position={getCenter($rotateOrigin, $file.threeDCursor1, $file.threeDCursor2)} radius={0.2} offset={[-$file.frameWidth / 2 + xOffset, 0, -$file.frameHeight / 2 + yOffset]} />
 {/if}
 
 <Gizmo center={$center} verticalPlacement={'top'} size={64} paddingX={8} paddingY={8} />

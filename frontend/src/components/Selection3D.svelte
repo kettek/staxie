@@ -1,3 +1,8 @@
+<script lang="ts" context="module">
+  import { writable, type Writable } from 'svelte/store'
+  export const rotateOrigin: Writable<[number, number, number]> = writable([0, 0, 0])
+</script>
+
 <script lang="ts">
   import Button from './common/Button.svelte'
   import { fileStates } from '../stores/file'
@@ -11,9 +16,6 @@
   let radX: number = 0
   let radY: number = 0
   let radZ: number = 0
-  let originX: number | string = ''
-  let originY: number | string = ''
-  let originZ: number | string = ''
   $: radX = rotateX * (Math.PI / 180)
   $: radY = rotateY * (Math.PI / 180)
   $: radZ = rotateZ * (Math.PI / 180)
@@ -38,9 +40,9 @@
 
     const size = [maxX - minX, maxY - minY, maxZ - minZ]
     let center = [Math.floor(minX + size[0] / 2), Math.floor(minY + size[1] / 2), Math.floor(minZ + size[2] / 2)]
-    center[0] += originX === '' ? 0 : Number(originX)
-    center[1] += originY === '' ? 0 : Number(originY)
-    center[2] += originZ === '' ? 0 : Number(originZ)
+    center[0] += Number($rotateOrigin[0]) || 0
+    center[1] += Number($rotateOrigin[1]) || 0
+    center[2] += Number($rotateOrigin[2]) || 0
 
     const oldPixels: { x: number; y: number; index: number }[] = []
     const newPixels: { x: number; y: number; index: number }[] = []
@@ -81,7 +83,7 @@
   <Input type="number" width={4} bind:value={rotateX} labelColor="#ff3553">
     <svelte:fragment slot="label">X°</svelte:fragment>
   </Input>
-  <Input type="number" width={6} bind:value={originX} labelColor="#ff3553" placeholder="0">
+  <Input type="number" width={6} bind:value={$rotateOrigin[0]} labelColor="#ff3553" placeholder="0">
     <svelte:fragment slot="label">Origin</svelte:fragment>
   </Input>
 </div>
@@ -89,7 +91,7 @@
   <Input type="number" width={4} bind:value={rotateY} labelColor="#8adb00">
     <svelte:fragment slot="label">Y°</svelte:fragment>
   </Input>
-  <Input type="number" width={6} bind:value={originY} labelColor="#8adb00" placeholder="0">
+  <Input type="number" width={6} bind:value={$rotateOrigin[1]} labelColor="#8adb00" placeholder="0">
     <svelte:fragment slot="label">Origin</svelte:fragment>
   </Input>
 </div>
@@ -97,7 +99,7 @@
   <Input type="number" width={4} bind:value={rotateZ} labelColor="#2a8fff">
     <svelte:fragment slot="label">Z°</svelte:fragment>
   </Input>
-  <Input type="number" width={6} bind:value={originZ} labelColor="#2a8fff" placeholder="0">
+  <Input type="number" width={6} bind:value={$rotateOrigin[2]} labelColor="#2a8fff" placeholder="0">
     <svelte:fragment slot="label">Origin</svelte:fragment>
   </Input>
 </div>
