@@ -11,13 +11,15 @@
 
   export let size: 'tiny' | 'small' | 'medium' | 'large' = 'small'
 
+  export let color: string = ''
+
   export let tooltip: string = ''
   export let tooltipPosition: 'top' | 'right' | 'bottom' | 'left' = 'top'
   // Not used for now.
   export let tooltipAlignment: 'start' | 'center' | 'end' = 'center'
 </script>
 
-<button tabindex={0} aria-pressed={selected} on:click on:contextmenu class="-{size}{selected ? ' -selected' : ''}{disabled ? ' -disabled' : ''}">
+<button tabindex={0} aria-pressed={selected} on:click on:contextmenu class="-{size}{selected ? ' -selected' : ''}{disabled ? ' -disabled' : ''}" style={color ? 'color:' + color : ''}>
   {#if icon}
     <svelte:component this={icon} />
   {/if}
