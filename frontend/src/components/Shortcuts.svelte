@@ -110,6 +110,10 @@
   }
   window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
+    // On windows, previously focused input fields are refocused if ctrl-z or ctrl-y is used, so we have to catch those conditions to prevent the input field from receiving the undo/redo operation.
+    if (event.target === document.body && (event.ctrlKey || (event.ctrlKey && event.shiftKey)) && (event.key === 'z' || event.key === 'y')) {
+      event.preventDefault()
+    }
     if (disabled) return
     if (event.key === 'Alt') event.preventDefault() // Prevent alt because that opens a menu that doesn't exist.
     let key = normalizeKey(event.key, event.code)
