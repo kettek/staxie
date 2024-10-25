@@ -925,6 +925,9 @@
       >
       <span>{$file.view.width}</span><span>{$file.view.height}</span>
     </section>
+    <section class="selectionInfo">
+      <span>{$file.selection.active ? 'selection active' : ''}</span>
+    </section>
     <section class="controls">
       <Input type="number" min={0} max={10} step={1} value={zoom} width={5} on:change={(e) => setZoom(e.detail)} />
       <Button on:click={zoomIn} kind="ghost" size="small" icon={ZoomIn} tooltip="Zoom In" tooltipPosition="top" tooltipAlignment="end" />
@@ -977,6 +980,13 @@
   .cursorInfo span aside {
     display: inline-block;
     width: 0.5em;
+  }
+  .selectionInfo {
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: auto;
+    align-items: center;
+    justify-content: stretch;
   }
   .controls {
     display: flex;
