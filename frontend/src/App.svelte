@@ -14,7 +14,7 @@
   import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
-  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, ResizeSlicesUndoable, SelectionClearUndoable, SelectionReplacePixelIndicesUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
+  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, ResizeSlicesUndoable, SelectionClearUndoable, SelectionReplacePixelIndicesUndoable, SelectionSetUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
 
   import 'carbon-components-svelte/css/all.css'
   import { Tabs, Tab, TabContent, Theme, NumberInput, Dropdown, Checkbox } from 'carbon-components-svelte'
@@ -408,6 +408,18 @@
     $fileStates.focused.push(new ResizeSlicesUndoable(width, height))
   }
 
+  function selectAll() {
+    if (!$fileStates.focused) return
+    let pixels: { x: number; y: number; marked: boolean }[] = []
+    for (let x = 0; x < $fileStates.focused.canvas.width; x++) {
+      for (let y = 0; y < $fileStates.focused.canvas.height; y++) {
+        pixels.push({ x, y, marked: true })
+      }
+    }
+    $fileStates.focused.push(new SelectionSetUndoable(pixels, true), $fileStates.focused.view)
+    $fileStates.focused.selection.active = true
+  }
+
   function handlePaletteSelect(event: CustomEvent) {
     let index = event.detail.index
 
@@ -641,6 +653,7 @@
         <Shortcuts group="editor2D">
           <Shortcut global cmd="clear selection" keys={['escape']} on:trigger={() => $fileStates.focused?.push(new SelectionClearUndoable())} />
           <Shortcut global cmd="selection" keys={['s']} on:trigger={() => toolSettings.swapTool(toolRectangularSelection)} />
+          <Shortcut global cmd="select all" keys={['ctrl+a']} on:trigger={selectAll} />
           <Shortcut global cmd="magic selection" keys={['shift+s']} on:trigger={() => toolSettings.swapTool(toolMagicWand)} />
           <Shortcut global cmd="move" keys={['m']} on:trigger={() => toolSettings.swapTool(toolMove)} />
           <Shortcut global cmd="move left" keys={['arrowleft']} on:trigger={() => toolMove.shift({ file: $fileStates.focused }, { x: -1, y: 0, id: 0 })} />
