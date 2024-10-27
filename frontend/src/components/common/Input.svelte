@@ -4,6 +4,7 @@
   const dispatch = createEventDispatcher()
 
   export let size: 'small' | 'medium' | 'large' = 'medium'
+  export let step: number = 1
   export let width: number = 6
   export let labelColor: string | undefined
   export let type: 'text' | 'number' | 'color' | 'file' | 'checkbox' = 'text'
@@ -51,6 +52,16 @@
     }
     dispatch('input', value)
   }
+  function onWheel(e: WheelEvent) {
+    const target = e.target as HTMLInputElement
+    value = target.value
+    if (e.deltaY > 0) {
+      value = parseFloat(value) - step
+    } else {
+      value = parseFloat(value) + step
+    }
+    dispatch('change', value)
+  }
 </script>
 
 <label class={size}>
@@ -60,7 +71,7 @@
   {#if type === 'text'}
     <input type="text" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'number'}
-    <input style={`width: ${width}em`} {...$$restProps} bind:value on:change={onChange} on:input={onInput} class={`${!showSpinner ? '-hideSpinner' : ''}`} />
+    <input style={`width: ${width}em`} {...$$restProps} {step} bind:value on:change={onChange} on:input={onInput} class={`${!showSpinner ? '-hideSpinner' : ''}`} on:wheel={onWheel} />
   {:else if type === 'color'}
     <input type="color" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'file'}
