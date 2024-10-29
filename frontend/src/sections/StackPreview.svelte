@@ -24,6 +24,7 @@
     sliceEnd: number
     frameStart: number
     frameEnd: number
+    rotation: number
   }
   type VisibleState = {
     visible: boolean
@@ -134,6 +135,7 @@
           if (animation) {
             const frameStart = Math.max(visibleFiles[file.id].stacks[stack.name].frameStart || 0, 0)
             const frameEnd = Math.min(visibleFiles[file.id].stacks[stack.name].frameEnd || animation.frames.length, animation.frames.length)
+            const stackRotation = visibleFiles[file.id].stacks[stack.name].rotation || 0
             let frameIndex = frameStart + (Math.floor(timeElapsed / animation.frameTime) % (frameEnd - frameStart))
             let frame = animation.frames[frameIndex]
             if (!frame) continue
@@ -157,7 +159,7 @@
                   ctx.translate(x, y)
                   ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
                   ctx.scale(zoom, zoom)
-                  ctx.rotate((rotation * Math.PI) / 180)
+                  ctx.rotate(((rotation + stackRotation) * Math.PI) / 180)
                   ctx.strokeStyle = $previewSettings.sizeOutlineColor
                   ctx.lineWidth = 1 / zoom
                   ctx.strokeRect(-file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
@@ -168,7 +170,7 @@
               ctx.translate(x, y - sliceOffset * sliceDistance * zoom)
               ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
               ctx.scale(zoom, zoom)
-              ctx.rotate((rotation * Math.PI) / 180)
+              ctx.rotate(((rotation + stackRotation) * Math.PI) / 180)
 
               if (automaticShading) {
                 // FIXME: Adjust this math to use configurable min/max values.
@@ -310,6 +312,12 @@
     visibleFiles[file.id].stacks[stack.name].frameEnd = e.detail < 0 ? 0 : e.detail > frameCount ? frameCount : e.detail
     visibleFiles = { ...visibleFiles }
   }
+  function setStackRotation(file: LoadedFile, stack: StaxStack, e: any) {
+    if (!visibleFiles[file.id]) visibleFiles[file.id] = { visible: true, stacks: {} }
+    visibleFiles[file.id].stacks[stack.name] = visibleFiles[file.id].stacks[stack.name] || { visible: true, animation: stack.animations[0]?.name, frameIndex: 0, orderIndex: 0 }
+    visibleFiles[file.id].stacks[stack.name].rotation = e.detail
+    visibleFiles = { ...visibleFiles }
+  }
 
   onMount(() => {
     let frameID: number = 0
@@ -337,6 +345,10 @@
                 <Checkbox on:change={(e) => toggleStack(file, stack, e)} checked={stackState.visible} labelText={stack.name.length > 20 ? '…' + stack.name.substring(stack.name.length - 20) : stack.name}></Checkbox>
                 {#if stackState.visible}
                   <Dropdown on:select={(e) => changeStackAnimation(file, stack, e)} selectedId={stackState.animation} items={stack.animations.map((animation) => ({ id: animation.name, text: animation.name }))}></Dropdown>
+                  <div class="spinner">
+                    <span>Rotation</span>
+                    <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackRotation(file, stack, e)} value={stackState.rotation || 0}></Input>
+                  </div>
                   <div class="spinner">
                     <span>Frames</span>
                     <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackFrameStart(file, stack, e)} value={stackState.frameStart || 0}></Input>
