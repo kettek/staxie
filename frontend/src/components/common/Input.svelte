@@ -53,6 +53,7 @@
     dispatch('input', value)
   }
   function onWheel(e: WheelEvent) {
+    e.preventDefault()
     const target = e.target as HTMLInputElement
     value = target.value
     if (e.deltaY > 0) {
