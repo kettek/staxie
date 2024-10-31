@@ -11,6 +11,7 @@
   import { brushSettings } from './stores/brush'
   import { editor2DSettings } from './stores/editor2d.js'
   import { editor3DSettings } from './stores/editor3d.js'
+  import { generalSettings } from './stores/general.js'
   import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
@@ -65,7 +66,6 @@
   import ReplacePixelIndicesModal from './components/ReplacePixelIndicesModal.svelte'
   import ResizeSlicesModal from './components/ResizeSlicesModal.svelte'
 
-  let useRichPresence: boolean = false
   let is3D: boolean = true
 
   let theme: 'white' | 'g10' | 'g80' | 'g90' | 'g100' = 'g90'
@@ -583,7 +583,7 @@
     <OverflowMenu size="sm">
       <div slot="menu">Other</div>
       <OverflowMenuItem>
-        <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={useRichPresence} labelText="Rich Presence" />
+        <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$generalSettings.useRichPresence} labelText="Rich Presence" />
       </OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
@@ -867,7 +867,7 @@
   <About bind:open={showAbout} />
 </ComposedModal>
 
-{#if useRichPresence}
+{#if $generalSettings.useRichPresence}
   <RichPresence {is3D} />
 {/if}
 
