@@ -6,7 +6,7 @@
   export let size: 'small' | 'medium' | 'large' = 'medium'
   export let step: number = 1
   export let width: number = 6
-  export let labelColor: string | undefined
+  export let labelColor: string | undefined = ''
   export let type: 'text' | 'number' | 'color' | 'file' | 'checkbox' = 'text'
   export let value: string | number = ''
   export let checked: boolean = false
@@ -67,14 +67,18 @@
 
 <label class={size}>
   <span style={labelColor ? 'color: ' + labelColor : ''}>
-    <slot name="label"></slot>
+    {#if $$props.label}
+      {$$props.label}
+    {:else}
+      <slot name="label"></slot>
+    {/if}
   </span>
   {#if type === 'text'}
     <input type="text" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'number'}
     <input style={`width: ${width}em`} {...$$restProps} {step} bind:value on:change={onChange} on:input={onInput} class={`${!showSpinner ? '-hideSpinner' : ''}`} on:wheel={onWheel} />
   {:else if type === 'color'}
-    <input type="color" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
+    <input class="color" type="color" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'file'}
     <input type="file" {...$$restProps} bind:value on:change={onChange} on:input={onInput} />
   {:else if type === 'checkbox'}
@@ -148,5 +152,10 @@
   }
   label.large {
     height: 2.5rem;
+  }
+  input.color {
+    padding: 0;
+    width: 1.5rem;
+    height: 1.5rem;
   }
 </style>
