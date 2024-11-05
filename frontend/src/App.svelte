@@ -18,7 +18,7 @@
   import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, ResizeSlicesUndoable, SelectionClearUndoable, SelectionReplacePixelIndicesUndoable, SelectionSetUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
 
   import 'carbon-components-svelte/css/all.css'
-  import { Tabs, Tab, TabContent, Theme, NumberInput, Dropdown, Checkbox } from 'carbon-components-svelte'
+  import { Tabs, Tab, TabContent, NumberInput, Dropdown, Checkbox, Theme } from 'carbon-components-svelte'
   import Button from './components/common/Button.svelte'
   import { ComposedModal } from 'carbon-components-svelte'
 
@@ -35,15 +35,11 @@
   import type { PixelPosition } from './types/shapes.js'
   import ColorSelector from './components/ColorSelector.svelte'
   import ColorIndex from './components/ColorIndex.svelte'
-  import CheckerboardSettingsModal from './components/CheckerboardSettingsModal.svelte'
-  import GridSettingsModal from './components/GridSettingsModal.svelte'
-  import ThemeSettingsModal from './components/ThemeSettingsModal.svelte'
-  import BackgroundSettingsModal from './components/BackgroundSettingsModal.svelte'
   import New from './sections/New.svelte'
-  import PreviewSettingsModal from './components/PreviewSettingsModal.svelte'
   import { SaveFileBytes } from '../wailsjs/go/main/App.js'
   import { onMount } from 'svelte'
   import About from './sections/About.svelte'
+  import Settings from './sections/Settings.svelte'
   import Stacks from './sections/Stacks.svelte'
   import { fileStates } from './stores/file'
   import { IndexedPNG, type StaxStack } from './types/png.js'
@@ -62,7 +58,6 @@
   import ShortcutTooltip from './components/ShortcutTooltip.svelte'
   import SmallStackPreview from './sections/SmallStackPreview.svelte'
   import Selection3D from './components/Selection3D.svelte'
-  import BorderSettingsModal from './components/BorderSettingsModal.svelte'
   import ReplacePixelIndicesModal from './components/ReplacePixelIndicesModal.svelte'
   import ResizeSlicesModal from './components/ResizeSlicesModal.svelte'
 
@@ -108,6 +103,7 @@
   let showImport: boolean = false
   let showNew: boolean = false
   let showAbout: boolean = false
+  let showSettings: boolean = false
   let importValid: boolean = false
   let importPNG: IndexedPNG | null = null
   let importFilepath: string = ''
@@ -131,12 +127,6 @@
   let showResizeSlices: boolean = false
 
   let showPreview: boolean = false
-  let showPreviewSettings: boolean = false
-  let showGridSettings: boolean = false
-  let showCheckerboardSettings: boolean = false
-  let showBorderSettings: boolean = false
-  let showThemeSettings: boolean = false
-  let showBackgroundSettings: boolean = false
 
   let showUpdater: boolean = false
 
@@ -472,6 +462,7 @@
       <OverflowMenuItem hasDivider on:click={() => $fileStates.focused?.repeat()} disabled={!$fileStates.focused}>Repeat Last</OverflowMenuItem>
       <OverflowMenuItem hasDivider on:click={showReplacePixelIndicesModal} disabled={!$fileStates.focused}>Replace Pixel Indices</OverflowMenuItem>
       <OverflowMenuItem hasDivider on:click={showResizeSlicesModal} disabled={!$fileStates.focused}>Resize Slices</OverflowMenuItem>
+      <OverflowMenuItem hasDivider text="Settings" on:click={() => (showSettings = true)} />
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Image</div>
@@ -506,13 +497,9 @@
       <OverflowMenuItem>
         <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor2DSettings.showGrid} labelText="Grid" />
       </OverflowMenuItem>
-      <OverflowMenuItem text="Change Grid..." on:click={() => (showGridSettings = true)} />
       <OverflowMenuItem hasDivider>
         <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor2DSettings.showCheckerboard} labelText="Checkerboard" />
       </OverflowMenuItem>
-      <OverflowMenuItem text="Change Checkerboard..." on:click={() => (showCheckerboardSettings = true)} />
-      <OverflowMenuItem hasDivider text="Background..." on:click={() => (showBackgroundSettings = true)} />
-      <OverflowMenuItem hasDivider text="Theme..." on:click={() => (showThemeSettings = true)} />
       <OverflowMenuItem hasDivider text="Fullscreen" on:click={() => ToggleFullscreen()} />
     </OverflowMenu>
     {#if is3D}
@@ -573,12 +560,10 @@
           <input type="radio" name="view-mode" value="sheet" bind:group={$editor2DSettings.viewMode} />
         </label>
       </OverflowMenuItem>
-      <OverflowMenuItem hasDivider text="Change Borders..." on:click={() => (showBorderSettings = true)} />
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Windows</div>
       <OverflowMenuItem text="Preview" on:click={() => (showPreview = true)} />
-      <OverflowMenuItem text="Preview Settings..." on:click={() => (showPreviewSettings = true)} />
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Other</div>
@@ -811,23 +796,10 @@
         <Selection3D />
       </FloatingPanel>
     {/if}
-    {#if showPreviewSettings}
-      <PreviewSettingsModal bind:open={showPreviewSettings} />
-    {/if}
-    {#if showGridSettings}
-      <GridSettingsModal bind:open={showGridSettings} />
-    {/if}
-    {#if showCheckerboardSettings}
-      <CheckerboardSettingsModal bind:open={showCheckerboardSettings} />
-    {/if}
-    {#if showBorderSettings}
-      <BorderSettingsModal bind:open={showBorderSettings} />
-    {/if}
-    {#if showBackgroundSettings}
-      <BackgroundSettingsModal bind:open={showBackgroundSettings} />
-    {/if}
-    {#if showThemeSettings}
-      <ThemeSettingsModal bind:open={showThemeSettings} bind:theme />
+    {#if showSettings}
+      <FloatingPanel label="Settings" bind:open={showSettings} noPadding id="settings">
+        <Settings />
+      </FloatingPanel>
     {/if}
   </section>
 </main>
