@@ -6,6 +6,8 @@
   export let size: 'small' | 'medium' | 'large' = 'medium'
   export let step: number = 1
   export let width: number = 6
+  export const label: string = ''
+  export let labelWidth: string = ''
   export let labelColor: string | undefined = ''
   export let type: 'text' | 'number' | 'color' | 'file' | 'checkbox' = 'text'
   export let value: string | number = ''
@@ -66,7 +68,7 @@
 </script>
 
 <label class={size}>
-  <span style={labelColor ? 'color: ' + labelColor : ''}>
+  <span style={`${labelColor ? 'color: ' + labelColor + ';' : ''}${labelWidth ? 'width: ' + labelWidth + 'rem;' : ''}`}>
     {#if $$props.label}
       {$$props.label}
     {:else}
