@@ -489,15 +489,9 @@
         </label>
       </OverflowMenuItem>
       <OverflowMenuItem hasDivider>
-        <Checkbox on:click={(e) => e.stopPropagation()} checked={is3D} on:change={toggle3D} labelText="3D" />
-      </OverflowMenuItem>
-      <OverflowMenuItem>
-        <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={orthographicCamera} labelText="Orthographic" disabled={!is3D} />
-      </OverflowMenuItem>
-      <OverflowMenuItem>
         <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor2DSettings.showGrid} labelText="Grid" />
       </OverflowMenuItem>
-      <OverflowMenuItem hasDivider>
+      <OverflowMenuItem>
         <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor2DSettings.showCheckerboard} labelText="Checkerboard" />
       </OverflowMenuItem>
       <OverflowMenuItem hasDivider text="Fullscreen" on:click={() => ToggleFullscreen()} />
@@ -506,6 +500,9 @@
       <OverflowMenu size="sm">
         <div slot="menu">3D</div>
         <OverflowMenuItem>
+          <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={orthographicCamera} labelText="Orthographic" disabled={!is3D} />
+        </OverflowMenuItem>
+        <OverflowMenuItem hasDivider>
           <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor3DSettings.showCursor} labelText="Cursor" />
         </OverflowMenuItem>
         <OverflowMenuItem>
