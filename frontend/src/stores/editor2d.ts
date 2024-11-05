@@ -52,4 +52,4 @@ export const editor2DSettingsDefault: Editor2DSettings = {
   imageReferences: createImageReferenceStore(),
 }
 
-export const editor2DSettings = makeLocalStorageStore<Editor2DSettings>('editor2d', editor2DSettingsDefault)
+export const editor2DSettings = makeLocalStorageStore<Editor2DSettings>('editor2d', { ...editor2DSettingsDefault })

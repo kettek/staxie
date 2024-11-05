@@ -18,7 +18,7 @@ type PreviewSettings = {
   useCanvasSize: boolean
 }
 
-export const previewSettings = makeLocalStorageStore<PreviewSettings>('preview', {
+export const previewSettingsDefault: PreviewSettings = {
   background: '#111111',
   rotation: 0,
   zoom: 1,
@@ -34,4 +34,6 @@ export const previewSettings = makeLocalStorageStore<PreviewSettings>('preview',
   canvasWidth: 200,
   canvasHeight: 100,
   useCanvasSize: false,
-})
+}
+
+export const previewSettings = makeLocalStorageStore<PreviewSettings>('preview', { ...previewSettingsDefault })
