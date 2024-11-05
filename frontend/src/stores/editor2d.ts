@@ -27,7 +27,7 @@ type Editor2DSettings = {
   imageReferences: ImageReferenceStore
 }
 
-export const editor2DSettings = makeLocalStorageStore<Editor2DSettings>('editor2d', {
+export const editor2DSettingsDefault: Editor2DSettings = {
   backgroundColor: '#111111',
   // Checkerboard
   showCheckerboard: true,
@@ -50,4 +50,6 @@ export const editor2DSettings = makeLocalStorageStore<Editor2DSettings>('editor2
   stackBorderColor: '#0000ff',
   // References
   imageReferences: createImageReferenceStore(),
-})
+}
+
+export const editor2DSettings = makeLocalStorageStore<Editor2DSettings>('editor2d', editor2DSettingsDefault)
