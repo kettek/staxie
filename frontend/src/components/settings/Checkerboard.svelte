@@ -15,15 +15,15 @@
 <Grid narrow condensed fullWidth>
   <Column>
     <Row>
-      <SettingsInput labelWidth="10" type="number" label="Checkerboard Size" min={1} max={512} step={1} bind:value={$editor2DSettings.checkerboardSize} defaultValue={editor2DSettingsDefault.checkerboardSize} />
+      <SettingsInput noPadding labelWidth="10" type="number" label="Checkerboard Size" min={1} max={512} step={1} bind:value={$editor2DSettings.checkerboardSize} defaultValue={editor2DSettingsDefault.checkerboardSize} />
     </Row>
     <Row>
-      <Input labelWidth="10" type="color" label="Checkerboard Color 1" bind:value={$editor2DSettings.checkerboardColor1} />
-      <SettingsInput bind:value={$editor2DSettings.checkerboardColor1} defaultValue={editor2DSettingsDefault.checkerboardColor1} />
+      <Input noPadding labelWidth="10" type="color" label="Checkerboard Color 1" bind:value={$editor2DSettings.checkerboardColor1} />
+      <SettingsInput noPadding bind:value={$editor2DSettings.checkerboardColor1} defaultValue={editor2DSettingsDefault.checkerboardColor1} />
     </Row>
     <Row>
-      <Input labelWidth="10" type="color" label="Checkerboard Color 2" bind:value={$editor2DSettings.checkerboardColor2} />
-      <SettingsInput bind:value={$editor2DSettings.checkerboardColor2} defaultValue={editor2DSettingsDefault.checkerboardColor2} />
+      <Input noPadding labelWidth="10" type="color" label="Checkerboard Color 2" bind:value={$editor2DSettings.checkerboardColor2} />
+      <SettingsInput noPadding bind:value={$editor2DSettings.checkerboardColor2} defaultValue={editor2DSettingsDefault.checkerboardColor2} />
     </Row>
   </Column>
 </Grid>

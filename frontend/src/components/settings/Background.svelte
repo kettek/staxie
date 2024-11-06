@@ -8,8 +8,8 @@
 <Grid narrow condensed fullWidth>
   <Column>
     <Row>
-      <Input type="color" labelWidth="10" label="Background Color" bind:value={$editor2DSettings.backgroundColor} defaultValue={editor2DSettingsDefault.backgroundColor} />
-      <SettingsInput type="text" bind:value={$editor2DSettings.backgroundColor} width={7} defaultValue={editor2DSettingsDefault.backgroundColor} />
+      <Input noPadding type="color" labelWidth="10" label="Background Color" bind:value={$editor2DSettings.backgroundColor} defaultValue={editor2DSettingsDefault.backgroundColor} />
+      <SettingsInput noPadding type="text" bind:value={$editor2DSettings.backgroundColor} width={7} defaultValue={editor2DSettingsDefault.backgroundColor} />
     </Row>
   </Column>
 </Grid>
