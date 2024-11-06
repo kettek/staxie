@@ -43,14 +43,14 @@
     </Row>
     <Row>
       <SettingsInput noPadding labelWidth="10" id="canvasWidth" type="number" label="Canvas Width & Height" bind:value={$previewSettings.canvasWidth} defaultValue={previewSettingsDefault.canvasWidth} />
-      <SettingsInput noPadding id="canvasHeight" type="number" bind:value={$previewSettings.canvasHeight} defaultValue={previewSettingsDefault.canvasHeight} />
+      <SettingsInput id="canvasHeight" type="number" bind:value={$previewSettings.canvasHeight} defaultValue={previewSettingsDefault.canvasHeight} />
     </Row>
     <Row>
       <SettingsInput noPadding labelWidth="10" id="secondsBetweenFrames" type="number" label="Seconds Between Frames" bind:value={$previewSettings.secondsBetweenFrames} min={0} step={0.5} defaultValue={previewSettingsDefault.secondsBetweenFrames} />
     </Row>
     <Row>
       <SettingsInput noPadding labelWidth="10" id="framePrefix" type="text" label="Frame Prefix & Suffix" bind:value={$previewSettings.framePrefix} defaultValue={previewSettingsDefault.framePrefix} />
-      <SettingsInput noPadding id="frameSuffix" type="text" bind:value={$previewSettings.frameSuffix} defaultValue={previewSettingsDefault.frameSuffix} />
+      <SettingsInput id="frameSuffix" type="text" bind:value={$previewSettings.frameSuffix} defaultValue={previewSettingsDefault.frameSuffix} />
     </Row>
   </Column>
 </Grid>
