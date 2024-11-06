@@ -13,6 +13,7 @@
   export let value: string | number = ''
   export let checked: boolean = false
   export let showSpinner: boolean = false
+  export let noPadding: boolean = false
 
   function onChange(e: Event) {
     const target = e.target as HTMLInputElement
@@ -67,7 +68,7 @@
   }
 </script>
 
-<label class={size}>
+<label class={size} class:noPadding>
   <span style={`${labelColor ? 'color: ' + labelColor + ';' : ''}${labelWidth ? 'width: ' + labelWidth + 'rem;' : ''}`}>
     {#if $$props.label}
       {$$props.label}
@@ -97,6 +98,10 @@
     padding-left: 0.5rem;
     padding-right: 0.25rem;
   }
+  label.noPadding {
+    gap: 0;
+    padding: 0;
+  }
   label span {
     display: flex;
     align-items: center;
@@ -114,7 +119,7 @@
   }
   input {
     width: 100%;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
     font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 0.25rem;
@@ -130,12 +135,12 @@
     border: 0;
     border-bottom: 0.0625rem solid var(--cds-ui-04, #8d8d8d);
     border-radius: 0;
-    background-color: var(--cds-field-01, #f4f4f4);
+    background-color: var(--cds-field-02, #c6c6c6);
     color: var(--cds-text-01, #161616);
     transition:
       background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
       outline 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
-    padding-right: 1rem;
+    /*padding-right: 1rem;*/
     user-select: text;
   }
   input:focus {
@@ -158,6 +163,6 @@
   input.color {
     padding: 0;
     width: 1.5rem;
-    height: 1.5rem;
+    height: 100%;
   }
 </style>
