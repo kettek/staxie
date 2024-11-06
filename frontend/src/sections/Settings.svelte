@@ -10,6 +10,7 @@
   import Preview from '../components/settings/Preview.svelte'
   import Checkerboard from '../components/settings/Checkerboard.svelte'
   import Borders from '../components/settings/Borders.svelte'
+  import Grid from '../components/settings/Grid.svelte'
 </script>
 
 <main>
@@ -17,6 +18,7 @@
     <AccordionItem title="General">
       <Theme />
       <Background />
+      <Grid />
     </AccordionItem>
     <AccordionItem title="2D View">
       <Checkerboard />
