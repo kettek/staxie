@@ -346,18 +346,15 @@
                 {#if stackState.visible}
                   <Dropdown on:select={(e) => changeStackAnimation(file, stack, e)} selectedId={stackState.animation} items={stack.animations.map((animation) => ({ id: animation.name, text: animation.name }))}></Dropdown>
                   <div class="spinner">
-                    <span>Rotation</span>
-                    <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackRotation(file, stack, e)} value={stackState.rotation || 0}></Input>
+                    <Input labelWidth="3" label="Rotation" type="number" size="small" width={4} showSpinner on:change={(e) => setStackRotation(file, stack, e)} value={stackState.rotation || 0}></Input>
                   </div>
                   <div class="spinner">
-                    <span>Frames</span>
-                    <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackFrameStart(file, stack, e)} value={stackState.frameStart || 0}></Input>
+                    <Input labelWidth="3" label="Frames" type="number" size="small" width={4} showSpinner on:change={(e) => setStackFrameStart(file, stack, e)} value={stackState.frameStart || 0}></Input>
                     →
                     <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackFrameEnd(file, stack, e)} value={stackState.frameEnd || stack.animations.find((v) => v.name === stackState.animation)?.frames.length}></Input>
                   </div>
                   <div class="spinner">
-                    <span>Slices</span>
-                    <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackStart(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceStart || 0}></Input>
+                    <Input labelWidth="3" label="Slices" type="number" size="small" width={4} showSpinner on:change={(e) => setStackStart(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceStart || 0}></Input>
                     →
                     <Input type="number" size="small" width={4} showSpinner on:change={(e) => setStackEnd(file, stack, e)} value={visibleFiles[file.id]?.stacks[stack.name]?.sliceEnd || stack.animations[0].frames[0].slices.length}></Input>
                   </div>
