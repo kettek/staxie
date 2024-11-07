@@ -29,6 +29,17 @@
   let minSize: number = 1
   $: minSize = Math.max(minWidth, minHeight)
 
+  function checkRotation() {
+    if (Number.isFinite(rotation) === false) {
+      rotation = 0
+    }
+    if (rotation >= 360) {
+      rotation -= 360
+    } else if (rotation < 0) {
+      rotation += 360
+    }
+  }
+
   let canvas: HTMLCanvasElement
   function draw(ts: DOMHighResTimeStamp) {
     if (!canvas) return
@@ -36,6 +47,7 @@
     lastTime = ts
     if (spin) {
       rotation += $smallPreviewSettings.spinSpeed ?? 0.5
+      checkRotation()
     }
 
     if (canvas.width !== minWidth || canvas.height !== minHeight) {
@@ -100,10 +112,7 @@
       } else {
         rotation -= $smallPreviewSettings.wheelIncrement
       }
-      if (isNaN(rotation)) {
-        rotation = 0
-      }
-      console.log(rotation, $smallPreviewSettings.wheelIncrement)
+      checkRotation()
     }
   }
 
@@ -124,6 +133,7 @@
 
 <main on:wheel={handleWheel} on:click={handleClick} style={`background: ${$smallPreviewSettings.background}`}>
   <canvas bind:this={canvas} style="width: {minWidth}px; height: {minHeight}px"></canvas>
+  <span>{Math.round(rotation)}°</span>
 </main>
 
 <style>
@@ -134,5 +144,13 @@
     width: 100%;
     height: 100%;
     background: black;
+    position: relative;
+  }
+  span {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-family: monospace;
+    font-size: 0.7rem;
   }
 </style>
