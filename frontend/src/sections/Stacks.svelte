@@ -6,6 +6,8 @@
   import Button from '../components/common/Button.svelte'
   import { fileStates } from '../stores/file'
   import RenameModal from '../components/RenameModal.svelte'
+  import SmallStackPreview from './SmallStackPreview.svelte'
+  import { smallPreviewSettings } from '../stores/smallpreview'
 
   export let file: LoadedFile
 
@@ -188,6 +190,11 @@
 </script>
 
 <main>
+  {#if $smallPreviewSettings.show}
+    <SmallStackPreview file={$file} />
+  {:else}
+    <span></span>
+  {/if}
   <menu class="toolbar">
     <Button kind="ghost" size="small" icon={FolderAdd} tooltip="Add Stack" tooltipPosition="bottom" tooltipAlignment="end" disabled={!file} on:click={addStack} />
     <hr />
@@ -245,7 +252,8 @@
   main {
     height: 100%;
     display: grid;
-    grid-template-rows: auto 1fr 4fr;
+    grid-template-rows: auto auto 1fr 4fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .toolbar {
     display: flex;

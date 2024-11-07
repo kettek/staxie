@@ -11,6 +11,7 @@
   import Checkerboard from '../components/settings/Checkerboard.svelte'
   import Borders from '../components/settings/Borders.svelte'
   import Grid from '../components/settings/Grid.svelte'
+  import SmallPreview from '../components/settings/SmallPreview.svelte'
 </script>
 
 <main>
@@ -26,6 +27,9 @@
     </AccordionItem>
     <AccordionItem title="Preview">
       <Preview />
+    </AccordionItem>
+    <AccordionItem title="Embedded Preview">
+      <SmallPreview />
     </AccordionItem>
   </Accordion>
 </main>
