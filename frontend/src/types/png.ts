@@ -81,6 +81,10 @@ export class IndexedPNG {
     }
   }
 
+  clone(): IndexedPNG {
+    return new IndexedPNG(this.data)
+  }
+
   process() {
     const imgDataBuf = []
     let i: number

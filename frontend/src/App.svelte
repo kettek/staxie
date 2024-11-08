@@ -356,6 +356,12 @@
 
     console.log('paste results', paletteDiff, missingColors, cp)
   }
+  function engageDuplicate() {
+    if (!$fileStates.focused) return
+    let file = $fileStates.focused.duplicate()
+    fileStates.addFile(file)
+    selectFile(file, fileStates.length() - 1, file.id)
+  }
 
   function engageColorMode() {
     if (!$fileStates.focused) return
@@ -467,6 +473,7 @@
     <OverflowMenu size="sm">
       <div slot="menu">Image</div>
       <OverflowMenuItem text="Color Mode..." on:click={() => (showColorMode = true)} />
+      <OverflowMenuItem hasDivider text="Duplicate" on:click={() => engageDuplicate()} />
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">View</div>

@@ -1,5 +1,5 @@
 import { type Writable, writable, type Subscriber, type Unsubscriber, type Updater } from 'svelte/store'
-import type { Canvas } from './canvas'
+import { Canvas } from './canvas'
 import type { IndexedPNG, StaxAnimation, StaxFrame, StaxStack, StaxSlice } from './png'
 import { Preview } from './preview'
 import { SelectionArea } from './selection'
@@ -58,6 +58,19 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
   update: (this: void, updater: Updater<LoadedFile>) => void
   refresh() {
     this.set(this)
+  }
+
+  duplicate(): LoadedFile {
+    const options: LoadedFileOptions = {
+      filepath: this.filepath,
+      stacks: JSON.parse(JSON.stringify(this.stacks)),
+      frameWidth: this.frameWidth,
+      frameHeight: this.frameHeight,
+      title: this.title,
+      canvas: Canvas.clone(this.canvas),
+      data: this.data?.clone(),
+    }
+    return new LoadedFile(options)
   }
 
   constructor(options: LoadedFileOptions) {
