@@ -7,12 +7,14 @@
   import { onMount } from 'svelte'
   import type { LoadedFile } from '../types/file'
   import { smallPreviewSettings } from '../stores/smallpreview'
+  import type { StaxFrame } from 'src/types/png'
 
   export let file: LoadedFile
 
   let rotation: number = 0
   let zoom: number = 4
   let spin: boolean = false
+  let animate: boolean = false
   let sliceDistance: number = 1
 
   let automaticShading: boolean = true
@@ -66,12 +68,18 @@
 
     if (file.animation) {
       const animation = file.animation
-      let frameIndex = Math.floor(timeElapsed / animation.frameTime) % animation.frames.length
-      let frame = animation.frames[frameIndex]
-      if (!frame) {
-        frameIndex = 0
-        return
+      let frame: StaxFrame | undefined
+      if (animate) {
+        let frameIndex = Math.floor(timeElapsed / animation.frameTime) % animation.frames.length
+        frame = animation.frames[frameIndex]
+        if (!frame) {
+          frameIndex = 0
+          return
+        }
+      } else {
+        frame = file.frame
       }
+      if (!frame) return
       let y = frame.slices.length * sliceDistance * zoom
       for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
         const slice = frame.slices[sliceIndex]
@@ -116,8 +124,12 @@
     }
   }
 
-  function handleClick(event: MouseEvent) {
-    spin = !spin
+  function handleMousedown(event: MouseEvent) {
+    if (event.button === 0) {
+      spin = !spin
+    } else if (event.button === 1) {
+      animate = !animate
+    }
   }
 
   onMount(() => {
@@ -131,7 +143,7 @@
   })
 </script>
 
-<main on:wheel={handleWheel} on:click={handleClick} style={`background: ${$smallPreviewSettings.background}`}>
+<main on:wheel={handleWheel} on:mousedown={handleMousedown} style={`background: ${$smallPreviewSettings.background}`}>
   <canvas bind:this={canvas} style="width: {minWidth}px; height: {minHeight}px"></canvas>
   <span>{Math.round(rotation)}°</span>
 </main>
