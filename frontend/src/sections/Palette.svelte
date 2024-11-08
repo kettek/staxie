@@ -7,7 +7,7 @@
   import type { Palette } from '../types/palette'
 
   import { type LoadedFile } from '../types/file'
-  import { MoveSwatchUndoable } from '../types/file/undoables'
+  import { DuplicateSwatchUndoable, MoveSwatchUndoable } from '../types/file/undoables'
   import { createEventDispatcher } from 'svelte'
   import { ContextMenu, ContextMenuOption } from 'carbon-components-svelte'
   import DeletePaletteEntryModal from '../components/DeletePaletteEntryModal.svelte'
@@ -129,6 +129,11 @@
     showMoveDialog = true
   }
 
+  function duplicateSwatch() {
+    if (targetIndex === -1) return
+    file.push(new DuplicateSwatchUndoable(targetIndex))
+  }
+
   // These are entry refs for sharing the ContextMenu.
   let _refs = []
   $: refs = _refs.filter(Boolean)
@@ -154,6 +159,7 @@
   {/each}
   <ContextMenu target={_refs} on:open={onContextMenu}>
     <ContextMenuOption labelText="Move..." on:click={showMoveSwatchDialog} />
+    <ContextMenuOption labelText="Duplicate" on:click={duplicateSwatch} />
     <ContextMenuOption labelText="Delete..." on:click={showDeleteSwatchDialog} kind="danger" />
   </ContextMenu>
   <DeletePaletteEntryModal bind:open={showDeleteDialog} paletteIndex={targetIndex} {file} />

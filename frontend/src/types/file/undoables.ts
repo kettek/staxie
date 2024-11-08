@@ -426,6 +426,23 @@ export class AddSwatchUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class DuplicateSwatchUndoable implements Undoable<LoadedFile> {
+  private index: number
+  constructor(index: number) {
+    this.index = index
+  }
+  apply(file: LoadedFile) {
+    let r = file.canvas.palette[this.index] & 0xff
+    let g = (file.canvas.palette[this.index] >> 8) & 0xff
+    let b = (file.canvas.palette[this.index] >> 16) & 0xff
+    let a = (file.canvas.palette[this.index] >> 24) & 0xff
+    file.canvas.insertPaletteColor(this.index, r, g, b, a, true)
+  }
+  unapply(t: LoadedFile): void {
+    t.canvas.removePaletteIndex(this.index, true)
+  }
+}
+
 export class RemoveSwatchUndoable implements Undoable<LoadedFile> {
   private index: number
   private replaceIndex: number = -1
