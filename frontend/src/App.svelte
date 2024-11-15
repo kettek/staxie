@@ -646,10 +646,10 @@
           <Shortcut global cmd="select all" keys={['ctrl+a']} on:trigger={selectAll} />
           <Shortcut global cmd="magic selection" keys={['shift+s']} on:trigger={() => toolSettings.swapTool(toolMagicWand)} />
           <Shortcut global cmd="move" keys={['m']} on:trigger={() => toolSettings.swapTool(toolMove)} />
-          <Shortcut global cmd="move left" keys={['arrowleft']} on:trigger={() => toolMove.shift({ file: $fileStates.focused }, { x: -1, y: 0, id: 0 })} />
-          <Shortcut global cmd="move right" keys={['arrowright']} on:trigger={() => toolMove.shift({ file: $fileStates.focused }, { x: 1, y: 0, id: 0 })} />
-          <Shortcut global cmd="move up" keys={['arrowup']} on:trigger={() => toolMove.shift({ file: $fileStates.focused }, { x: 0, y: -1, id: 0 })} />
-          <Shortcut global cmd="move down" keys={['arrowdown']} on:trigger={() => toolMove.shift({ file: $fileStates.focused }, { x: 0, y: 1, id: 0 })} />
+          <Shortcut global cmd="move left" keys={['shift+arrowleft']} on:trigger={() => toolMove.shift({ file: $fileStates.focused }, { x: -1, y: 0, id: 0 })} />
+          <Shortcut global cmd="move right" keys={['shift+arrowright']} on:trigger={() => toolMove.shift({ file: $fileStates.focused }, { x: 1, y: 0, id: 0 })} />
+          <Shortcut global cmd="move up" keys={['shift+arrowup']} on:trigger={() => toolMove.shift({ file: $fileStates.focused }, { x: 0, y: -1, id: 0 })} />
+          <Shortcut global cmd="move down" keys={['shift+arrowdown']} on:trigger={() => toolMove.shift({ file: $fileStates.focused }, { x: 0, y: 1, id: 0 })} />
           <Shortcut global cmd="brush" keys={['b']} on:trigger={() => toolSettings.swapTool(toolBrush)} />
           <Shortcut global cmd="brushToPicker" keys={['alt']} on:trigger={() => ($toolSettings.current === toolBrush || $toolSettings.current === toolSpray || $toolSettings.current === toolFill ? toolSettings.swapTool(toolPicker) : null)} on:release={() => (($toolSettings.previous === toolBrush || $toolSettings.previous === toolSpray || $toolSettings.previous === toolFill) && $toolSettings.current === toolPicker ? toolSettings.swapTool($toolSettings.previous) : null)} />
           <Shortcut global cmd="previousPrimaryPaletteEntry" keys={['alt+wheelup']} on:trigger={() => stepPalette(-1, true)} />
@@ -662,10 +662,10 @@
           <Shortcut global cmd="picker" keys={['i']} on:trigger={() => toolSettings.swapTool(toolPicker)} />
           <Shortcut global cmd="erase" keys={['e']} on:trigger={() => toolSettings.swapTool(toolErase)} />
           <Shortcut global cmd="spray" keys={['p']} on:trigger={() => toolSettings.swapTool(toolSpray)} />
-          <Shortcut global cmd="horizontal flip" keys={['h']} on:trigger={() => {}} />
-          <Shortcut global cmd="vertical flip" keys={['shift+h']} on:trigger={() => {}} />
-          <Shortcut global cmd="rotate clockwise" keys={['r']} on:trigger={() => {}} />
-          <Shortcut global cmd="rotate counter clockwise" keys={['shift+r']} on:trigger={() => {}} />
+          <Shortcut global cmd="horizontal flip" keys={['shift+h']} on:trigger={() => {}} />
+          <Shortcut global cmd="vertical flip" keys={['ctrl+shift+h']} on:trigger={() => {}} />
+          <Shortcut global cmd="rotate clockwise" keys={['shift+r']} on:trigger={() => {}} />
+          <Shortcut global cmd="rotate counter clockwise" keys={['ctrl+shift+r']} on:trigger={() => {}} />
           <Shortcut global cmd="copy" keys={['ctrl+c']} on:trigger={() => engageCopy()} />
           <Shortcut global cmd="cut" keys={['ctrl+x']} on:trigger={() => engageDelete(true)} />
           <Shortcut global cmd="paste" keys={['ctrl+v']} on:trigger={() => engagePaste()} />
