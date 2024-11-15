@@ -1893,8 +1893,6 @@ export class MoveAnimationFrameUndoable implements Undoable<LoadedFile> {
     this.sourcePixels = file.canvas.getPixels(0, this.sourceY, file.canvas.width, this.sourceHeight)
     file.canvas.clearPixels(0, this.sourceY, file.canvas.width, this.sourceHeight)
 
-    console.log(this.side, this.sourceIndex, this.targetIndex)
-
     if (this.side === 'middle') {
       let { y: targetY, height: targetHeight } = file.getFrameArea(this.stackName, this.animationName, this.targetIndex)
       this.targetY = targetY
@@ -1959,18 +1957,29 @@ export class MoveAnimationFrameSliceUndoable implements Undoable<LoadedFile> {
   private stackName: string
   private animationName: string
   private frameIndex: number
-  private oldIndex: number
-  private newIndex: number
+  private sourceIndex: number
+  private targetIndex: number
+  private side: 'above' | 'below' | 'middle'
 
-  private fromPixels: Uint8Array = new Uint8Array([])
-  private toPixels: Uint8Array = new Uint8Array([])
+  private sourceY: number = 0
+  private sourceX: number = 0
+  private sourceWidth: number = 0
+  private targetX: number = 0
+  private targetWidth: number = 0
 
-  constructor(stackName: string, animationName: string, frameIndex: number, fromIndex: number, toIndex: number) {
+  private sourcePixels: Uint8Array = new Uint8Array([])
+
+  constructor(stackName: string, animationName: string, frameIndex: number, fromIndex: number, toIndex: number, side?: 'above' | 'below' | 'middle') {
     this.stackName = stackName
     this.animationName = animationName
     this.frameIndex = frameIndex
-    this.oldIndex = fromIndex
-    this.newIndex = toIndex
+    this.sourceIndex = fromIndex
+    this.targetIndex = toIndex
+    this.side = side || 'middle'
+    if (this.side === 'above') {
+      this.targetIndex++
+    }
+
   }
   apply(file: LoadedFile) {
     let g = file.stacks.find((v) => v.name === this.stackName)
@@ -1983,20 +1992,43 @@ export class MoveAnimationFrameSliceUndoable implements Undoable<LoadedFile> {
     }
 
     // Get our pixels to swap.
-    let { x, y, width, height } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.oldIndex)
-    this.fromPixels = file.canvas.getPixels(x, y, width, height)
+    let { x: sourceX, y: sourceY, width: sourceWidth, height: sourceHeight } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.sourceIndex)
+    this.sourcePixels = file.canvas.getPixels(sourceX, sourceY, sourceWidth, sourceHeight)
+    this.sourceWidth = sourceWidth
+    this.sourceX = sourceX
+    this.sourceY = sourceY
+    file.canvas.clearPixels(sourceX, sourceY, sourceWidth, sourceHeight)
 
-    let { x: newX, y: newY, width: newWidth, height: newHeight } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.newIndex)
-    this.toPixels = file.canvas.getPixels(newX, newY, width, newHeight)
-
-    // Move pixels into position.
-    file.canvas.setPixels(x, y, width, height, this.toPixels)
-    file.canvas.setPixels(newX, newY, width, newHeight, this.fromPixels)
-
-    // Update frames.
-    let f = a.frames[this.frameIndex]
-    let s = f.slices.splice(this.oldIndex, 1)[0]
-    f.slices.splice(this.newIndex, 0, s)
+    if (this.side === 'middle') {
+      let { x: targetX, y: targetY, width: targetWidth, height: targetHeight } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.targetIndex)
+      this.targetX = targetX
+      this.targetWidth = targetWidth
+      let targetPixels = file.canvas.getPixels(targetX, targetY, targetWidth, file.frameHeight)
+      file.canvas.setPixels(sourceX, sourceY, targetWidth, targetHeight, targetPixels)
+      file.canvas.setPixels(targetX, targetY, sourceWidth, sourceHeight, this.sourcePixels)
+    } else {
+      if (this.targetIndex < this.sourceIndex) {
+        console.log('source is above target')
+        let { x: targetX, y: targetY } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.targetIndex)
+        let { x: targetX2 } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.sourceIndex)
+        let targetWidth = targetX2 - targetX
+        this.targetX = targetX
+        this.targetWidth = targetWidth
+        let targetPixels = file.canvas.getPixels(targetX, targetY, targetWidth, file.frameHeight)
+        file.canvas.setPixels(targetX + this.sourceWidth, targetY, targetWidth, file.frameHeight, targetPixels)
+        file.canvas.setPixels(targetX, targetY, this.sourceWidth, file.frameHeight, this.sourcePixels)
+      } else {
+        console.log('source is below target')
+        let { x: targetX, y: targetY } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.sourceIndex + 1)
+        let { x: targetX2, width: targetWidth2 } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.targetIndex - 1)
+        let targetWidth = targetX2 + targetWidth2 - targetX
+        this.targetX = targetX
+        this.targetWidth = targetWidth
+        let targetPixels = file.canvas.getPixels(targetX, targetY, targetWidth, file.frameHeight)
+        file.canvas.setPixels(this.sourceX, targetY, targetWidth, file.frameHeight, targetPixels)
+        file.canvas.setPixels(targetX + targetWidth - this.sourceWidth, targetY, this.sourceWidth, file.frameHeight, this.sourcePixels)
+      }
+    }
 
     file.cacheSlicePositions()
   }
@@ -2010,17 +2042,21 @@ export class MoveAnimationFrameSliceUndoable implements Undoable<LoadedFile> {
       throw new Error('animation not found')
     }
 
-    // Move pixels back into position.
-    let { x, y, width, height } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.oldIndex)
-    file.canvas.setPixels(x, y, width, height, this.fromPixels)
-
-    let { x: newX, y: newY, width: newWidth, height: newHeight } = file.getSliceArea(this.stackName, this.animationName, this.frameIndex, this.newIndex)
-    file.canvas.setPixels(newX, newY, newWidth, newHeight, this.toPixels)
-
-    // Update frames.
-    let f = a.frames[this.frameIndex]
-    let s = f.slices.splice(this.newIndex, 1)[0]
-    f.slices.splice(this.oldIndex, 0, s)
+    if (this.side === 'middle') {
+      let targetPixels = file.canvas.getPixels(this.sourceX, this.sourceY, this.targetWidth, file.frameHeight)
+      file.canvas.setPixels(this.targetX, this.sourceY, this.targetWidth, file.frameHeight, targetPixels)
+      file.canvas.setPixels(this.sourceX, this.sourceY, this.sourceWidth, file.frameHeight, this.sourcePixels)
+    } else {
+      if (this.targetIndex < this.sourceIndex) {
+        let targetPixels = file.canvas.getPixels(this.targetX + this.sourceWidth, this.sourceY, this.targetWidth, file.frameHeight)
+        file.canvas.setPixels(this.targetX, this.sourceY, this.targetWidth, file.frameHeight, targetPixels)
+        file.canvas.setPixels(this.sourceX, this.sourceY, this.sourceWidth, file.frameHeight, this.sourcePixels)
+      } else {
+        let targetPixels = file.canvas.getPixels(this.sourceX, this.sourceY, this.targetWidth, file.frameHeight)
+        file.canvas.setPixels(this.targetX, this.sourceY, this.targetWidth, file.frameHeight, targetPixels)
+        file.canvas.setPixels(this.sourceX, this.sourceY, this.sourceWidth, file.frameHeight, this.sourcePixels)
+      }
+    }
 
     file.cacheSlicePositions()
   }

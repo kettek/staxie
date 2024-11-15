@@ -120,22 +120,29 @@
     const relativeHeight = rect.height
     const relativePosition = relativeY / relativeHeight
 
-    if (relativePosition < 0.25) {
+    if (relativePosition < 0.33) {
       hoveringSliceSide = 'above'
-    } else if (relativePosition > 0.75) {
+    } else if (relativePosition > 0.66) {
       hoveringSliceSide = 'below'
     } else {
       hoveringSliceSide = 'middle'
     }
   }
   function handleSliceDrop(e: DragEvent, sliceIndex: number) {
+    const hoverSliceIndex = hoveringSliceIndex
     hoveringSliceIndex = -1
     if (!file || !file.frame) return
     e.preventDefault()
     const data = e.dataTransfer?.getData('staxie/slice')
     if (!data) return
     const { index } = JSON.parse(data)
-    file.push(new MoveAnimationFrameSliceUndoable(file.stackName, file.animationName, file.frameIndex, index, sliceIndex))
+
+    if (hoverSliceIndex === index) {
+      // TODO: Show err that same selected.
+      return
+    }
+
+    file.push(new MoveAnimationFrameSliceUndoable(file.stackName, file.animationName, file.frameIndex, index, sliceIndex, hoveringSliceSide))
     file.selectSliceIndex(index, true)
     file.setSliceIndex(index)
   }
@@ -173,12 +180,20 @@
     hoveringFrameIndex = -1
   }
   function handleFrameDrop(e: DragEvent, frameIndex: number) {
+    const hoverFrameIndex = hoveringFrameIndex
     hoveringFrameIndex = -1
-    if (!file || !file.stack) return
+    if (!file || !file.stack) {
+      return
+    }
     e.preventDefault()
     const data = e.dataTransfer?.getData('staxie/frame')
     if (!data) return
     const { index } = JSON.parse(data)
+
+    if (hoverFrameIndex === index) {
+      // TODO: Show err that same selected.
+      return
+    }
 
     file.push(new MoveAnimationFrameUndoable(file.stackName, file.animationName, index, frameIndex, hoveringFrameSide))
     file.selectFrameIndex(index, true)
