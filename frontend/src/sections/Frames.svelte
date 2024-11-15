@@ -24,9 +24,9 @@
   }
 
   let hoveringSliceIndex: number = -1
-  let hoveringSliceSide: 'top' | 'bottom' | 'middle' = 'middle'
+  let hoveringSliceSide: 'above' | 'below' | 'middle' = 'middle'
   let hoveringFrameIndex: number = -1
-  let hoveringFrameSide: 'top' | 'bottom' | 'middle' = 'middle'
+  let hoveringFrameSide: 'above' | 'below' | 'middle' = 'middle'
 
   let contextFrameOpen: boolean = false
   let contextFrameIndex: number = -1
@@ -121,9 +121,9 @@
     const relativePosition = relativeY / relativeHeight
 
     if (relativePosition < 0.25) {
-      hoveringSliceSide = 'top'
+      hoveringSliceSide = 'above'
     } else if (relativePosition > 0.75) {
-      hoveringSliceSide = 'bottom'
+      hoveringSliceSide = 'below'
     } else {
       hoveringSliceSide = 'middle'
     }
@@ -160,9 +160,9 @@
     const relativePosition = relativeY / relativeHeight
 
     if (relativePosition < 0.25) {
-      hoveringFrameSide = 'top'
+      hoveringFrameSide = 'above'
     } else if (relativePosition > 0.75) {
-      hoveringFrameSide = 'bottom'
+      hoveringFrameSide = 'below'
     } else {
       hoveringFrameSide = 'middle'
     }
@@ -179,7 +179,8 @@
     const data = e.dataTransfer?.getData('staxie/frame')
     if (!data) return
     const { index } = JSON.parse(data)
-    file.push(new MoveAnimationFrameUndoable(file.stackName, file.animationName, index, frameIndex))
+
+    file.push(new MoveAnimationFrameUndoable(file.stackName, file.animationName, index, frameIndex, hoveringFrameSide))
     file.selectFrameIndex(index, true)
     file.setFrameIndex(index)
   }
