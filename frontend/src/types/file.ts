@@ -296,6 +296,17 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     return this.getAnimationAreaFromAnimation(animation)
   }
 
+  getAnimationAreaFromIndex(stack: string, index: number): { x: number; y: number; width: number; height: number } {
+    let g = this.stacks.find((g) => g.name === stack)
+    if (!g) {
+      throw new Error('stack not found: ' + stack)
+    }
+    if (index >= g.animations.length || index < 0) {
+      throw new Error(`animation oob: ${index} out of ${g.animations.length}`)
+    }
+    return this.getAnimationAreaFromAnimation(g.animations[index])
+  }
+
   getAnimationAreaFromAnimation(animation: StaxAnimation): {
     x: number
     y: number

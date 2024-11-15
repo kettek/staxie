@@ -13,6 +13,11 @@
 
   let folded: Record<string, boolean> = {}
 
+  let hoveringStackIndex: number = -1
+  let hoveringStackSide: 'above' | 'below' | 'middle' = 'middle'
+  let hoveringAnimationIndex: number = -1
+  let hoveringAnimationSide: 'above' | 'below' | 'middle' = 'middle'
+
   let contextX: number = 0
   let contextY: number = 0
   let contextStackName: string = ''
@@ -172,20 +177,45 @@
     e.dataTransfer?.setData('staxie/animation', JSON.stringify({ fromStack: stack, fromIndex: animationIndex }))
   }
   function handleAnimationDragEnd(e: DragEvent) {}
-  function handleAnimationDragOver(e: DragEvent) {
+  function handleAnimationDragOver(e: DragEvent, animationIndex: number) {
     if (!e.dataTransfer?.types.includes('staxie/animation')) return
     e.preventDefault()
+
+    hoveringAnimationIndex = animationIndex
+    console.log('hover', animationIndex)
+    const hoveredAnimationElement = e.target as HTMLElement
+    const rect = hoveredAnimationElement.getBoundingClientRect()
+    const relativeY = e.clientY - rect.top
+    const relativeHeight = rect.height
+    const relativePosition = relativeY / relativeHeight
+
+    if (relativePosition < 0.33) {
+      hoveringAnimationSide = 'above'
+    } else if (relativePosition > 0.66) {
+      hoveringAnimationSide = 'below'
+    } else {
+      hoveringAnimationSide = 'middle'
+    }
   }
   function handleAnimationDrop(e: DragEvent, stack: string, animationIndex: number) {
+    const hoverAnimationIndex = hoveringAnimationIndex
+    hoveringAnimationIndex = -1
+    console.log('droppe', hoverAnimationIndex)
+    if (!file || !file.stack) return
     e.preventDefault()
     const data = e.dataTransfer?.getData('staxie/animation')
     if (!data) return
     const { fromStack, fromIndex } = JSON.parse(data)
+    if (fromIndex === animationIndex) {
+      // TODO: show error
+      return
+    }
     if (fromStack !== stack) {
       alert('cannot move animations between stacks (if you want this, request)')
       return
     }
     // TODO: Move it.
+    file.push(new MoveAnimationUndoable(fromStack, fromIndex, animationIndex, hoveringAnimationSide))
   }
 </script>
 
@@ -217,7 +247,7 @@
             <ul class="animations">
               {#if !folded[stack.name]}
                 {#each stack.animations as animation, animationIndex}
-                  <li class="animation" on:click={(e) => handleAnimationClick(stack.name, animation.name)} on:contextmenu|preventDefault={(e) => handleAnimationRightClick(e, stack.name, animation.name)} on:dragstart={(e) => handleAnimationDragStart(e, stack.name, animationIndex)} on:dragend={handleAnimationDragEnd} on:dragover={handleAnimationDragOver} on:drop={(e) => handleAnimationDrop(e, stack.name, animationIndex)} draggable="true">
+                  <li class="animation{hoveringAnimationIndex === animationIndex ? ' --targeted' + (' --' + hoveringAnimationSide) : ''}" on:click={(e) => handleAnimationClick(stack.name, animation.name)} on:contextmenu|preventDefault={(e) => handleAnimationRightClick(e, stack.name, animation.name)} on:dragstart={(e) => handleAnimationDragStart(e, stack.name, animationIndex)} on:dragend={handleAnimationDragEnd} on:dragover={(e) => handleAnimationDragOver(e, animationIndex)} on:drop={(e) => handleAnimationDrop(e, stack.name, animationIndex)} draggable="true">
                     <header class:--selected={stackSelected && $file.animationName === animation.name}>
                       <span>{animation.name}</span>
                     </header>
@@ -311,8 +341,19 @@
     align-items: center;
     background-color: var(--cds-ui-01, #f4f4f4);
     color: var(--cds-text-02, #525252);
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid var(--cds-ui-01);
   }
   .animation header.--selected {
     background-color: var(--cds-ui-02, #e0e0e0);
+  }
+  .animation.--targeted header {
+    background: var(--cds-highlight);
+  }
+  .animation.--targeted.--above header {
+    border-top: 1px solid var(--cds-focus);
+  }
+  .animation.--targeted.--below header {
+    border-bottom: 1px solid var(--cds-focus);
   }
 </style>
