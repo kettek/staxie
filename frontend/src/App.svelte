@@ -614,6 +614,7 @@
           <Shortcut global cmd="previousSlice" keys={['shift+wheeldown']} on:trigger={() => $fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex - 1)} />
           <Shortcut global cmd="nextSlice" keys={['shift+wheelup']} on:trigger={() => $fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex + 1)} />
           <Shortcut global cmd="cursor" keys={['c']} on:trigger={() => toolSettings.swapTool(toolVoxelCursor)} />
+          <Shortcut global cmd="duplicate" keys={['ctrl+d']} on:trigger={() => engageDuplicate()} />
         </Shortcuts>
 
         <Button selected={$toolSettings.current === toolVoxelPlace} kind="ghost" size="small" icon={WatsonHealth3DSoftware} tooltipPosition="right" on:click={() => toolSettings.swapTool(toolVoxelPlace)}>
@@ -673,6 +674,7 @@
           <Shortcut global cmd="delete" keys={['delete']} on:trigger={() => engageDelete(false)} />
           <Shortcut global cmd="quit" keys={['ctrl+q']} on:trigger={() => engageQuit()} />
           <Shortcut global cmd="fullscreen" keys={['f11']} on:trigger={() => ToggleFullscreen()} />
+          <Shortcut global cmd="duplicate" keys={['ctrl+d']} on:trigger={() => engageDuplicate()} />
         </Shortcuts>
 
         <Button selected={$toolSettings.current === toolMove} kind="ghost" size="small" icon={Move} tooltipPosition="right" on:click={() => toolSettings.swapTool(toolMove)}>
