@@ -255,6 +255,17 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
     }
     return this.getStackAreaFromStack(g)
   }
+  getStackAreaFromIndex(index: number): {
+    x: number
+    y: number
+    width: number
+    height: number
+  } {
+    if (index >= this.stacks.length || index < 0) {
+      throw new Error(`stack oob: ${index} out of ${this.stacks.length}`)
+    }
+    return this.getStackAreaFromStack(this.stacks[index])
+  }
   getStackAreaFromStack(stack: StaxStack): {
     x: number
     y: number

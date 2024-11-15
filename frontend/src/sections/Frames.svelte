@@ -24,9 +24,9 @@
   }
 
   let hoveringSliceIndex: number = -1
-  let hoveringSliceSide: 'above' | 'below' | 'middle' = 'middle'
+  let hoveringSliceSide: 'above' | 'below' | 'middle' = 'above'
   let hoveringFrameIndex: number = -1
-  let hoveringFrameSide: 'above' | 'below' | 'middle' = 'middle'
+  let hoveringFrameSide: 'above' | 'below' | 'middle' = 'above'
 
   let contextFrameOpen: boolean = false
   let contextFrameIndex: number = -1
@@ -120,12 +120,12 @@
     const relativeHeight = rect.height
     const relativePosition = relativeY / relativeHeight
 
-    if (relativePosition < 0.33) {
+    if (relativePosition < 0.5) {
       hoveringSliceSide = 'above'
-    } else if (relativePosition > 0.66) {
+    } else if (relativePosition >= 0.5) {
       hoveringSliceSide = 'below'
-    } else {
-      hoveringSliceSide = 'middle'
+      /*} else {
+      hoveringSliceSide = 'middle'*/
     }
   }
   function handleSliceDrop(e: DragEvent, sliceIndex: number) {
@@ -166,12 +166,12 @@
     const relativeHeight = rect.height
     const relativePosition = relativeY / relativeHeight
 
-    if (relativePosition < 0.33) {
+    if (relativePosition < 0.5) {
       hoveringFrameSide = 'above'
-    } else if (relativePosition > 0.66) {
+    } else if (relativePosition >= 0.5) {
       hoveringFrameSide = 'below'
-    } else {
-      hoveringFrameSide = 'middle'
+      /*} else {
+      hoveringFrameSide = 'middle'*/
     }
   }
   function handleFrameDragLeave(e: DragEvent) {

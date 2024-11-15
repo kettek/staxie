@@ -14,9 +14,9 @@
   let folded: Record<string, boolean> = {}
 
   let hoveringStackIndex: number = -1
-  let hoveringStackSide: 'above' | 'below' | 'middle' = 'middle'
+  let hoveringStackSide: 'above' | 'below' | 'middle' = 'above'
   let hoveringAnimationIndex: number = -1
-  let hoveringAnimationSide: 'above' | 'below' | 'middle' = 'middle'
+  let hoveringAnimationSide: 'above' | 'below' | 'middle' = 'above'
 
   let contextX: number = 0
   let contextY: number = 0
@@ -159,12 +159,12 @@
     const relativeHeight = rect.height
     const relativePosition = relativeY / relativeHeight
 
-    if (relativePosition < 0.33) {
+    if (relativePosition < 0.5) {
       hoveringStackSide = 'above'
-    } else if (relativePosition > 0.66) {
+    } else if (relativePosition >= 0.5) {
       hoveringStackSide = 'below'
-    } else {
-      hoveringStackSide = 'middle'
+      /*} else {
+      hoveringStackSide = 'middle'*/
     }
   }
   function handleStackDrop(e: DragEvent, stackIndex: number) {
@@ -212,12 +212,12 @@
     const relativeHeight = rect.height
     const relativePosition = relativeY / relativeHeight
 
-    if (relativePosition < 0.33) {
+    if (relativePosition < 0.5) {
       hoveringAnimationSide = 'above'
-    } else if (relativePosition > 0.66) {
+    } else if (relativePosition >= 0.5) {
       hoveringAnimationSide = 'below'
-    } else {
-      hoveringAnimationSide = 'middle'
+      /*} else {
+      hoveringAnimationSide = 'middle'*/
     }
   }
   function handleAnimationDrop(e: DragEvent, stack: string, animationIndex: number) {
