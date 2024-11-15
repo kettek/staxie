@@ -533,7 +533,7 @@
       </OverflowMenu>
     {/if}
     <OverflowMenu size="sm">
-      <div slot="menu">Mode</div>
+      <div slot="menu">Sheet</div>
       <OverflowMenuItem>
         <label on:click={(e) => e.stopPropagation()} on:keypress={(e) => e.stopPropagation()}>
           <span>Slice</span>
