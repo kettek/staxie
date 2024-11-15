@@ -159,9 +159,9 @@
     const relativeHeight = rect.height
     const relativePosition = relativeY / relativeHeight
 
-    if (relativePosition < 0.25) {
+    if (relativePosition < 0.33) {
       hoveringFrameSide = 'above'
-    } else if (relativePosition > 0.75) {
+    } else if (relativePosition > 0.66) {
       hoveringFrameSide = 'below'
     } else {
       hoveringFrameSide = 'middle'
@@ -288,10 +288,10 @@
   .slice.--targeted {
     background: var(--cds-highlight);
   }
-  .slice.--targeted.--top {
+  .slice.--targeted.--above {
     border-top: 1px solid var(--cds-focus);
   }
-  .slice.--targeted.--bottom {
+  .slice.--targeted.--below {
     border-bottom: 1px solid var(--cds-focus);
   }
   .slice:hover {
@@ -344,10 +344,10 @@
   .frame.--targeted {
     background: var(--cds-highlight);
   }
-  .frame.--targeted.--top {
+  .frame.--targeted.--above {
     border-top: 1px solid var(--cds-focus);
   }
-  .frame.--targeted.--bottom {
+  .frame.--targeted.--below {
     border-bottom: 1px solid var(--cds-focus);
   }
   .frame:hover {
