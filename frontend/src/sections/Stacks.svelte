@@ -1,7 +1,7 @@
 <script lang="ts">
   import { CaretDown, CaretRight, FaceAdd, FolderAdd } from 'carbon-icons-svelte'
   import { type LoadedFile } from '../types/file'
-  import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable, RenameAnimationUndoable, RenameStackUndoable, DuplicateStackUndoable, DuplicateAnimationUndoable, MoveAnimationUndoable } from '../types/file/undoables'
+  import { RemoveStackUndoable, ShrinkStackSliceUndoable, GrowStackSliceUndoable, RemoveAnimationUndoable, AddAnimationUndoable, AddStackUndoable, ChangeFrameTimeUndoable, RenameAnimationUndoable, RenameStackUndoable, DuplicateStackUndoable, DuplicateAnimationUndoable, MoveAnimationUndoable, MoveStackUndoable } from '../types/file/undoables'
   import { ContextMenu, ContextMenuOption, NumberInput } from 'carbon-components-svelte'
   import Button from '../components/common/Button.svelte'
   import { fileStates } from '../stores/file'
@@ -144,20 +144,44 @@
     contextY = e.clientY
     contextStackOpen = true
   }
-  function handleStackDragStart(e: DragEvent, stack: string) {
-    e.dataTransfer?.setData('staxie/stack', stack)
+  function handleStackDragStart(e: DragEvent, stack: string, stackIndex: number) {
+    e.dataTransfer?.setData('staxie/stack', JSON.stringify({ name: stack, index: stackIndex }))
   }
   function handleStackDragEnd(e: DragEvent) {}
-  function handleStackDragOver(e: DragEvent) {
+  function handleStackDragOver(e: DragEvent, stackIndex: number) {
     if (!e.dataTransfer?.types.includes('staxie/stack')) return
     e.preventDefault()
+
+    hoveringStackIndex = stackIndex
+    const hoveredStackElement = e.target as HTMLElement
+    const rect = hoveredStackElement.getBoundingClientRect()
+    const relativeY = e.clientY - rect.top
+    const relativeHeight = rect.height
+    const relativePosition = relativeY / relativeHeight
+
+    if (relativePosition < 0.33) {
+      hoveringStackSide = 'above'
+    } else if (relativePosition > 0.66) {
+      hoveringStackSide = 'below'
+    } else {
+      hoveringStackSide = 'middle'
+    }
   }
   function handleStackDrop(e: DragEvent, stackIndex: number) {
     e.preventDefault()
+    const hoverStackIndex = hoveringStackIndex
+    hoveringStackIndex = -1
+    if (!file) return
     const data = e.dataTransfer?.getData('staxie/stack')
     if (!data) return
-    const fromStack = data
-    // TODO: Move it.
+    const { name, index } = JSON.parse(data)
+
+    if (index === stackIndex) {
+      // TODO: show error
+      return
+    }
+
+    file.push(new MoveStackUndoable(index, stackIndex, hoveringStackSide))
   }
 
   function handleAnimationClick(stack: string, animation: string) {
@@ -182,7 +206,6 @@
     e.preventDefault()
 
     hoveringAnimationIndex = animationIndex
-    console.log('hover', animationIndex)
     const hoveredAnimationElement = e.target as HTMLElement
     const rect = hoveredAnimationElement.getBoundingClientRect()
     const relativeY = e.clientY - rect.top
@@ -200,7 +223,6 @@
   function handleAnimationDrop(e: DragEvent, stack: string, animationIndex: number) {
     const hoverAnimationIndex = hoveringAnimationIndex
     hoveringAnimationIndex = -1
-    console.log('droppe', hoverAnimationIndex)
     if (!file || !file.stack) return
     e.preventDefault()
     const data = e.dataTransfer?.getData('staxie/animation')
@@ -214,7 +236,6 @@
       alert('cannot move animations between stacks (if you want this, request)')
       return
     }
-    // TODO: Move it.
     file.push(new MoveAnimationUndoable(fromStack, fromIndex, animationIndex, hoveringAnimationSide))
   }
 </script>
@@ -239,8 +260,8 @@
       <ul class="stacks">
         {#each $file.stacks as stack, stackIndex}
           {@const stackSelected = $file.stackName === stack.name}
-          <li class="stack">
-            <header class:--selected={stackSelected} on:click={(e) => handleStackClick(stack.name)} on:contextmenu|preventDefault={(e) => handleStackRightClick(e, stack.name)} on:dragstart={(e) => handleStackDragStart(e, stack.name)} on:dragend={handleStackDragEnd} on:dragover={handleStackDragOver} on:drop={(e) => handleStackDrop(e, stack.name)} draggable={true}>
+          <li class="stack{hoveringStackIndex === stackIndex ? ' --targeted' + (' --' + hoveringStackSide) : ''}">
+            <header class:--selected={stackSelected} on:click={(e) => handleStackClick(stack.name)} on:contextmenu|preventDefault={(e) => handleStackRightClick(e, stack.name)} on:dragstart={(e) => handleStackDragStart(e, stack.name, stackIndex)} on:dragend={handleStackDragEnd} on:dragover={(e) => handleStackDragOver(e, stackIndex)} on:drop={(e) => handleStackDrop(e, stackIndex)} draggable={true}>
               <Button icon={folded[stack.name] ? CaretRight : CaretDown} on:click={() => (folded[stack.name] = !folded[stack.name])} />
               <span>{stack.name}</span>
             </header>
@@ -317,12 +338,23 @@
     background-color: var(--cds-ui-01, #f4f4f4);
     color: var(--cds-text-02, #525252);
     border-left: 0.25rem solid transparent;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid var(--cds-ui-01);
   }
   .stack header:hover {
     background-color: var(--cds-ui-02, #e0e0e0);
   }
   .stack > header.--selected {
     border-left: 0.25rem solid var(--cds-interactive-04, #0f62fe);
+  }
+  .stack.--targeted > header {
+    background: var(--cds-highlight);
+  }
+  .stack.--targeted.--above > header {
+    border-top: 1px solid var(--cds-focus);
+  }
+  .stack.--targeted.--below > header {
+    border-bottom: 1px solid var(--cds-focus);
   }
   .stack header span {
     height: 100%;

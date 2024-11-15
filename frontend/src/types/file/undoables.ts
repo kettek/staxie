@@ -857,17 +857,91 @@ export class RemoveStackUndoable implements Undoable<LoadedFile> {
 }
 
 export class MoveStackUndoable implements Undoable<LoadedFile> {
-  private stack: string
-  private oldIndex: number
-  private newIndex: number
-  constructor(stack: string, oldIndex: number, newIndex: number) { }
+  private side: 'above' | 'below' | 'middle'
+
+  private sourceIndex: number
+  private sourcePixels: Uint8Array = new Uint8Array([])
+  private sourceY: number = 0
+  private sourceHeight: number = 0
+
+  private targetY: number = 0
+  private targetHeight: number = 0
+
+  private targetIndex: number
+
+  constructor(fromIndex: number, toIndex: number, side: 'above' | 'below' | 'middle') {
+    this.sourceIndex = fromIndex
+    this.targetIndex = toIndex
+    this.side = side
+    if (this.side === 'below') {
+      this.targetIndex++
+    }
+  }
   apply(file: LoadedFile) {
-    // TODO: Lazymode -- get our pixels for our stacks between our two move stacks, get our pixels for our first and second move stack, clear pixels from first through second, then paste the pixels for our from to our to position, our to to our end position -to's height, then paste the between pixels between the two.
+    let { y: sourceY, height: sourceHeight } = file.getStackAreaFromIndex(this.sourceIndex)
+    this.sourceHeight = sourceHeight
+    this.sourceY = sourceY
+    this.sourcePixels = file.canvas.getPixels(0, this.sourceY, file.canvas.width, this.sourceHeight)
+    file.canvas.clearPixels(0, this.sourceY, file.canvas.width, this.sourceHeight)
+
+    if (this.side === 'middle') {
+      let { y: targetY, height: targetHeight } = file.getStackAreaFromIndex(this.targetIndex)
+      this.targetY = targetY
+      this.targetHeight = targetHeight
+      let targetPixels = file.canvas.getPixels(0, targetY, file.canvas.width, targetHeight)
+      file.canvas.setPixels(0, this.sourceY, file.canvas.width, targetHeight, targetPixels)
+      file.canvas.setPixels(0, targetY, file.canvas.width, this.sourceHeight, this.sourcePixels)
+    } else {
+      if (this.targetIndex < this.sourceIndex) {
+        let { y: targetY } = file.getStackAreaFromIndex(this.targetIndex)
+        let { y: targetY2 } = file.getStackAreaFromIndex(this.sourceIndex)
+        let targetHeight = targetY2 - targetY
+        this.targetY = targetY
+        this.targetHeight = targetHeight
+        let targetPixels = file.canvas.getPixels(0, targetY, file.canvas.width, targetHeight)
+        file.canvas.setPixels(0, targetY + this.sourceHeight, file.canvas.width, targetHeight, targetPixels)
+        file.canvas.setPixels(0, targetY, file.canvas.width, this.sourceHeight, this.sourcePixels)
+      } else {
+        let { y: targetY } = file.getStackAreaFromIndex(this.sourceIndex + 1)
+        let { y: targetY2, height: targetHeight2 } = file.getStackAreaFromIndex(this.targetIndex - 1)
+        let targetHeight = targetY2 + targetHeight2 - targetY
+        this.targetY = targetY
+        this.targetHeight = targetHeight
+        let targetPixels = file.canvas.getPixels(0, targetY, file.canvas.width, targetHeight)
+        file.canvas.setPixels(0, this.sourceY, file.canvas.width, targetHeight, targetPixels)
+        file.canvas.setPixels(0, targetY + targetHeight - this.sourceHeight, file.canvas.width, this.sourceHeight, this.sourcePixels)
+      }
+    }
+
+    let stack = file.stacks.splice(this.sourceIndex, 1)[0]
+    file.stacks.splice(this.targetIndex > this.sourceIndex ? this.targetIndex - 1 : this.targetIndex, 0, stack)
+
+    file.cacheSlicePositions()
   }
   unapply(file: LoadedFile) {
-    // TODO: Part of above lazy mode, clear out old pixels, then position to, from, and between pixels.
+    if (this.side === 'middle') {
+      let targetPixels = file.canvas.getPixels(0, this.sourceY, file.canvas.width, this.targetHeight)
+      file.canvas.setPixels(0, this.targetY, file.canvas.width, this.targetHeight, targetPixels)
+      file.canvas.setPixels(0, this.sourceY, file.canvas.width, this.sourceHeight, this.sourcePixels)
+    } else {
+      if (this.targetIndex < this.sourceIndex) {
+        let targetPixels = file.canvas.getPixels(0, this.targetY + this.sourceHeight, file.canvas.width, this.targetHeight)
+        file.canvas.setPixels(0, this.targetY, file.canvas.width, this.targetHeight, targetPixels)
+        file.canvas.setPixels(0, this.sourceY, file.canvas.width, this.sourceHeight, this.sourcePixels)
+      } else {
+        let targetPixels = file.canvas.getPixels(0, this.sourceY, file.canvas.width, this.targetHeight)
+        file.canvas.setPixels(0, this.targetY, file.canvas.width, this.targetHeight, targetPixels)
+        file.canvas.setPixels(0, this.sourceY, file.canvas.width, this.sourceHeight, this.sourcePixels)
+      }
+    }
+
+    let stack = file.stacks.splice(this.targetIndex > this.sourceIndex ? this.targetIndex - 1 : this.targetIndex, 1)[0]
+    file.stacks.splice(this.sourceIndex, 0, stack)
+
+    file.cacheSlicePositions()
   }
 }
+
 
 export class RenameStackUndoable implements Undoable<LoadedFile> {
   private stack: string
