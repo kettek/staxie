@@ -71,7 +71,7 @@
     canvas.width = size
     canvas.height = size
 
-    const frameCount = Math.round(360 / angleSteps)
+    const frameCount = Math.round(360 / $renderSettings.angleSteps)
 
     try {
       await getOutput()
@@ -85,26 +85,35 @@
     ctx.imageSmoothingEnabled = false
     ctx.fillStyle = $renderSettings.backgroundColor
     let frames: { data: ArrayBufferLike; delay: number }[] = []
+
+    const sliceDistanceEnd = $renderSettings.interpolateSlices ? $renderSettings.sliceDistance * $renderSettings.zoom : 1
+    const sliceStep = $renderSettings.interpolateSlices ? 1 : $renderSettings.sliceDistance * $renderSettings.zoom
+
     for (let i = $renderSettings.angleOffset; i < 360 + $renderSettings.angleOffset; i += $renderSettings.angleSteps) {
       ctx.fillRect(0, 0, size, size)
       let y = file.frame.slices.length * $renderSettings.sliceDistance * $renderSettings.zoom
       for (let sliceIndex = 0; sliceIndex < file.frame.slices.length; sliceIndex++) {
         const slice = file.frame.slices[sliceIndex]
-        ctx.save()
 
-        ctx.translate(minWidth / 2, 0)
+        for (let step = 0; step < sliceDistanceEnd; step += sliceStep) {
+          ctx.save()
 
-        ctx.translate(0, y)
-        ctx.translate(frameWidth / 2, frameHeight / 2)
-        ctx.rotate(((i * Math.PI) / 180) * (clockwise ? 1 : -1))
-        ctx.translate(-frameWidth / 2, -frameHeight / 2)
+          ctx.translate(minWidth / 2, 0)
 
-        let shade = 128 + Math.min(255, 128 * sliceIndex)
-        ctx.filter = `brightness(${$renderSettings.minShade + (1 - $renderSettings.minShade) * (shade / 255)})`
+          ctx.translate(0, y - step)
+          ctx.translate(frameWidth / 2, frameHeight / 2)
+          ctx.rotate(((i * Math.PI) / 180) * ($renderSettings.clockwise ? 1 : -1))
+          ctx.translate(-frameWidth / 2, -frameHeight / 2)
 
-        ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.frameWidth, file.frameHeight, 0, 0, frameWidth, frameHeight)
+          if ($renderSettings.automaticShading) {
+            let shade = 128 + Math.min(255, 128 * (sliceIndex / file.frame.slices.length))
+            ctx.filter = `brightness(${$renderSettings.minShade + $renderSettings.minShade * (shade / 255)})`
+          }
 
-        ctx.restore()
+          ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.frameWidth, file.frameHeight, 0, 0, frameWidth, frameHeight)
+
+          ctx.restore()
+        }
         y -= $renderSettings.sliceDistance * $renderSettings.zoom
       }
       frames = [...frames, { data: ctx.getImageData(0, 0, size, size).data.buffer, delay: $renderSettings.delay }]
@@ -139,10 +148,16 @@
         <Input noPadding labelWidth="8" label="Zoom" type="number" bind:value={$renderSettings.zoom} />
       </Row>
       <Row>
+        <Input noPadding labelWidth="8" label="Automatic Shading" type="checkbox" bind:checked={$renderSettings.automaticShading} />
+      </Row>
+      <Row>
         <Input noPadding labelWidth="8" label="Min Shade" type="number" bind:value={$renderSettings.minShade} />
       </Row>
       <Row>
         <Input noPadding labelWidth="8" label="Slice Distance" type="number" bind:value={$renderSettings.sliceDistance} />
+      </Row>
+      <Row>
+        <Input noPadding labelWidth="8" label="Interpolate Slices" type="checkbox" bind:checked={$renderSettings.interpolateSlices} />
       </Row>
       <Row>
         <Input noPadding labelWidth="8" label="Background Color" type="color" bind:value={$renderSettings.backgroundColor} />
