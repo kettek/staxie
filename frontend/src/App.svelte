@@ -60,6 +60,7 @@
   import Selection3D from './components/Selection3D.svelte'
   import ReplacePixelIndicesModal from './components/ReplacePixelIndicesModal.svelte'
   import ResizeSlicesModal from './components/ResizeSlicesModal.svelte'
+  import Render from './sections/Render.svelte'
 
   let is3D: boolean = true
 
@@ -434,6 +435,8 @@
     alpha = (entry >> 24) & 0xff
   }
 
+  let showRender: boolean = false
+
   onMount(async () => {
     window.addEventListener('resize', (e: UIEvent) => {
       EventsEmit('window:resize', {
@@ -574,6 +577,7 @@
       <OverflowMenuItem>
         <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$generalSettings.useRichPresence} labelText="Rich Presence" />
       </OverflowMenuItem>
+      <OverflowMenuItem hasDivider on:click={() => (showRender = true)}>Render...</OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Help</div>
@@ -805,6 +809,11 @@
     {#if showSettings}
       <FloatingPanel label="Settings" bind:open={showSettings} noPadding id="settings">
         <Settings />
+      </FloatingPanel>
+    {/if}
+    {#if showRender && $fileStates.focused}
+      <FloatingPanel label="Render" bind:open={showRender} noPadding id="render">
+        <Render bind:file={$fileStates.focused} />
       </FloatingPanel>
     {/if}
   </section>
