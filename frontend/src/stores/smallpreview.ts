@@ -5,6 +5,7 @@ type SmallPreviewSettings = {
   background: string
   spinSpeed: number
   wheelIncrement: number
+  interpolateSlices: boolean
 }
 
 export const smallPreviewSettingsDefault: SmallPreviewSettings = {
@@ -12,6 +13,7 @@ export const smallPreviewSettingsDefault: SmallPreviewSettings = {
   background: '#111111',
   spinSpeed: 0.5,
   wheelIncrement: 1,
+  interpolateSlices: false,
 }
 
 export const smallPreviewSettings = makeLocalStorageStore<SmallPreviewSettings>('smallPreview', { ...smallPreviewSettingsDefault })

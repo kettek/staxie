@@ -15,6 +15,9 @@
       <SettingsInput noPadding id="background" type="text" bind:value={$smallPreviewSettings.background} defaultValue={smallPreviewSettingsDefault.background} />
     </Row>
     <Row>
+      <Input noPadding labelWidth="10" type="checkbox" label="Interpolate Slices" bind:checked={$smallPreviewSettings.interpolateSlices} />
+    </Row>
+    <Row>
       <SettingsInput noPadding labelWidth="10" id="spinSpeed" type="number" label="Spin Speed" bind:value={$smallPreviewSettings.spinSpeed} step={0.1} defaultValue={smallPreviewSettingsDefault.spinSpeed} />
     </Row>
     <Row>

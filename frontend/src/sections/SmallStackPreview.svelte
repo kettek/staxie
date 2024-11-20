@@ -66,6 +66,9 @@
     const frameWidth = file.frameWidth * zoom
     const frameHeight = file.frameHeight * zoom
 
+    const sliceDistanceEnd = $smallPreviewSettings.interpolateSlices ? sliceDistance * zoom : 1
+    const sliceStep = $smallPreviewSettings.interpolateSlices ? 1 : sliceDistance * zoom
+
     if (file.animation) {
       const animation = file.animation
       let frame: StaxFrame | undefined
@@ -83,22 +86,24 @@
       let y = frame.slices.length * sliceDistance * zoom
       for (let sliceIndex = 0; sliceIndex < frame.slices.length; sliceIndex++) {
         const slice = frame.slices[sliceIndex]
-        ctx.save()
+        for (let step = 0; step < sliceDistanceEnd; step += sliceStep) {
+          ctx.save()
 
-        ctx.translate(0, y)
-        ctx.translate(frameWidth / 2, frameHeight / 2)
-        ctx.rotate((rotation * Math.PI) / 180)
-        ctx.translate(-frameWidth / 2, -frameHeight / 2)
+          ctx.translate(0, y - step)
+          ctx.translate(frameWidth / 2, frameHeight / 2)
+          ctx.rotate((rotation * Math.PI) / 180)
+          ctx.translate(-frameWidth / 2, -frameHeight / 2)
 
-        if (automaticShading) {
-          // FIXME: Adjust this math to use configurable min/max values.
-          // FIXME: This is not affected by multiple stacks!!!
-          let shade = 128 + Math.min(255, 128 * (sliceIndex / frame.slices.length))
-          ctx.filter = `brightness(${minShade + (1 - minShade) * (shade / 255)})`
+          if (automaticShading) {
+            // FIXME: Adjust this math to use configurable min/max values.
+            // FIXME: This is not affected by multiple stacks!!!
+            let shade = 128 + Math.min(255, 128 * (sliceIndex / frame.slices.length))
+            ctx.filter = `brightness(${minShade + (1 - minShade) * (shade / 255)})`
+          }
+
+          ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.frameWidth, file.frameHeight, 0, 0, file.frameWidth * zoom, file.frameHeight * zoom)
+          ctx.restore()
         }
-
-        ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.frameWidth, file.frameHeight, 0, 0, file.frameWidth * zoom, file.frameHeight * zoom)
-        ctx.restore()
         y -= 1 * sliceDistance * zoom
       }
     }

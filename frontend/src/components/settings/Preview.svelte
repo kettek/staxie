@@ -25,6 +25,9 @@
       {/if}
     </Row>
     <Row>
+      <Input noPadding labelWidth="10" type="checkbox" label="Interpolate Slices" bind:checked={$previewSettings.interpolateSlices} />
+    </Row>
+    <Row>
       <Input noPadding labelWidth="10" id="showBaseSizeOutline" type="checkbox" label="Show Base Size Outline" bind:checked={$previewSettings.showBaseSizeOutline} />
     </Row>
     <Row>

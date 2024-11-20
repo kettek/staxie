@@ -102,6 +102,9 @@
       canvas.height = rect.height
     }
 
+    const sliceDistanceEnd = $previewSettings.interpolateSlices ? sliceDistance * zoom : 1
+    const sliceStep = $previewSettings.interpolateSlices ? 1 : sliceDistance * zoom
+
     let ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -143,44 +146,46 @@
             let sliceEnd = Math.min(visibleFiles[file.id].stacks[stack.name].sliceEnd || frame.slices.length, frame.slices.length)
             for (let sliceIndex = sliceStart; sliceIndex < sliceEnd; sliceIndex++) {
               let slice = frame.slices[sliceIndex]
-              if (sliceIndex === 0) {
-                if ($previewSettings.showBaseSizeOutline) {
-                  ctx.save()
-                  ctx.translate(x, y)
-                  ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
-                  ctx.scale(zoom, zoom)
-                  ctx.strokeStyle = $previewSettings.baseSizeOutlineColor
-                  ctx.lineWidth = 1 / zoom
-                  ctx.strokeRect(-file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
-                  ctx.restore()
+              for (let step = 0; step < sliceDistanceEnd; step += sliceStep) {
+                if (sliceIndex === 0) {
+                  if ($previewSettings.showBaseSizeOutline) {
+                    ctx.save()
+                    ctx.translate(x, y)
+                    ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
+                    ctx.scale(zoom, zoom)
+                    ctx.strokeStyle = $previewSettings.baseSizeOutlineColor
+                    ctx.lineWidth = 1 / zoom
+                    ctx.strokeRect(-file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
+                    ctx.restore()
+                  }
+                  if ($previewSettings.showSizeOutline) {
+                    ctx.save()
+                    ctx.translate(x, y)
+                    ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
+                    ctx.scale(zoom, zoom)
+                    ctx.rotate(((rotation + stackRotation) * Math.PI) / 180)
+                    ctx.strokeStyle = $previewSettings.sizeOutlineColor
+                    ctx.lineWidth = 1 / zoom
+                    ctx.strokeRect(-file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
+                    ctx.restore()
+                  }
                 }
-                if ($previewSettings.showSizeOutline) {
-                  ctx.save()
-                  ctx.translate(x, y)
-                  ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
-                  ctx.scale(zoom, zoom)
-                  ctx.rotate(((rotation + stackRotation) * Math.PI) / 180)
-                  ctx.strokeStyle = $previewSettings.sizeOutlineColor
-                  ctx.lineWidth = 1 / zoom
-                  ctx.strokeRect(-file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
-                  ctx.restore()
+                ctx.save()
+                ctx.translate(x, y - sliceOffset * sliceDistance * zoom - step)
+                ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
+                ctx.scale(zoom, zoom)
+                ctx.rotate(((rotation + stackRotation) * Math.PI) / 180)
+
+                if (automaticShading) {
+                  // FIXME: Adjust this math to use configurable min/max values.
+                  // FIXME: This is not affected by multiple stacks!!!
+                  let shade = 128 + Math.min(255, 128 * (sliceIndex / frame.slices.length))
+                  ctx.filter = `brightness(${minShade + (1 - minShade) * (shade / 255)})`
                 }
-              }
-              ctx.save()
-              ctx.translate(x, y - sliceOffset * sliceDistance * zoom)
-              ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
-              ctx.scale(zoom, zoom)
-              ctx.rotate(((rotation + stackRotation) * Math.PI) / 180)
 
-              if (automaticShading) {
-                // FIXME: Adjust this math to use configurable min/max values.
-                // FIXME: This is not affected by multiple stacks!!!
-                let shade = 128 + Math.min(255, 128 * (sliceIndex / frame.slices.length))
-                ctx.filter = `brightness(${minShade + (1 - minShade) * (shade / 255)})`
+                ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.frameWidth, file.frameHeight, -file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
+                ctx.restore()
               }
-
-              ctx.drawImage(file.canvas.canvas, slice.x, slice.y, file.frameWidth, file.frameHeight, -file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
-              ctx.restore()
               y -= 1 * sliceDistance * zoom
             }
             sliceOffset += frame.slices.length
