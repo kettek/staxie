@@ -146,30 +146,30 @@
             let sliceEnd = Math.min(visibleFiles[file.id].stacks[stack.name].sliceEnd || frame.slices.length, frame.slices.length)
             for (let sliceIndex = sliceStart; sliceIndex < sliceEnd; sliceIndex++) {
               let slice = frame.slices[sliceIndex]
-              for (let step = 0; step < sliceDistanceEnd; step += sliceStep) {
-                if (sliceIndex === 0) {
-                  if ($previewSettings.showBaseSizeOutline) {
-                    ctx.save()
-                    ctx.translate(x, y)
-                    ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
-                    ctx.scale(zoom, zoom)
-                    ctx.strokeStyle = $previewSettings.baseSizeOutlineColor
-                    ctx.lineWidth = 1 / zoom
-                    ctx.strokeRect(-file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
-                    ctx.restore()
-                  }
-                  if ($previewSettings.showSizeOutline) {
-                    ctx.save()
-                    ctx.translate(x, y)
-                    ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
-                    ctx.scale(zoom, zoom)
-                    ctx.rotate(((rotation + stackRotation) * Math.PI) / 180)
-                    ctx.strokeStyle = $previewSettings.sizeOutlineColor
-                    ctx.lineWidth = 1 / zoom
-                    ctx.strokeRect(-file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
-                    ctx.restore()
-                  }
+              if (sliceIndex === 0) {
+                if ($previewSettings.showBaseSizeOutline) {
+                  ctx.save()
+                  ctx.translate(x, y)
+                  ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
+                  ctx.scale(zoom, zoom)
+                  ctx.strokeStyle = $previewSettings.baseSizeOutlineColor
+                  ctx.lineWidth = 1 / zoom
+                  ctx.strokeRect(-file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
+                  ctx.restore()
                 }
+                if ($previewSettings.showSizeOutline) {
+                  ctx.save()
+                  ctx.translate(x, y)
+                  ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
+                  ctx.scale(zoom, zoom)
+                  ctx.rotate(((rotation + stackRotation) * Math.PI) / 180)
+                  ctx.strokeStyle = $previewSettings.sizeOutlineColor
+                  ctx.lineWidth = 1 / zoom
+                  ctx.strokeRect(-file.frameWidth / 2, -file.frameHeight / 2, file.frameWidth, file.frameHeight)
+                  ctx.restore()
+                }
+              }
+              for (let step = 0; step < sliceDistanceEnd; step += sliceStep) {
                 ctx.save()
                 ctx.translate(x, y - sliceOffset * sliceDistance * zoom - step)
                 ctx.translate(filePositions[file.id].x, filePositions[file.id].y)
