@@ -61,6 +61,8 @@
   import ReplacePixelIndicesModal from './components/ReplacePixelIndicesModal.svelte'
   import ResizeSlicesModal from './components/ResizeSlicesModal.svelte'
   import Render from './sections/Render.svelte'
+  import PalettePicker from './components/PalettePicker.svelte'
+  import PalettePopup from './components/PalettePopup.svelte'
 
   let is3D: boolean = true
 
@@ -136,6 +138,9 @@
   let previewUseMini: boolean = false
 
   let orthographicCamera: boolean = false
+
+  let minifiedLeft: boolean = false
+  let showSwatchChanger: boolean = false
 
   function selectFile(file: LoadedFile, index: number, id: number) {
     if (index < 0 || index >= fileStates.length()) return
@@ -578,6 +583,9 @@
         <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$generalSettings.useRichPresence} labelText="Rich Presence" />
       </OverflowMenuItem>
       <OverflowMenuItem hasDivider on:click={() => (showRender = true)}>Render...</OverflowMenuItem>
+      <OverflowMenuItem hasDivider>
+        <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={minifiedLeft} labelText="Minified Left" />
+      </OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Help</div>
@@ -587,17 +595,19 @@
       </OverflowMenuItem>
     </OverflowMenu>
   </menu>
-  <section class="content">
+  <section class="content" class:minifiedLeft>
     <section class="left">
-      <Dropdown size="sm" bind:selectedId={selectedPaletteID} items={[{ id: 0, text: '<image>' }].concat($palettesStore.map((p, i) => ({ id: i + 1, text: p.name })))} />
-      <section class="palette">
-        <PaletteOptionsToolbar palette={fakePalette} file={$fileStates.focused} />
-      </section>
-      <PaletteSection refresh={refreshPalette} file={$fileStates.focused} {fakePalette} on:select={handlePaletteSelect} />
-      <article>
-        <ColorSelector bind:red bind:green bind:blue bind:alpha />
-        <ColorIndex bind:red bind:green bind:blue bind:alpha file={$fileStates.focused} palette={fakePalette} on:refresh={() => (refreshPalette = {})} />
-      </article>
+      {#if !minifiedLeft}
+        <Dropdown size="sm" bind:selectedId={selectedPaletteID} items={[{ id: 0, text: '<image>' }].concat($palettesStore.map((p, i) => ({ id: i + 1, text: p.name })))} />
+        <section class="palette">
+          <PaletteOptionsToolbar palette={fakePalette} file={$fileStates.focused} />
+        </section>
+        <PaletteSection refresh={refreshPalette} file={$fileStates.focused} {fakePalette} on:select={handlePaletteSelect} />
+        <article>
+          <ColorSelector bind:red bind:green bind:blue bind:alpha />
+          <ColorIndex bind:red bind:green bind:blue bind:alpha file={$fileStates.focused} palette={fakePalette} on:refresh={() => (refreshPalette = {})} />
+        </article>
+      {/if}
     </section>
     <menu class="toolbar">
       {#if is3D}
@@ -725,6 +735,9 @@
           <ShortcutTooltip slot="tooltip" group="editor2D" cmd="rotate counter clockwise" />
         </Button>
       {/if}
+      {#if minifiedLeft}
+        <PalettePicker {fakePalette} file={$fileStates.focused} on:selectPrimarySwatch={() => (showSwatchChanger = true)} on:selectSecondarySwatch={() => (showSwatchChanger = true)} />
+      {/if}
     </menu>
     <section class="middle">
       <menu class="toolsettings">
@@ -846,6 +859,13 @@
 {#if showResizeSlices && $fileStates.focused}
   <ResizeSlicesModal bind:open={showResizeSlices} onsubmit={engageResizeSlices} />
 {/if}
+
+{#if showSwatchChanger && $fileStates.focused}
+  <FloatingPanel label="Change Swatch" bind:open={showSwatchChanger} noPadding id="swatch-changer">
+    <PalettePopup file={$fileStates.focused} {fakePalette} />
+  </FloatingPanel>
+{/if}
+
 {#if showUpdater && $fileStates.focused}
   <VioUpdater bind:open={showUpdater} file={$fileStates.focused} />
 {/if}
@@ -878,6 +898,9 @@
     display: grid;
     grid-template-columns: 1fr auto 4fr 1fr;
     grid-template-rows: minmax(0, 1fr);
+  }
+  .content.minifiedLeft {
+    grid-template-columns: 0 auto 4fr 1fr;
   }
   .left {
     display: grid;
