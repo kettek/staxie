@@ -25,6 +25,8 @@ type Editor2DSettings = {
   stackBorderColor: string
   // References
   imageReferences: ImageReferenceStore
+  // Layout
+  minifiedLeftPanel: boolean
 }
 
 export const editor2DSettingsDefault: Editor2DSettings = {
@@ -50,6 +52,8 @@ export const editor2DSettingsDefault: Editor2DSettings = {
   stackBorderColor: '#0000ff',
   // References
   imageReferences: createImageReferenceStore(),
+  // Layout
+  minifiedLeftPanel: false,
 }
 
 export const editor2DSettings = makeLocalStorageStore<Editor2DSettings>('editor2d', { ...editor2DSettingsDefault })

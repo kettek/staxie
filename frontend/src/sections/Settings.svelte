@@ -12,10 +12,14 @@
   import Borders from '../components/settings/Borders.svelte'
   import Grid from '../components/settings/Grid.svelte'
   import SmallPreview from '../components/settings/SmallPreview.svelte'
+  import Layout from '../components/settings/Layout.svelte'
 </script>
 
 <main>
   <Accordion align="start">
+    <AccordionItem title="Layout">
+      <Layout />
+    </AccordionItem>
     <AccordionItem title="General">
       <Theme />
       <Background />

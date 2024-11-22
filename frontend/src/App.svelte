@@ -139,7 +139,6 @@
 
   let orthographicCamera: boolean = false
 
-  let minifiedLeft: boolean = false
   let showSwatchChanger: boolean = false
 
   function selectFile(file: LoadedFile, index: number, id: number) {
@@ -583,9 +582,6 @@
         <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$generalSettings.useRichPresence} labelText="Rich Presence" />
       </OverflowMenuItem>
       <OverflowMenuItem hasDivider on:click={() => (showRender = true)}>Render...</OverflowMenuItem>
-      <OverflowMenuItem hasDivider>
-        <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={minifiedLeft} labelText="Minified Left" />
-      </OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Help</div>
@@ -595,9 +591,9 @@
       </OverflowMenuItem>
     </OverflowMenu>
   </menu>
-  <section class="content" class:minifiedLeft>
+  <section class="content" class:minifiedLeft={$editor2DSettings.minifiedLeftPanel}>
     <section class="left">
-      {#if !minifiedLeft}
+      {#if !$editor2DSettings.minifiedLeftPanel}
         <Dropdown size="sm" bind:selectedId={selectedPaletteID} items={[{ id: 0, text: '<image>' }].concat($palettesStore.map((p, i) => ({ id: i + 1, text: p.name })))} />
         <section class="palette">
           <PaletteOptionsToolbar palette={fakePalette} file={$fileStates.focused} />
@@ -735,7 +731,7 @@
           <ShortcutTooltip slot="tooltip" group="editor2D" cmd="rotate counter clockwise" />
         </Button>
       {/if}
-      {#if minifiedLeft}
+      {#if $editor2DSettings.minifiedLeftPanel}
         <PalettePicker {fakePalette} file={$fileStates.focused} on:selectPrimarySwatch={() => (showSwatchChanger = true)} on:selectSecondarySwatch={() => (showSwatchChanger = true)} />
       {/if}
     </menu>
