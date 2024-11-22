@@ -73,6 +73,7 @@
     left: 0;
     width: 1rem;
     height: 1rem;
+    border: 1px solid black;
   }
   .secondary {
     position: absolute;
@@ -80,6 +81,7 @@
     right: 0;
     width: 1rem;
     height: 1rem;
+    border: 1px solid black;
   }
   .swapper {
     position: absolute;
