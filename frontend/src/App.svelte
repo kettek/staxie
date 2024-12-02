@@ -575,6 +575,9 @@
     <OverflowMenu size="sm">
       <div slot="menu">Windows</div>
       <OverflowMenuItem text="Preview" on:click={() => (showPreview = true)} />
+      <OverflowMenuItem hasDivider>
+        <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor2DSettings.minifiedLeftPanel} labelText="Minified Palettes Panel" />
+      </OverflowMenuItem>
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Other</div>
