@@ -956,6 +956,12 @@
   :global(.bx--number input[type='number']) {
     padding-right: 1rem !important;
   }
+  :global(.bx--overflow-menu-options) {
+    width: 13rem;
+  }
+  :global(.bx--overflow-menu-options__btn) {
+    max-width: 13rem;
+  }
   hr {
     width: 50%;
     height: 1px;
