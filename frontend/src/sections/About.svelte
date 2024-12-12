@@ -19,6 +19,7 @@
   let availableVersion: string = ''
   let availableSHA: string = ''
   let downloadURL: string = ''
+  let maybeDownloading: boolean = false
 
   function followLink(e: MouseEvent) {
     e.preventDefault()
@@ -39,6 +40,7 @@
   }
 
   async function getRelease() {
+    maybeDownloading = false
     const url = 'https://api.github.com/repos/kettek/staxie/releases/latest'
 
     try {
@@ -63,6 +65,7 @@
   }
 
   function update() {
+    maybeDownloading = true
     Update(downloadURL)
   }
 
@@ -102,7 +105,7 @@
       <Link on:click={followLink} href="https://github.com/kettek/staxie/releases/tag/{availableVersion}">{availableVersion} ({availableSHA})</Link>
       <Button kind="ghost" size="small" icon={UpdateNow} tooltipPosition="bottom" tooltip="Check for Updates" on:click={getRelease} />
       {#if newer && downloadURL}
-        <Button kind="ghost" size="small" icon={Async} tooltipPosition="bottom" tooltip="Update Now" on:click={update} />
+        <Button disabled={maybeDownloading} kind="ghost" size="small" icon={Async} tooltipPosition="bottom" tooltip="Update Now" on:click={update} />
       {/if}
     </article>
   {/if}
