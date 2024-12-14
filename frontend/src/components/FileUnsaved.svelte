@@ -5,10 +5,18 @@
   export let savingFileName: string = ''
 
   const dispatch = createEventDispatcher()
+
+  function handleSecondary(evt: CustomEvent<{ text: string }>) {
+    if (evt.detail.text === 'Discard') {
+      dispatch('discard')
+    } else if (evt.detail.text === 'Cancel') {
+      dispatch('cancel')
+    }
+  }
 </script>
 
 <ModalHeader label="Unsaved Changes" />
 <ModalBody>
   "{savingFileName}" has unsaved changes. Save or discard them?
 </ModalBody>
-<ModalFooter primaryButtonText="Save" secondaryButtonText="Discard" on:click:button--secondary={() => dispatch('discard')} />
+<ModalFooter primaryButtonText="Save" secondaryButtons={[{ text: 'Cancel' }, { text: 'Discard' }]} on:click:button--secondary={handleSecondary} />

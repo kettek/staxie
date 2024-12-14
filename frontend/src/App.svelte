@@ -420,6 +420,11 @@
     savingFileName = ''
     savingFileIndex = -1
   }
+  function engageUnsavedChangesCancel() {
+    showUnsavedChanges = false
+    savingFileName = ''
+    savingFileIndex = -1
+  }
 
   function showReplacePixelIndicesModal() {
     showReplacePixelIndices = true
@@ -904,7 +909,7 @@
 </ComposedModal>
 
 <ComposedModal bind:open={showUnsavedChanges} size="sm" preventCloseOnClickOutside on:click:button--primary={engageUnsavedChangesSave}>
-  <FileUnsaved {savingFileName} on:discard={engageUnsavedChangesDiscard} />
+  <FileUnsaved {savingFileName} on:discard={engageUnsavedChangesDiscard} on:cancel={engageUnsavedChangesCancel} />
 </ComposedModal>
 
 {#if $generalSettings.useRichPresence}
