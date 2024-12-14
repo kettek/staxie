@@ -64,6 +64,7 @@
   import PalettePicker from './components/PalettePicker.svelte'
   import PalettePopup from './components/PalettePopup.svelte'
   import FileUnsaved from './components/FileUnsaved.svelte'
+  import FilesUnsaved from './components/FilesUnsaved.svelte'
 
   let is3D: boolean = true
 
@@ -145,6 +146,7 @@
   let showUnsavedChanges: boolean = false
   let savingFileName: string = ''
   let savingFileIndex: number = -1
+  let showUnsavedFilesModal: boolean = false
 
   function selectFile(file: LoadedFile, index: number, id: number) {
     if (index < 0 || index >= fileStates.length()) return
@@ -308,6 +310,17 @@
     }
   }
 
+  async function engageSaveAll(quitAfter: boolean = false) {
+    for (let file of $fileStates.files) {
+      if (!file.saved()) {
+        await engageSave(file)
+      }
+    }
+    if (quitAfter) {
+      engageQuit(true)
+    }
+  }
+
   function engageNew() {
     let file = new LoadedFile({
       filepath: 'untitled.png',
@@ -323,7 +336,21 @@
     showNew = false
   }
 
-  function engageQuit() {
+  async function engageQuit(force: boolean = false) {
+    if (!force) {
+      let unsaved: boolean = false
+      for (let file of $fileStates.files) {
+        if (!file.saved()) {
+          unsaved = true
+          break
+        }
+      }
+      if (unsaved) {
+        showUnsavedFilesModal = true
+        return
+      }
+    }
+
     ;(window as any).runtime.Quit()
   }
 
@@ -497,7 +524,7 @@
       <OverflowMenuItem text="Save" on:click={engageSave} />
       <OverflowMenuItem text="Save As..." on:click={engageSaveAs} />
       <OverflowMenuItem disabled={!$fileStates.focused} text="Update..." on:click={() => (showUpdater = true)} />
-      <OverflowMenuItem hasDivider danger text="Quit" on:click={engageQuit} />
+      <OverflowMenuItem hasDivider danger text="Quit" on:click={() => engageQuit(false)} />
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">Edit</div>
@@ -720,7 +747,7 @@
           <Shortcut global cmd="clear paste" keys={['escape']} on:trigger={() => {}} />
           <Shortcut global cmd="apply paste" keys={['enter']} on:trigger={() => {}} />
           <Shortcut global cmd="delete" keys={['delete']} on:trigger={() => engageDelete(false)} />
-          <Shortcut global cmd="quit" keys={['ctrl+q']} on:trigger={() => engageQuit()} />
+          <Shortcut global cmd="quit" keys={['ctrl+q']} on:trigger={() => engageQuit(false)} />
           <Shortcut global cmd="fullscreen" keys={['f11']} on:trigger={() => ToggleFullscreen()} />
           <Shortcut global cmd="duplicate" keys={['ctrl+d']} on:trigger={() => engageDuplicate()} />
         </Shortcuts>
@@ -910,6 +937,10 @@
 
 <ComposedModal bind:open={showUnsavedChanges} size="sm" preventCloseOnClickOutside on:click:button--primary={engageUnsavedChangesSave}>
   <FileUnsaved {savingFileName} on:discard={engageUnsavedChangesDiscard} on:cancel={engageUnsavedChangesCancel} />
+</ComposedModal>
+
+<ComposedModal bind:open={showUnsavedFilesModal} size="sm" preventCloseOnClickOutside on:click:button--primary={() => engageSaveAll(true)}>
+  <FilesUnsaved on:discard={() => engageQuit(true)} on:cancel={() => (showUnsavedFilesModal = false)} />
 </ComposedModal>
 
 {#if $generalSettings.useRichPresence}
