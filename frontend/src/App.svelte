@@ -63,6 +63,7 @@
   import Render from './sections/Render.svelte'
   import PalettePicker from './components/PalettePicker.svelte'
   import PalettePopup from './components/PalettePopup.svelte'
+  import FileUnsaved from './components/FileUnsaved.svelte'
 
   let is3D: boolean = true
 
@@ -140,6 +141,10 @@
   let orthographicCamera: boolean = false
 
   let showSwatchChanger: boolean = false
+
+  let showUnsavedChanges: boolean = false
+  let savingFileName: string = ''
+  let savingFileIndex: number = -1
 
   function selectFile(file: LoadedFile, index: number, id: number) {
     if (index < 0 || index >= fileStates.length()) return
@@ -240,32 +245,34 @@
     showImport = false
   }
 
-  async function engageSave() {
-    if (!$fileStates.focused) return
+  async function engageSave(file?: LoadedFile | null) {
+    if (!file) file = $fileStates.focused
+    if (!file) return
     try {
-      let data = await $fileStates.focused.canvas.toPNG($fileStates.focused)
+      let data = await file.canvas.toPNG(file)
 
       if ((window as any)['go']) {
-        SaveFileBytes($fileStates.focused.filepath, [...data])
+        SaveFileBytes(file.filepath, [...data])
       } else {
-        await engageSaveAs()
+        await engageSaveAs(file)
       }
-      $fileStates.focused.markSaved()
-      $fileStates.focused.refresh()
+      file.markSaved()
+      file.refresh()
       fileStates.refresh()
     } catch (e) {
       alert(e)
     }
   }
 
-  async function engageSaveAs() {
-    if (!$fileStates.focused) return
+  async function engageSaveAs(file?: LoadedFile | null) {
+    if (!file) file = $fileStates.focused
+    if (!file) return
     try {
-      let data = await $fileStates.focused.canvas.toPNG($fileStates.focused)
+      let data = await file.canvas.toPNG(file)
 
       let path: string = ''
       if ((window as any)['go']) {
-        path = await SaveFilePath($fileStates.focused.filepath)
+        path = await SaveFilePath(file.filepath)
         if (path === '') return
         SaveFileBytes(path, [...data])
       } else {
@@ -288,13 +295,13 @@
         } else {
           const a = document.createElement('a')
           a.href = URL.createObjectURL(new Blob([data], { type: 'image/png' }))
-          a.download = $fileStates.focused.filepath
+          a.download = file.filepath
           a.click()
         }
       }
-      $fileStates.focused.filepath = path
-      $fileStates.focused.title = /[^/\\]*$/.exec(path)[0]
-      $fileStates.focused.markSaved()
+      file.filepath = path
+      file.title = /[^/\\]*$/.exec(path)[0]
+      file.markSaved()
       fileStates.refresh()
     } catch (e) {
       alert(e)
@@ -374,7 +381,14 @@
     showColorMode = false
   }
 
-  function closeFile(index: number) {
+  function closeFile(index: number, force: boolean = false) {
+    if (!fileStates.getFile(index)?.saved() && !force) {
+      savingFileName = fileStates.getFile(index)?.title || ''
+      savingFileIndex = index
+      showUnsavedChanges = true
+      return
+    }
+
     fileStates.removeFile(index)
     let nextIndex = index
     if ($fileStates.focusedIndex === index) {
@@ -389,6 +403,22 @@
       $fileStates.focused = null
     }
     fileStates.refresh()
+  }
+
+  async function engageUnsavedChangesSave() {
+    const savingFile = fileStates.getFile(savingFileIndex)
+    if (!savingFile) return
+    await engageSave(savingFile)
+    closeFile(savingFileIndex, true)
+    showUnsavedChanges = false
+    savingFileName = ''
+    savingFileIndex = -1
+  }
+  function engageUnsavedChangesDiscard() {
+    closeFile(savingFileIndex, true)
+    showUnsavedChanges = false
+    savingFileName = ''
+    savingFileIndex = -1
   }
 
   function showReplacePixelIndicesModal() {
@@ -757,7 +787,7 @@
       <Tabs bind:selected={$fileStates.focusedIndex}>
         {#each $fileStates.files as file, index}
           <Tab on:click={() => selectFile(file, index, file.id)} title={file.filepath}>
-            <TabTitle {file} on:close={() => closeFile(index)} />
+            <TabTitle {file} on:close={() => closeFile(index, false)} />
           </Tab>
         {/each}
         <svelte:fragment slot="content">
@@ -871,6 +901,10 @@
 
 <ComposedModal bind:open={showAbout} size="sm" preventCloseOnClickOutside on:click:button--primary={engageNew}>
   <About bind:open={showAbout} />
+</ComposedModal>
+
+<ComposedModal bind:open={showUnsavedChanges} size="sm" preventCloseOnClickOutside on:click:button--primary={engageUnsavedChangesSave}>
+  <FileUnsaved {savingFileName} on:discard={engageUnsavedChangesDiscard} />
 </ComposedModal>
 
 {#if $generalSettings.useRichPresence}
