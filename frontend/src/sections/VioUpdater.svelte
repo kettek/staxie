@@ -138,16 +138,18 @@
               origSubset: subset,
             }
             animation.frames[staxieAnimationFrame][staxieSliceIndex] = slice
-            frameSizeCounts[`${frame.width}x${frame.height}`] = (frameSizeCounts[`${frame.width}x${frame.height}`] || 0) + 1
+            //frameSizeCounts[`${frame.width}x${frame.height}`] = (frameSizeCounts[`${frame.width}x${frame.height}`] || 0) + 1
           }
         }
       }
       vioImport.stacks.push(stack)
     }
-    let bestFrameSize = Object.keys(frameSizeCounts).sort((a, b) => frameSizeCounts[b] - frameSizeCounts[a])[0]
+    /*let bestFrameSize = Object.keys(frameSizeCounts).sort((a, b) => frameSizeCounts[b] - frameSizeCounts[a])[0]
 
     vioImport.frameWidth = parseInt(bestFrameSize.split('x')[0])
-    vioImport.frameHeight = parseInt(bestFrameSize.split('x')[1])
+    vioImport.frameHeight = parseInt(bestFrameSize.split('x')[1])*/
+    vioImport.frameWidth = file.frameWidth
+    vioImport.frameHeight = file.frameHeight
   }
 
   function fileToVio(): VioSprite {
