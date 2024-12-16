@@ -521,8 +521,8 @@
       <OverflowMenuItem text="New..." on:click={() => (showNew = true)} />
       <OverflowMenuItem text="Open PNG..." on:click={loadPNG} />
       <OverflowMenuItem text="Import..." on:click={() => (showImport = true)} />
-      <OverflowMenuItem text="Save" on:click={engageSave} />
-      <OverflowMenuItem text="Save As..." on:click={engageSaveAs} />
+      <OverflowMenuItem text="Save" on:click={() => engageSave()} />
+      <OverflowMenuItem text="Save As..." on:click={() => engageSaveAs()} />
       <OverflowMenuItem disabled={!$fileStates.focused} text="Update..." on:click={() => (showUpdater = true)} />
       <OverflowMenuItem hasDivider danger text="Quit" on:click={() => engageQuit(false)} />
     </OverflowMenu>
@@ -829,8 +829,8 @@
                 <svelte:fragment slot="left">
                   {#if !is3D}
                     <Shortcuts group="editor2D" active={$fileStates.focused === file}>
-                      <Shortcut cmd="save" keys={['ctrl+s']} on:trigger={engageSave} />
-                      <Shortcut cmd="saveAs" keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
+                      <Shortcut cmd="save" keys={['ctrl+s']} on:trigger={() => engageSave()} />
+                      <Shortcut cmd="saveAs" keys={['ctrl+shift+s']} on:trigger={() => engageSaveAs()} />
                       <Shortcut cmd="undo" keys={['ctrl+z']} on:trigger={() => file.undo()} />
                       <Shortcut cmd="redo" keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={() => file.redo()} />
                       <Shortcut global cmd={'swapFile' + index} keys={['F' + (index + 1)]} on:trigger={() => selectFile(file, index, file.id)} />
@@ -841,8 +841,8 @@
                 <svelte:fragment slot="right">
                   {#if is3D}
                     <Shortcuts group="editor3D" active={$fileStates.focused === file}>
-                      <Shortcut cmd="save" keys={['ctrl+s']} on:trigger={engageSave} />
-                      <Shortcut cmd="saveAs" keys={['ctrl+shift+s']} on:trigger={engageSaveAs} />
+                      <Shortcut cmd="save" keys={['ctrl+s']} on:trigger={() => engageSave()} />
+                      <Shortcut cmd="saveAs" keys={['ctrl+shift+s']} on:trigger={() => engageSaveAs()} />
                       <Shortcut cmd="undo" keys={['ctrl+z']} on:trigger={() => file.undo()} />
                       <Shortcut cmd="redo" keys={['ctrl+y', 'ctrl+shift+z']} on:trigger={() => file.redo()} />
                       <Shortcut global cmd={'swapFile' + index} keys={['F' + (index + 1)]} on:trigger={() => selectFile(file, index, file.id)} />
