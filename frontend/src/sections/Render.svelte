@@ -86,8 +86,8 @@
     ctx.fillStyle = $renderSettings.backgroundColor
     let frames: { data: ArrayBufferLike; delay: number }[] = []
 
-    const sliceDistanceEnd = $renderSettings.interpolateSlices ? $renderSettings.sliceDistance * $renderSettings.zoom : 1
-    const sliceStep = $renderSettings.interpolateSlices ? 1 : $renderSettings.sliceDistance * $renderSettings.zoom
+    const sliceDistanceEnd = Math.max(1, $renderSettings.interpolateSlices ? $renderSettings.sliceDistance * $renderSettings.zoom : 1)
+    const sliceStep = Math.max(1, $renderSettings.interpolateSlices ? 1 : $renderSettings.sliceDistance * $renderSettings.zoom)
 
     for (let i = $renderSettings.angleOffset; i < 360 + $renderSettings.angleOffset; i += $renderSettings.angleSteps) {
       ctx.fillRect(0, 0, size, size)

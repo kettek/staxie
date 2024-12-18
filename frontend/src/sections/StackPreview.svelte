@@ -102,8 +102,8 @@
       canvas.height = rect.height
     }
 
-    const sliceDistanceEnd = $previewSettings.interpolateSlices ? sliceDistance * zoom : 1
-    const sliceStep = $previewSettings.interpolateSlices ? 1 : sliceDistance * zoom
+    const sliceDistanceEnd = Math.max(1, $previewSettings.interpolateSlices ? sliceDistance * zoom : 1)
+    const sliceStep = Math.max(1, $previewSettings.interpolateSlices ? 1 : sliceDistance * zoom)
 
     let ctx = canvas.getContext('2d')
     if (!ctx) return

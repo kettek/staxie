@@ -66,8 +66,8 @@
     const frameWidth = file.frameWidth * zoom
     const frameHeight = file.frameHeight * zoom
 
-    const sliceDistanceEnd = $smallPreviewSettings.interpolateSlices ? sliceDistance * zoom : 1
-    const sliceStep = $smallPreviewSettings.interpolateSlices ? 1 : sliceDistance * zoom
+    const sliceDistanceEnd = Math.max(1, $smallPreviewSettings.interpolateSlices ? sliceDistance * zoom : 1)
+    const sliceStep = Math.max(1, $smallPreviewSettings.interpolateSlices ? 1 : sliceDistance * zoom)
 
     if (file.animation) {
       const animation = file.animation
