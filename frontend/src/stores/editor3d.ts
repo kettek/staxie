@@ -19,6 +19,14 @@ type Editor3DSettings = {
   showCursor: boolean
   // Voxels
   hoverScale: boolean
+  // Clipping
+  useClipping: boolean
+  clipX: number
+  clipY: number
+  clipZ: number
+  clipW: number
+  clipH: number
+  clipD: number
 }
 
 export const editor3DSettings = makeLocalStorageStore<Editor3DSettings>('editor3d', {
@@ -40,4 +48,12 @@ export const editor3DSettings = makeLocalStorageStore<Editor3DSettings>('editor3
   showCursor: true,
   // Voxels
   hoverScale: true,
+  // Clipping
+  useClipping: false,
+  clipX: 0,
+  clipY: 0,
+  clipZ: 0,
+  clipW: 0,
+  clipH: 0,
+  clipD: 0,
 })

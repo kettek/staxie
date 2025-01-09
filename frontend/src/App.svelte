@@ -65,6 +65,7 @@
   import PalettePopup from './components/PalettePopup.svelte'
   import FileUnsaved from './components/FileUnsaved.svelte'
   import FilesUnsaved from './components/FilesUnsaved.svelte'
+  import Clip3D from './sections/Clip3D.svelte'
 
   let is3D: boolean = true
 
@@ -147,6 +148,8 @@
   let savingFileName: string = ''
   let savingFileIndex: number = -1
   let showUnsavedFilesModal: boolean = false
+
+  let show3DClipView: boolean = false
 
   function selectFile(file: LoadedFile, index: number, id: number) {
     if (index < 0 || index >= fileStates.length()) return
@@ -643,6 +646,7 @@
     <OverflowMenu size="sm">
       <div slot="menu">Windows</div>
       <OverflowMenuItem text="Preview" on:click={() => (showPreview = true)} />
+      <OverflowMenuItem text="3D Clip View" on:click={() => (show3DClipView = true)} />
       <OverflowMenuItem hasDivider>
         <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor2DSettings.minifiedLeftPanel} labelText="Minified Palettes Panel" />
       </OverflowMenuItem>
@@ -879,6 +883,11 @@
           <Button size="small" kind="ghost" icon={previewUseMini ? Maximize : Minimize} on:click={() => (previewUseMini = !previewUseMini)} />
         </div>
         <StackPreview shronked={previewUseMini} />
+      </FloatingPanel>
+    {/if}
+    {#if show3DClipView}
+      <FloatingPanel label="3D Clip View" noPadding bind:open={show3DClipView} id="3d-clip-view">
+        <Clip3D />
       </FloatingPanel>
     {/if}
     {#if is3D && showRotate && $toolSettings.current === toolVoxelBoxSelection}

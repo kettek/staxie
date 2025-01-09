@@ -24,6 +24,7 @@
   import { isKeyActive } from '../Shortcuts.svelte'
   import OptimizedRender from './OptimizedRender.svelte'
   import Point from './Point.svelte'
+  import ClipView from './ClipView.svelte'
 
   export let file: LoadedFile
   export let palette: Palette | undefined
@@ -426,13 +427,17 @@
 {#if $file.frame}
   <T.Group>
     {#each $file.frame.slices as slice, y}
-      {#each $file.canvas.getPixels(slice.x, slice.y, $file.frameWidth, $file.frameHeight) as pixel, index}
-        {#if pixel !== 0}
-          {@const x = index % $file.frameWidth}
-          {@const z = Math.floor(index / $file.frameWidth)}
-          <Voxel hoverScale={$editor3DSettings.hoverScale} hideTransparent={$editor3DSettings.hideTransparent} ignoreAlpha={$editor3DSettings.ignoreAlpha} position={[x, y, z]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={$palette ? $palette.swatches[pixel] : $file.canvas.getPaletteColor(pixel)} on:hover={onVoxelHover} on:move={onVoxelMove} on:leave={onVoxelLeave} on:click={onVoxelClick} ignoreEvents={cursorGrabbed} />
-        {/if}
-      {/each}
+      {#if !$editor3DSettings.useClipping || (y >= $editor3DSettings.clipY && y <= $editor3DSettings.clipY + $editor3DSettings.clipH)}
+        {#each $file.canvas.getPixels(slice.x, slice.y, $file.frameWidth, $file.frameHeight) as pixel, index}
+          {#if pixel !== 0}
+            {@const x = index % $file.frameWidth}
+            {@const z = Math.floor(index / $file.frameWidth)}
+            {#if !$editor3DSettings.useClipping || (x >= $editor3DSettings.clipX && x <= $editor3DSettings.clipX + $editor3DSettings.clipW && z >= $editor3DSettings.clipZ && z <= $editor3DSettings.clipZ + $editor3DSettings.clipD)}
+              <Voxel hoverScale={$editor3DSettings.hoverScale} hideTransparent={$editor3DSettings.hideTransparent} ignoreAlpha={$editor3DSettings.ignoreAlpha} position={[x, y, z]} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} color={$palette ? $palette.swatches[pixel] : $file.canvas.getPaletteColor(pixel)} on:hover={onVoxelHover} on:move={onVoxelMove} on:leave={onVoxelLeave} on:click={onVoxelClick} ignoreEvents={cursorGrabbed} />
+            {/if}
+          {/if}
+        {/each}
+      {/if}
     {/each}
   </T.Group>
 {/if}
@@ -467,6 +472,10 @@
   <T.PlaneGeometry args={[$file.frameWidth, $file.frame?.slices.length]} />
   <T.MeshBasicMaterial transparent={true} opacity={0.2} color={0xff0000} side={THREE.DoubleSide} />
 </T.Mesh>
+
+{#if $editor3DSettings.useClipping}
+  <ClipView x={$editor3DSettings.clipX} y={$editor3DSettings.clipY} z={$editor3DSettings.clipZ} w={$editor3DSettings.clipW} h={$editor3DSettings.clipH} d={$editor3DSettings.clipD} offset={[-$file.frameWidth / 2, 0, -$file.frameHeight / 2]} />
+{/if}
 
 {#if $toolSettings.current === toolVoxelCursor || $toolSettings.current === toolVoxelBoxSelection || pasting.length > 0}
   <Cursor position={$file.threeDCursor1} on:move={onCursorChange} on:grab={onCursorGrab} on:release={onCursorRelease} offset={[-$file.frameWidth / 2 + xOffset, 0, -$file.frameHeight / 2 + yOffset]} />
