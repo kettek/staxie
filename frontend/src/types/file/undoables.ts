@@ -2158,6 +2158,29 @@ export class MoveAnimationFrameSliceUndoable implements Undoable<LoadedFile> {
   }
 }
 
+export class TidyCanvasUndoable implements Undoable<LoadedFile> {
+  pixels: Uint8Array = new Uint8Array([])
+  constructor() {}
+  apply(t: LoadedFile): void {
+    this.pixels = t.canvas.getPixels(0, 0, t.canvas.width, t.canvas.height)
+    t.cacheSlicePositions() // Just in case.
+    type ClearArea = { x: number; y: number; width: number; height: number }
+    let clearAreas: ClearArea[] = []
+    for (let stack of t.stacks) {
+      let { x, y, width, height } = t.getStackAreaFromStack(stack)
+      if (width < t.canvas.width) {
+        clearAreas.push({ x: x + width, y, width: t.canvas.width - width, height })
+      }
+    }
+    for (let area of clearAreas) {
+      t.canvas.clearPixels(area.x, area.y, area.width, area.height)
+    }
+  }
+  unapply(t: LoadedFile): void {
+    t.canvas.setPixels(0, 0, t.canvas.width, t.canvas.height, this.pixels)
+  }
+}
+
 export class ThreeDSelectionBoxClearUndoable implements Undoable<LoadedFile> {
   //private selection: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]]
   private cursor1: [number, number, number] = [0, 0, 0]

@@ -15,7 +15,7 @@
   import { logSettings } from './stores/log.js'
 
   import { LoadedFile } from './types/file'
-  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, ResizeSlicesUndoable, SelectionClearUndoable, SelectionReplacePixelIndicesUndoable, SelectionSetUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable } from './types/file/undoables'
+  import { ChangeColorModeUndoable, PixelsFlipUndoable, PixelsPlaceUndoable, PixelsRotateUndoable, ResizeSlicesUndoable, SelectionClearUndoable, SelectionReplacePixelIndicesUndoable, SelectionSetUndoable, ThreeDSelectionBoxClearUndoable, ThreeDSelectionBoxSetVoxelsUndoable, TidyCanvasUndoable } from './types/file/undoables'
 
   import 'carbon-components-svelte/css/all.css'
   import { Tabs, Tab, TabContent, NumberInput, Dropdown, Checkbox, Theme } from 'carbon-components-svelte'
@@ -408,6 +408,11 @@
     showColorMode = false
   }
 
+  function engageTidy() {
+    if (!$fileStates.focused) return
+    $fileStates.focused.push(new TidyCanvasUndoable())
+  }
+
   function closeFile(index: number, force: boolean = false) {
     if (!fileStates.getFile(index)?.saved() && !force) {
       savingFileName = fileStates.getFile(index)?.title || ''
@@ -543,6 +548,7 @@
       <div slot="menu">Image</div>
       <OverflowMenuItem text="Color Mode..." on:click={() => (showColorMode = true)} />
       <OverflowMenuItem hasDivider text="Duplicate" on:click={() => engageDuplicate()} />
+      <OverflowMenuItem hasDivider text="Tidy" on:click={() => engageTidy()} />
     </OverflowMenu>
     <OverflowMenu size="sm">
       <div slot="menu">View</div>
