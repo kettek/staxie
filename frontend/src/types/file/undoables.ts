@@ -726,10 +726,10 @@ export class ResizeSlicesUndoable implements Undoable<LoadedFile> {
 
 export class AddStackUndoable implements Undoable<LoadedFile> {
   private stack: string = ''
-  constructor() { }
+  constructor() {}
   apply(file: LoadedFile) {
     let name = 'stack 0'
-    for (let count = 0; file.stacks.find((g) => g.name === name); name = `stack ${count++}`) { }
+    for (let count = 0; file.stacks.find((g) => g.name === name); name = `stack ${count++}`) {}
     this.stack = name
     file.stacks.push({
       name: this.stack,
@@ -942,7 +942,6 @@ export class MoveStackUndoable implements Undoable<LoadedFile> {
   }
 }
 
-
 export class RenameStackUndoable implements Undoable<LoadedFile> {
   private stack: string
   private oldName: string = ''
@@ -984,7 +983,7 @@ export class DuplicateStackUndoable implements Undoable<LoadedFile> {
       throw new Error('stack not found: ' + this.stack)
     }
     let name = this.stack + ' copy'
-    for (let count = 0; file.stacks.find((g) => g.name === name); name = `${this.stack} copy ${count++}`) { }
+    for (let count = 0; file.stacks.find((g) => g.name === name); name = `${this.stack} copy ${count++}`) {}
     this.name = name
 
     let { x, y, width, height } = file.getStackArea(this.stack)
@@ -1599,7 +1598,7 @@ export class DuplicateAnimationUndoable implements Undoable<LoadedFile> {
       throw new Error('animation not found: ' + this.animation)
     }
     let name = this.animation + ' copy'
-    for (let count = 0; g.animations.find((a) => a.name === name); name = `${this.animation} copy ${count++}`) { }
+    for (let count = 0; g.animations.find((a) => a.name === name); name = `${this.animation} copy ${count++}`) {}
     this.name = name
 
     let { x, y, width, height } = file.getAnimationAreaFromAnimation(a)
@@ -1613,8 +1612,8 @@ export class DuplicateAnimationUndoable implements Undoable<LoadedFile> {
     // 2. Resize canvas
     file.canvas.resizeCanvas(file.canvas.width, file.canvas.height + height)
     // 3. Shift all pixels after animation area down by animation area's height*2
-    let pixels = file.canvas.getPixels(x, y + height, width, file.canvas.height - (y + height))
-    file.canvas.setPixels(x, y + height * 2, width, file.canvas.height - (y + height), pixels)
+    let pixels = file.canvas.getPixels(x, y + height, file.canvas.width, file.canvas.height - (y + height))
+    file.canvas.setPixels(x, y + height * 2, file.canvas.width, file.canvas.height - (y + height), pixels)
     // 4. Set pixels at animation area + animation area height to stored
     file.canvas.setPixels(x, y + height, width, height, areaPixels)
     // 5. Update data structure
@@ -2077,7 +2076,6 @@ export class MoveAnimationFrameSliceUndoable implements Undoable<LoadedFile> {
     if (this.side === 'above') {
       this.targetIndex++
     }
-
   }
   apply(file: LoadedFile) {
     let g = file.stacks.find((v) => v.name === this.stackName)
@@ -2164,7 +2162,7 @@ export class ThreeDSelectionBoxClearUndoable implements Undoable<LoadedFile> {
   //private selection: [[number, number, number], [number, number, number]] = [[0, 0, 0], [0, 0, 0]]
   private cursor1: [number, number, number] = [0, 0, 0]
   private cursor2: [number, number, number] = [0, 0, 0]
-  constructor() { }
+  constructor() {}
   apply(file: LoadedFile) {
     this.cursor1 = [...file.threeDCursor1]
     this.cursor2 = [...file.threeDCursor2]
