@@ -10,7 +10,7 @@
   <Input labelWidth="3" label="Y" type="number" size="small" width={4} showSpinner bind:value={$editor3DSettings.clipY} />
   <Input labelWidth="3" label="Z" type="number" size="small" width={4} showSpinner bind:value={$editor3DSettings.clipZ} />
   <hr />
-  <Input labelWidth="3" label="H" type="number" size="small" width={4} showSpinner bind:value={$editor3DSettings.clipH} />
   <Input labelWidth="3" label="W" type="number" size="small" width={4} showSpinner bind:value={$editor3DSettings.clipW} />
+  <Input labelWidth="3" label="H" type="number" size="small" width={4} showSpinner bind:value={$editor3DSettings.clipH} />
   <Input labelWidth="3" label="D" type="number" size="small" width={4} showSpinner bind:value={$editor3DSettings.clipD} />
 </main>
