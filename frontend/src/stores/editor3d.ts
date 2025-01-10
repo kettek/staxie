@@ -21,6 +21,8 @@ type Editor3DSettings = {
   hoverScale: boolean
   // Clipping
   useClipping: boolean
+  clipFill: boolean
+  clipPlace: boolean
   clipX: number
   clipY: number
   clipZ: number
@@ -50,6 +52,8 @@ export const editor3DSettings = makeLocalStorageStore<Editor3DSettings>('editor3
   hoverScale: true,
   // Clipping
   useClipping: false,
+  clipFill: true,
+  clipPlace: true,
   clipX: 0,
   clipY: 0,
   clipZ: 0,

@@ -6,6 +6,9 @@
 
 <main>
   <Checkbox labelText="Clip View" bind:checked={$editor3DSettings.useClipping}></Checkbox>
+  <Checkbox labelText="Clip Place" bind:checked={$editor3DSettings.clipPlace}></Checkbox>
+  <Checkbox labelText="Clip Fill" bind:checked={$editor3DSettings.clipFill}></Checkbox>
+  <hr />
   <Input labelWidth="3" label="X" type="number" size="small" width={4} showSpinner bind:value={$editor3DSettings.clipX} />
   <Input labelWidth="3" label="Y" type="number" size="small" width={4} showSpinner bind:value={$editor3DSettings.clipY} />
   <Input labelWidth="3" label="Z" type="number" size="small" width={4} showSpinner bind:value={$editor3DSettings.clipZ} />

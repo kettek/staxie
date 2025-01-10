@@ -74,6 +74,13 @@
     if (z === -1 || z === file.frameHeight) return
     if (y === -1 || y === file.frame?.slices.length) return
 
+    // Prevent placing if we're using the clipped view.
+    if ($editor3DSettings.useClipping && $editor3DSettings.clipPlace) {
+      if (y < $editor3DSettings.clipY || y > $editor3DSettings.clipY + $editor3DSettings.clipH) return
+      if (x < $editor3DSettings.clipX || x > $editor3DSettings.clipX + $editor3DSettings.clipW) return
+      if (z < $editor3DSettings.clipZ || z > $editor3DSettings.clipZ + $editor3DSettings.clipD) return
+    }
+
     let slice = file.frame?.slices[y]
     if (!slice) return
     let p = file.canvas.getPixel(slice.x + x, slice.y + z)
@@ -103,6 +110,14 @@
         if (x === -1 || x === file.frameWidth) continue
         if (z === -1 || z === file.frameHeight) continue
         if (y === -1 || y === file.frame?.slices.length) continue
+
+        // Also prevent filling if we're using the clipped view.
+        if ($editor3DSettings.useClipping && $editor3DSettings.clipFill) {
+          if (y < $editor3DSettings.clipY || y > $editor3DSettings.clipY + $editor3DSettings.clipH) continue
+          if (x < $editor3DSettings.clipX || x > $editor3DSettings.clipX + $editor3DSettings.clipW) continue
+          if (z < $editor3DSettings.clipZ || z > $editor3DSettings.clipZ + $editor3DSettings.clipD) continue
+        }
+
         let index = y * file.frameWidth * file.frameHeight + z * file.frameWidth + x
         if (traversed.has(index)) continue
         traversed.add(index)
