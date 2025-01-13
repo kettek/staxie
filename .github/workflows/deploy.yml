@@ -18,9 +18,19 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.22'
       - uses: actions/setup-node@v4
         with:
           node-version: 18
+      - name: Install Wails
+        shell: bash
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - name: Build bindings
+        shell: bash
+        run: wails generate module
       - name: Build Web
         shell: bash
         working-directory: frontend
