@@ -24,7 +24,7 @@ jobs:
       - name: Build Web
         shell: bash
         working-directory: frontend
-        run: npm run build
+        run: npm i && npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
