@@ -7,6 +7,8 @@ This is a WIP sprite/pixel editor designed to be used to create **sprite stacks*
 
 At the moment, the stack interface is still being developed, however sprite editing via 2D and 3D views is functional along with sprite stack previewing.
 
+There is a web-based version [here](https://kettek.github.io/staxie/). It is automatically updated whenever a new release is made. Keep in mind that it is not as thoroughly tested as the desktop applications.
+
 ## Technical Notes
 This editor uses a PNG-based format via a custom stAx chunk that defines how the PNG data should be interpreted to represent data for sprite stacks. This allows the format to be readable by any program that can read PNGs. If the generated stAx file is more complex, then PNG chunk decoding can be used that adheres to the PNG Chunk Format section.
 
