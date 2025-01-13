@@ -30,11 +30,11 @@ jobs:
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
       - name: Build bindings
         shell: bash
-        run: wails generate module
+        run: mkdir frontend/dist && touch frontend/dist/empty && wails generate module
       - name: Build Web
         shell: bash
         working-directory: frontend
-        run: npm i && npm run build
+        run: rm dist/empty && npm i && npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
