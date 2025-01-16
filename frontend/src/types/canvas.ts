@@ -232,6 +232,11 @@ export class Canvas {
     return this.pixels[y * this.width + x]
   }
 
+  // getPixelDirect returns the index without any bounds checking.
+  getPixelDirect(x: number, y: number): number {
+    return this.pixels[y * this.width + x]
+  }
+
   // setPixel sets the index at the provided pixel position.
   setPixel(x: number, y: number, index: number, noRefresh?: boolean) {
     //clog.debug('setPixel', x, y, index)
