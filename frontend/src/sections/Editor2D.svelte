@@ -382,7 +382,7 @@
     // Draw checkboard.
     ctx.save()
     ctx.imageSmoothingEnabled = false
-    if ($editor2DSettings.showCheckerboard) {
+    if ($editor2DSettings.showCheckerboard && $editor2DSettings.checkerboardSize > 0) {
       ctx.beginPath()
       ctx.fillStyle = $editor2DSettings.checkerboardColor1
       ctx.rect(offsetX, offsetY, $file.view.width * zoom, $file.view.height * zoom)
