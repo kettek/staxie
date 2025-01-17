@@ -4,7 +4,7 @@
   This component provides settings for adjusting the grid.
 -->
 <script lang="ts">
-  import { Column, Grid, Row } from 'carbon-components-svelte'
+  import { Checkbox, Column, Grid, Row } from 'carbon-components-svelte'
   import { editor2DSettings, editor2DSettingsDefault } from '../../stores/editor2d'
   import Input from '../common/Input.svelte'
   import SettingsInput from '../common/SettingsInput.svelte'
@@ -12,6 +12,9 @@
 
 <Grid narrow condensed fullWidth>
   <Column>
+    <Row>
+      <Checkbox labelText="Show Grid" bind:checked={$editor2DSettings.showGrid}></Checkbox>
+    </Row>
     <Row>
       <SettingsInput noPadding labelWidth="10" type="number" id="size" label="Grid: Major Size" min={1} max={512} step={1} bind:value={$editor2DSettings.gridMajorSize} defaultValue={editor2DSettingsDefault.gridMajorSize} />
     </Row>
