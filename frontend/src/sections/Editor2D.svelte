@@ -283,31 +283,35 @@
       ctx.imageSmoothingEnabled = false
       ctx.imageSmoothingQuality = 'low'
       // Minor grid lines.
-      ctx.strokeStyle = $editor2DSettings.gridMinorColor
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      for (let x = $editor2DSettings.gridMinorSize; x < $file.view.width; x += $editor2DSettings.gridMinorSize) {
-        ctx.moveTo(offsetX + x * zoom, offsetY)
-        ctx.lineTo(offsetX + x * zoom, offsetY + $file.view.height * zoom)
+      if ($editor2DSettings.gridMinorSize > 0) {
+        ctx.strokeStyle = $editor2DSettings.gridMinorColor
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        for (let x = $editor2DSettings.gridMinorSize; x < $file.view.width; x += $editor2DSettings.gridMinorSize) {
+          ctx.moveTo(offsetX + x * zoom, offsetY)
+          ctx.lineTo(offsetX + x * zoom, offsetY + $file.view.height * zoom)
+        }
+        for (let y = $editor2DSettings.gridMinorSize; y < $file.view.height; y += $editor2DSettings.gridMinorSize) {
+          ctx.moveTo(offsetX, offsetY + y * zoom)
+          ctx.lineTo(offsetX + $file.view.width * zoom, offsetY + y * zoom)
+        }
+        ctx.stroke()
       }
-      for (let y = $editor2DSettings.gridMinorSize; y < $file.view.height; y += $editor2DSettings.gridMinorSize) {
-        ctx.moveTo(offsetX, offsetY + y * zoom)
-        ctx.lineTo(offsetX + $file.view.width * zoom, offsetY + y * zoom)
-      }
-      ctx.stroke()
       // Major grid lines.
-      ctx.strokeStyle = $editor2DSettings.gridMajorColor
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      for (let x = $editor2DSettings.gridMajorSize; x < $file.view.width; x += $editor2DSettings.gridMajorSize) {
-        ctx.moveTo(offsetX + x * zoom, offsetY)
-        ctx.lineTo(offsetX + x * zoom, offsetY + $file.view.height * zoom)
+      if ($editor2DSettings.gridMajorSize > 0) {
+        ctx.strokeStyle = $editor2DSettings.gridMajorColor
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        for (let x = $editor2DSettings.gridMajorSize; x < $file.view.width; x += $editor2DSettings.gridMajorSize) {
+          ctx.moveTo(offsetX + x * zoom, offsetY)
+          ctx.lineTo(offsetX + x * zoom, offsetY + $file.view.height * zoom)
+        }
+        for (let y = $editor2DSettings.gridMajorSize; y < $file.view.height; y += $editor2DSettings.gridMajorSize) {
+          ctx.moveTo(offsetX, offsetY + y * zoom)
+          ctx.lineTo(offsetX + $file.view.width * zoom, offsetY + y * zoom)
+        }
+        ctx.stroke()
       }
-      for (let y = $editor2DSettings.gridMajorSize; y < $file.view.height; y += $editor2DSettings.gridMajorSize) {
-        ctx.moveTo(offsetX, offsetY + y * zoom)
-        ctx.lineTo(offsetX + $file.view.width * zoom, offsetY + y * zoom)
-      }
-      ctx.stroke()
     }
     ctx.restore()
 
