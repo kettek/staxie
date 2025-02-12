@@ -32,7 +32,8 @@ func NewApp() *App {
 	}
 	if bld, ok := debug.ReadBuildInfo(); ok {
 		version := bld.Main.Version
-		for _, kv := range bld.Settings {
+		// Disabled since go 1.24.0 uses the VCS tag. Keeping commented out incase we want to ever run "cutting edge" releases that rely on the hash.
+		/*for _, kv := range bld.Settings {
 			switch kv.Key {
 			case "vcs.revision":
 				version = kv.Value
@@ -41,7 +42,7 @@ func NewApp() *App {
 					version += "-dirty"
 				}
 			}
-		}
+		}*/
 		a.versionString = version
 	}
 	return a

@@ -17,7 +17,7 @@
   let dirty: boolean = false
   let newer: boolean = false
   let availableVersion: string = ''
-  let availableSHA: string = ''
+  //  let availableSHA: string = ''
   let downloadURL: string = ''
   let maybeDownloading: boolean = false
 
@@ -47,14 +47,27 @@
       newer = false
       const results = await (await fetch(url)).json()
       const tag = await (await fetch(`https://api.github.com/repos/kettek/staxie/git/ref/tags/${results.tag_name}`)).json()
-      const sha = (await (await fetch(`https://api.github.com/repos/kettek/staxie/git/tags/${tag.object.sha}`)).json())?.object?.sha
+      //const sha = (await (await fetch(`https://api.github.com/repos/kettek/staxie/git/tags/${tag.object.sha}`)).json())?.object?.sha
       const match = await getRelativeTarget(results.assets)
       downloadURL = match
 
       availableVersion = results.tag_name
-      availableSHA = sha
+      //availableSHA = sha
 
-      if (sha !== version) {
+      const localVersionParts = version.split('.')
+      const remoteVersionParts = results.tag_name.split('.')
+
+      localVersionParts[2] = localVersionParts[2].replace('+dirty', '') // Clear out that dirty boy
+
+      if (localVersionParts.length !== 3 || remoteVersionParts.length !== 3) {
+        return
+      }
+
+      if (parseInt(localVersionParts[0]) < parseInt(remoteVersionParts[0])) {
+        newer = true
+      } else if (parseInt(localVersionParts[1]) < parseInt(remoteVersionParts[1])) {
+        newer = true
+      } else if (parseInt(localVersionParts[2]) < parseInt(remoteVersionParts[2])) {
         newer = true
       } else {
         newer = false
@@ -102,7 +115,7 @@
   {#if availableVersion}
     <article>
       <header>Latest Version</header>
-      <Link on:click={followLink} href="https://github.com/kettek/staxie/releases/tag/{availableVersion}">{availableVersion} ({availableSHA})</Link>
+      <Link on:click={followLink} href="https://github.com/kettek/staxie/releases/tag/{availableVersion}">{availableVersion}<!-- ({availableSHA})--></Link>
       <Button kind="ghost" size="small" icon={UpdateNow} tooltipPosition="bottom" tooltip="Check for Updates" on:click={getRelease} />
       {#if newer && downloadURL}
         <Button disabled={maybeDownloading} kind="ghost" size="small" icon={Async} tooltipPosition="bottom" tooltip="Update Now" on:click={update} />
