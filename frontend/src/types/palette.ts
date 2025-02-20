@@ -22,7 +22,7 @@ export class Palette extends UndoableStack<Palette> implements Writable<Palette>
 
   // fromJACPAL creates a new Palette from a given name and 4 or 3 element JASC-PAL file data.
   static fromJASCPAL(name: string, data: string): Palette {
-    let lines = data.split('\n')
+    let lines = data.split(/\r?\n/)
     if (lines.length < 4 || lines[0] !== 'JASC-PAL' || lines[1] !== '0100') {
       alert('Invalid JASC-PAL file')
       return
