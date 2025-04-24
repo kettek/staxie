@@ -608,6 +608,7 @@
         <OverflowMenuItem hasDivider text="Fill Z">
           <Checkbox on:click={(e) => e.stopPropagation()} bind:checked={$editor3DSettings.floodFillZ} labelText="Flood Z" />
         </OverflowMenuItem>
+        <OverflowMenuItem hasDivider text="Reset View" on:click={() => triggerCommand('editor3D', 'reset view')}></OverflowMenuItem>
       </OverflowMenu>
     {/if}
     <OverflowMenu size="sm">
@@ -700,6 +701,7 @@
           <Shortcut global cmd="nextSlice" keys={['shift+wheelup']} on:trigger={() => $fileStates.focused?.setSliceIndex($fileStates.focused?.sliceIndex + 1)} />
           <Shortcut global cmd="cursor" keys={['c']} on:trigger={() => toolSettings.swapTool(toolVoxelCursor)} />
           <Shortcut global cmd="duplicate" keys={['ctrl+d']} on:trigger={() => engageDuplicate()} />
+          <Shortcut global cmd="reset view" keys={['f5']} on:trigger={() => {}} />
         </Shortcuts>
 
         <Button selected={$toolSettings.current === toolVoxelPlace} kind="ghost" size="small" icon={WatsonHealth3DSoftware} tooltipPosition="right" on:click={() => toolSettings.swapTool(toolVoxelPlace)}>

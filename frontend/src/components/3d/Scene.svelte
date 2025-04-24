@@ -388,6 +388,14 @@
     clearPaste()
   }
 
+  let hideVoxels = false
+  function resetView() {
+    hideVoxels = true
+    setTimeout(() => {
+      hideVoxels = false
+    }, 100)
+  }
+
   interactivity()
 </script>
 
@@ -395,6 +403,7 @@
   <ShortcutHandler fileId={$file.id} group="editor3D" cmd="clear paste" on:trigger={clearPaste} />
   <ShortcutHandler fileId={$file.id} group="editor3D" cmd="paste" on:trigger={doPaste} />
   <ShortcutHandler fileId={$file.id} group="editor3D" cmd="apply paste" on:trigger={doApplyPaste} />
+  <ShortcutHandler fileId={$file.id} group="editor3D" cmd="reset view" on:trigger={resetView} />
 </ShortcutHandlers>
 
 {#if orthographic}
@@ -439,7 +448,7 @@
 <T.DirectionalLight position={[0, 10, 10]} />
 <T.AmbientLight color={0xffffff} intensity={0.9} />
 
-{#if $file.frame}
+{#if $file.frame && !hideVoxels}
   <T.Group>
     {#each $file.frame.slices as slice, y}
       {#if !$editor3DSettings.useClipping || (y >= $editor3DSettings.clipY && y <= $editor3DSettings.clipY + $editor3DSettings.clipH)}
