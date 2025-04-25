@@ -225,6 +225,24 @@
     selectFile(file, fileStates.length() - 1, file.id)
   }
 
+  // Show a default pyramid image on browsers.
+  if (!(window as any)['go']) {
+    ;(async () => {
+      const defaultPNG = new IndexedPNG(Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAIAAAACQCAMAAAD3NpNiAAAAZnN0QXgAABAAEAABB3B5cmFtaWQACAABBGdsb3cAAABkAAkBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH+eirLAAAAElBMVEUAAADe3o+4q3JoftZoftaUo9yw4BF0AAAABnRSTlMA////Zv/a+tGtAAAA9ElEQVR42u3ayw6DIBBG4Xp7/1euMbqQJiWtMEDynR0r/wQYjgMv9MA8ncyNAlzfn6Z7orA8HwGS4ZmoXp58gGR4JCqY548AyXBPlMmzLF/GIwaInoLoRRi9DZsXIgDLtQ2TcskH+AAf4ANh27B5IQLQX3/gLAxhZYEP8AE+0Hwb6g8AfGCA/sBRGusVRj7AB/pbhO4LAD7ABwboD+yHQ8GjgQ8MMAXeDwDgA3xggP5AetyG+0B0AO8H+ADAB/gAH8j+nq9r4/5A7QB8gA8AfIAP8IGf2/Xb1vi+oHQAPsAHAD7AB/jA4+v72/E8YgA+wAdQjjd5qQl9VjzGyQAAAABJRU5ErkJggg=='), (v) => v.charCodeAt(0)))
+      await defaultPNG.decode()
+      const defaultCanvas = new Canvas(defaultPNG)
+      fileStates.addFile(
+        new LoadedFile({
+          filepath: 'pyramid.png',
+          title: 'pyramid',
+          canvas: defaultCanvas,
+          data: defaultPNG,
+        }),
+      )
+      selectFile(fileStates.getFile(0), 0, fileStates.getFile(0).id)
+    })()
+  }
+
   function engageOpen() {
     if (importValid) {
       let file = new LoadedFile({
