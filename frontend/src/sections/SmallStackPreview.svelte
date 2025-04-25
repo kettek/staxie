@@ -13,8 +13,6 @@
 
   let rotation: number = 0
   let zoom: number = 4
-  let spin: boolean = false
-  let animate: boolean = false
   let sliceDistance: number = 1
 
   let automaticShading: boolean = true
@@ -47,7 +45,7 @@
     if (!canvas) return
     timeElapsed += ts - lastTime
     lastTime = ts
-    if (spin) {
+    if ($smallPreviewSettings.spin) {
       rotation += $smallPreviewSettings.spinSpeed ?? 0.5
       checkRotation()
     }
@@ -72,7 +70,7 @@
     if (file.animation) {
       const animation = file.animation
       let frame: StaxFrame | undefined
-      if (animate) {
+      if ($smallPreviewSettings.animate) {
         let frameIndex = Math.floor(timeElapsed / animation.frameTime) % animation.frames.length
         frame = animation.frames[frameIndex]
         if (!frame) {
@@ -119,7 +117,7 @@
       }
       zoom = Math.min(Math.max(1, zoom), 10)
     } else {
-      spin = false
+      $smallPreviewSettings.spin = false
       if (event.deltaY < 0) {
         rotation += $smallPreviewSettings.wheelIncrement
       } else {
@@ -131,9 +129,9 @@
 
   function handleMousedown(event: MouseEvent) {
     if (event.button === 0) {
-      spin = !spin
+      $smallPreviewSettings.spin = !$smallPreviewSettings.spin
     } else if (event.button === 1) {
-      animate = !animate
+      $smallPreviewSettings.animate = !$smallPreviewSettings.animate
     }
   }
 

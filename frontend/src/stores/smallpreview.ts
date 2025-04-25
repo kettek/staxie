@@ -2,16 +2,20 @@ import { makeLocalStorageStore } from './localstore'
 
 type SmallPreviewSettings = {
   show: boolean
-  background: string
+  animate: boolean
+  spin: boolean
   spinSpeed: number
+  background: string
   wheelIncrement: number
   interpolateSlices: boolean
 }
 
 export const smallPreviewSettingsDefault: SmallPreviewSettings = {
   show: true,
-  background: '#111111',
+  animate: true,
+  spin: false,
   spinSpeed: 0.5,
+  background: '#111111',
   wheelIncrement: 1,
   interpolateSlices: false,
 }
