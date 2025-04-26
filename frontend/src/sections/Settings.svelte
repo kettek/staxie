@@ -13,6 +13,7 @@
   import Grid from '../components/settings/Grid.svelte'
   import SmallPreview from '../components/settings/SmallPreview.svelte'
   import Layout from '../components/settings/Layout.svelte'
+  import Autosave from '../components/settings/Autosave.svelte'
 </script>
 
 <main>
@@ -24,6 +25,9 @@
       <Theme />
       <Background />
       <Grid />
+    </AccordionItem>
+    <AccordionItem title="Autosave">
+      <Autosave />
     </AccordionItem>
     <AccordionItem title="2D View">
       <Checkerboard />

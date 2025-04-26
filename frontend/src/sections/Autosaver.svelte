@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { autosaveSettings } from '../stores/autosave'
   import { fileStates } from '../stores/file'
   import { createEventDispatcher, onMount } from 'svelte'
 
@@ -11,11 +12,11 @@
         if (!$fileStates.focused) return
         if (!$fileStates.focused.saved() && $fileStates.focused.filepath !== '') {
           dispatch('autosave', $fileStates.focused)
-          saveTimeout = setTimeout(autosave, 30000)
+          saveTimeout = setTimeout(autosave, $autosaveSettings.interval * 1000)
         }
       }
       autosave()
-    }, 30000)
+    }, $autosaveSettings.interval * 1000)
     return () => {
       if (saveTimeout) clearTimeout(saveTimeout)
     }
