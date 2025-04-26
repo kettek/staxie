@@ -66,6 +66,7 @@
   import FileUnsaved from './components/FileUnsaved.svelte'
   import FilesUnsaved from './components/FilesUnsaved.svelte'
   import Clip3D from './sections/Clip3D.svelte'
+  import Autosaver from './sections/Autosaver.svelte'
 
   let is3D: boolean = true
 
@@ -981,6 +982,8 @@
 {#if $generalSettings.useRichPresence}
   <RichPresence {is3D} />
 {/if}
+
+<Autosaver on:autosave={(e) => engageSave(e.detail)} />
 
 <style>
   main {
