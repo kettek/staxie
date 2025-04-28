@@ -11,7 +11,11 @@
       const autosave = () => {
         if (!$fileStates.focused) return
         if (!$fileStates.focused.saved() && $fileStates.focused.filepath !== '') {
-          dispatch('autosave', $fileStates.focused)
+          if ($autosaveSettings.saveToTemporary) {
+            dispatch('autosaveTemp', $fileStates.focused)
+          } else {
+            dispatch('autosave', $fileStates.focused)
+          }
           saveTimeout = setTimeout(autosave, $autosaveSettings.interval * 1000)
         }
       }

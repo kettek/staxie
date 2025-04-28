@@ -289,15 +289,17 @@
     }
   }
 
-  async function engageSaveAs(file?: LoadedFile | null) {
+  async function engageSaveAs(file?: LoadedFile | null, path: string = '') {
     if (!file) file = $fileStates.focused
     if (!file) return
+    const hadPath = path ? true : false
     try {
       let data = await file.canvas.toPNG(file)
 
-      let path: string = ''
       if ((window as any)['go']) {
-        path = await SaveFilePath(file.filepath)
+        if (!hadPath) {
+          path = await SaveFilePath(file.filepath)
+        }
         if (path === '') return
         SaveFileBytes(path, [...data])
       } else {
@@ -324,9 +326,11 @@
           a.click()
         }
       }
-      file.filepath = path
-      file.title = /[^/\\]*$/.exec(path)[0]
-      file.markSaved()
+      if (!hadPath) {
+        file.filepath = path
+        file.title = /[^/\\]*$/.exec(path)[0]
+        file.markSaved()
+      }
       fileStates.refresh()
     } catch (e) {
       alert(e)
@@ -985,7 +989,7 @@
 {/if}
 
 {#if $autosaveSettings.enabled}
-  <Autosaver on:autosave={(e) => engageSave(e.detail)} />
+  <Autosaver on:autosave={(e) => engageSave(e.detail)} on:autosaveTemp={(e) => engageSaveAs(e.detail, e.detail.filepath + '.tmp')} />
 {/if}
 
 <style>
