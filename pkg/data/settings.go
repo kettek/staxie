@@ -28,6 +28,9 @@ var AppDirectory string
 // CacheDirectory is os.UserCacheDir() + "/staxie"
 var CacheDirectory string
 
+// TempDirectory is os.TempDir() + "/staxie"
+var TempDirectory string
+
 // Settings is our settings "singleton".
 var Settings SettingsStore
 
@@ -37,10 +40,19 @@ func init() {
 	AppDirectory = filepath.Join(AppDirectory, "staxie")
 	CacheDirectory, _ = os.UserCacheDir()
 	CacheDirectory = filepath.Join(CacheDirectory, "staxie")
+	TempDirectory = os.TempDir()
+	TempDirectory = filepath.Join(TempDirectory, "staxie")
 
 	// Create app dir
 	if _, err := os.Stat(AppDirectory); os.IsNotExist(err) {
 		if err = os.MkdirAll(AppDirectory, 0755); err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	// Create temp dir
+	if _, err := os.Stat(TempDirectory); os.IsNotExist(err) {
+		if err = os.MkdirAll(TempDirectory, 0755); err != nil {
 			fmt.Println(err)
 		}
 	}

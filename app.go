@@ -66,6 +66,10 @@ func (a *App) CacheDirectory(p string) string {
 	return filepath.Join(data.CacheDirectory, p)
 }
 
+func (a *App) TempDirectory(p string) string {
+	return filepath.Join(data.TempDirectory, p)
+}
+
 func (a *App) ReadBytes(name string) ([]byte, error) {
 	return os.ReadFile(name)
 }

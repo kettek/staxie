@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { GetFilePath, OpenFileBytes, SaveFilePath, ToggleFullscreen } from '../wailsjs/go/main/App.js'
+  import { GetFilePath, OpenFileBytes, SaveFilePath, TempDirectory, ToggleFullscreen } from '../wailsjs/go/main/App.js'
   import { EventsEmit } from '../wailsjs/runtime/runtime.js'
   import Editor2D from './sections/Editor2D.svelte'
   import Open from './sections/Open.svelte'
@@ -301,6 +301,10 @@
           path = await SaveFilePath(file.filepath)
         }
         if (path === '') return
+        if (hadPath && $autosaveSettings.saveToTempDir) {
+          const last = /[^/\\]*$/.exec(path)[0]
+          path = await TempDirectory(last)
+        }
         SaveFileBytes(path, [...data])
       } else {
         // This provides experimental file save support in non-Wails contexts, yo.
@@ -989,7 +993,7 @@
 {/if}
 
 {#if $autosaveSettings.enabled}
-  <Autosaver on:autosave={(e) => engageSave(e.detail)} on:autosaveTemp={(e) => engageSaveAs(e.detail, e.detail.filepath + '.tmp')} />
+  <Autosaver on:autosave={(e) => engageSave(e.detail)} on:autosaveTemp={(e) => engageSaveAs(e.detail, e.detail.filepath + ($autosaveSettings.saveToTempDir ? '' : '.tmp'))} />
 {/if}
 
 <style>
