@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/hugolgst/rich-go v0.0.0-20230917173849-4a4fb1d3c362
 	github.com/kettek/go-updater v1.0.0
-	github.com/wailsapp/wails/v2 v2.9.3
+	github.com/wailsapp/wails/v2 v2.9.2
 )
 
 require (
