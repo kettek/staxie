@@ -141,7 +141,7 @@
         }
       }
     }
-    file.push(new PixelsPlaceUndoable(pixels))
+    file.push(new PixelsPlaceUndoable(pixels), undefined, true)
   }
 
   function onVoxelHover(e: CustomEvent & { detail: VoxelEvent }) {
@@ -283,6 +283,8 @@
                         { x: slice.x + x, y: slice.y + z, index: 0 },
                         { x: slice.x + x, y: slice.y + z, index: p },
                       ]),
+                      undefined,
+                      true,
                     )
                   }
                 }
@@ -306,6 +308,8 @@
                   { x: slice.x + x, y: slice.y + z, index: 0 },
                   { x: nslice.x + nx, y: nslice.y + nz, index: p },
                 ]),
+                undefined,
+                true,
               )
             }
           }
@@ -384,7 +388,7 @@
         index,
       })
     }
-    file.push(new PixelsPlaceUndoable(pixels))
+    file.push(new PixelsPlaceUndoable(pixels), undefined, true)
     clearPaste()
   }
 

@@ -498,7 +498,7 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
       this.push(this.lastEntry, view)
     }
   }
-  push(item: Undoable<LoadedFile>, view?: CanvasView) {
+  push(item: Undoable<LoadedFile>, view?: CanvasView, from3D?: boolean) {
     flog.debug('push', item.constructor.name)
     if (this.lastSaveIndex > this.entriesIndex) {
       this.lastSaveIndex = -1
@@ -543,7 +543,12 @@ export class LoadedFile extends UndoableStack<LoadedFile> implements Writable<Lo
           offsetY = this.frameHeight * (i - this.frameIndex)
         }
 
-        for (let j of this.selectedSliceIndices.filter((i) => i < frame.slices.length)) {
+        let sliceIndices = [this.sliceIndex]
+        if (!from3D) {
+          sliceIndices = this.selectedSliceIndices.filter((i) => i < frame.slices.length)
+        }
+
+        for (let j of sliceIndices) {
           let offsetX = 0
           if (j !== this.sliceIndex) {
             offsetX = this.frameWidth * (j - this.sliceIndex)
