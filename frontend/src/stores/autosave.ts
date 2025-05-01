@@ -8,7 +8,7 @@ type AutosaveSettings = {
 }
 
 export const autosaveSettingsDefault: AutosaveSettings = {
-  enabled: true,
+  enabled: false,
   interval: 15,
   saveToTemporary: false,
   saveToTempDir: true,
