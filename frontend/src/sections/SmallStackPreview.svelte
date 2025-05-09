@@ -160,6 +160,7 @@
     height: 100%;
     background: black;
     position: relative;
+    overflow: hidden;
   }
   span {
     position: absolute;
