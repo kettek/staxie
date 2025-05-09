@@ -1,6 +1,8 @@
 <script lang="ts" context="module">
   import { writable, type Writable } from 'svelte/store'
   export const rotateOrigin: Writable<[number, number, number]> = writable([0, 0, 0])
+  export const rotateAngle: Writable<[number, number, number]> = writable([0, 0, 0])
+  export const rotateActive: Writable<boolean> = writable(false)
 </script>
 
 <script lang="ts">
@@ -9,16 +11,14 @@
   import { PixelsPlaceUndoable } from '../types/file/undoables'
   import Input from './common/Input.svelte'
   import { Checkmark } from 'carbon-icons-svelte'
+  import { onMount } from 'svelte'
 
-  let rotateX: number = 0
-  let rotateY: number = 0
-  let rotateZ: number = 0
   let radX: number = 0
   let radY: number = 0
   let radZ: number = 0
-  $: radX = rotateX * (Math.PI / 180)
-  $: radY = rotateY * (Math.PI / 180)
-  $: radZ = rotateZ * (Math.PI / 180)
+  $: radX = $rotateAngle[0] * (Math.PI / 180)
+  $: radY = $rotateAngle[1] * (Math.PI / 180)
+  $: radZ = $rotateAngle[2] * (Math.PI / 180)
   function doRotate() {
     if (!$fileStates.focused) return
     const c1 = $fileStates.focused.threeDCursor1
@@ -77,10 +77,16 @@
     }
     $fileStates.focused.push(new PixelsPlaceUndoable([...oldPixels, ...newPixels]))
   }
+  onMount(() => {
+    $rotateActive = true
+    return () => {
+      $rotateActive = false
+    }
+  })
 </script>
 
 <div>
-  <Input type="number" width={4} bind:value={rotateX} labelColor="#ff3553">
+  <Input type="number" width={4} bind:value={$rotateAngle[0]} labelColor="#ff3553">
     <svelte:fragment slot="label">X°</svelte:fragment>
   </Input>
   <Input type="number" width={6} bind:value={$rotateOrigin[0]} labelColor="#ff3553" placeholder="0">
@@ -88,7 +94,7 @@
   </Input>
 </div>
 <div>
-  <Input type="number" width={4} bind:value={rotateY} labelColor="#8adb00">
+  <Input type="number" width={4} bind:value={$rotateAngle[1]} labelColor="#8adb00">
     <svelte:fragment slot="label">Y°</svelte:fragment>
   </Input>
   <Input type="number" width={6} bind:value={$rotateOrigin[1]} labelColor="#8adb00" placeholder="0">
@@ -96,7 +102,7 @@
   </Input>
 </div>
 <div>
-  <Input type="number" width={4} bind:value={rotateZ} labelColor="#2a8fff">
+  <Input type="number" width={4} bind:value={$rotateAngle[2]} labelColor="#2a8fff">
     <svelte:fragment slot="label">Z°</svelte:fragment>
   </Input>
   <Input type="number" width={6} bind:value={$rotateOrigin[2]} labelColor="#2a8fff" placeholder="0">
